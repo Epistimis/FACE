@@ -99,7 +99,8 @@ UopAbstractUoP:
 
 UopAbstractConnection:
 	'aconn' name=ID description=STRING '{'
-		( conceptualView=[uddl::ConceptualView|QN] | logicalView=[uddl::LogicalView|QN])?
+		( 'c' conceptualView=[uddl::ConceptualView|QN])? 
+		( 'l' logicalView=[uddl::LogicalView|QN])?
 	'}' ';'	
 ;
 

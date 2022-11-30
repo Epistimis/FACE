@@ -9,5 +9,22 @@ Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.xtext,
  org.eclipse.xtext.xbase,
  org.eclipse.equinox.common;bundle-version="3.5.0",
- com.epistimis.uddl;bundle-version="1.0.0"
+ com.epistimis.uddl;bundle-version="1.0.0",
+ org.eclipse.emf.ecore,
+ org.eclipse.xtext.xbase.lib;bundle-version="2.14.0",
+ org.eclipse.xtext.util,
+ org.eclipse.emf.common,
+ org.antlr.runtime;bundle-version="[3.2.0,3.2.1)"
 Bundle-RequiredExecutionEnvironment: JavaSE-11
+Export-Package: com.epistimist.face.face.impl,
+ com.epistimist.face.serializer,
+ com.epistimist.face.face,
+ com.epistimist.face.validation,
+ com.epistimist.face.services,
+ com.epistimist.face.generator,
+ com.epistimist.face.scoping,
+ com.epistimist.face.face.util,
+ com.epistimist.face,
+ com.epistimist.face.parser.antlr,
+ com.epistimist.face.parser.antlr.internal
+Import-Package: org.apache.log4j
