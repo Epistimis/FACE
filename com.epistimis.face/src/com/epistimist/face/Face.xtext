@@ -114,7 +114,7 @@ UopUnitOfPortability:
 		'RAM:' memoryRequirements=UopRAMMemoryRequirements
 		'thread:' '[' thread+=UopThread+ ']'
 		('support:' '[' supportingComponent+=[UopSupportingComponent|QN]+ ']')? 
-		'conn:' '[' connection=UopConnection+ ']'
+		'conn:' '[' connection+=UopConnection+ ']'
 		('lcm:' '[' lcmPort+=UopLifeCycleManagementPort lcmPort+=UopLifeCycleManagementPort? ']' )?
 	'}' ';'
 ;
