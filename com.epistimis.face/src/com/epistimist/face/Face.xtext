@@ -1,9 +1,328 @@
-grammar com.epistimist.face.Face with org.eclipse.xtext.common.Terminals
+grammar com.epistimist.face.Face with com.epistimis.uddl.Uddl
 
 generate face "http://www.epistimist.com/face/Face"
+
+import "http://www.epistimis.com/uddl/Uddl" as uddl
 
 Model:
 	greetings+=Greeting*;
 	
 Greeting:
 	'Hello' name=ID '!';
+
+	
+ArchitectureModel:
+	(dm+=DataModel | um+=UopUoPModel | im+=IntegrationIntegrationModel)+
+;
+
+
+enum UoPClientServerRole:
+	CLIENT='client' | SERVER='server'
+;
+
+enum UopFaceProfile:
+	GENERAL_PURPOSE = 'GeneralPurpose' |
+	SECURITY = 'Security' |
+	SAFETY_BASE = 'SafetyBase' |
+	SAFETY_EXTENDED = 'SafetyExtended'
+;
+
+enum UopDesignAssuranceLevel:
+	A='a' | B='b' | C='c' | D='d' | E='e'
+;
+
+enum UopDesignAssuranceStandard:
+	DO_178B_ED_12B='DO_178B_ED_12B' |
+	DO_178C_ED_12C='DO_178C_ED_12C'
+;
+
+enum UopMessageExchangeType:
+	INBOUND_MESSAGE='InboundMessage' |
+	OUTBOUND_MESSAGE='OutboundMessage'
+;
+
+enum UopPartitionType:
+	POSIX='POSIX' | ARINC653='ARINC653'
+;
+
+enum UopProgrammingLanguage:
+	C='C' | CPP='cpp' | JAVA='Java' | ADA='Ada'
+;
+
+enum UopSynchronizationStyle:
+	BLOCKING='Blocking' | NON_BLOCKING='NonBlocking'
+;
+
+enum UopThreadType:
+	FOREGROUND='Foreground'| BACKGROUND='Background'
+;
+
+
+UopUoPModel:
+	name=ID description=STRING '{'
+		(um+=UopUoPModel | element +=UopElement)+
+	'}' ';'
+;
+
+UopElement: 
+	UopSupportingComponent |
+	UopUnitOfPortability |
+	UopAbstractUoP
+;
+
+
+UopSupportingComponent:
+	UopComponentFramework |
+	UopLanguageRuntime
+;
+
+UopLanguageRuntime:
+	'lr' name=ID description=STRING '{'
+		version=STRING
+	'}' ';'
+;
+
+
+
+UopComponentFramework:
+	'cf' name=ID description=STRING '{'
+		version=STRING
+	'}' ';'
+;
+
+UopAbstractUoP:
+	'aUoP' name=ID description=STRING '{'
+		(connection+=UopAbstractConnection)*
+	'}' ';'	
+;
+
+
+UopAbstractConnection:
+	'aconn' name=ID description=STRING '{'
+		( conceptualView=[uddl::ConceptualView|QN] | logicalView=[uddl::LogicalView|QN])?
+	'}' ';'	
+;
+
+UopUnitOfPortability:	
+	({UopPortableComponent}'pc' | {UopPlatformSpecificComponent} 'psc') name=ID description=STRING '->' realizes=[UopAbstractUoP|QN] '{'
+		'lang:' transportAPILanguage=UopProgrammingLanguage
+		'part:' partitionType=UopPartitionType
+		'prof:' faceProfile=UopFaceProfile
+		('DAL:' designAssuranceLevel=UopDesignAssuranceLevel)?
+		('DAS:' designAssuranceStandard=UopDesignAssuranceStandard)?
+		'RAM:' memoryRequirements=UopRAMMemoryRequirements
+		'thread:' '[' thread+=UopThread+ ']'
+		('support:' '[' supportingComponent+=[UopSupportingComponent|QN]+ ']')? 
+		'conn:' '[' connection=UopConnection+ ']'
+		('lcm:' '[' lcmPort+=UopLifeCycleManagementPort lcmPort+=UopLifeCycleManagementPort? ']' )?
+	'}' ';'
+;
+
+
+UopThread: '(' 
+	'per:' period=FLOAT 
+	'timeCap:' timeCapacity=FLOAT 
+	'prio:' relativePriority=INT 
+	'core:' relativeCoreAffinity=INT
+	'thread:' threadType=UopThreadType
+	')'
+	;
+
+
+UopRAMMemoryRequirements:
+	{UopRAMMemoryRequirements}
+	'('
+	('heap:' '[' heapStackMin=INT? ':' heapStackTypical=INT? ':' heapStackMax=INT? ']')?
+	('text:' 	textMax=INT)?
+	('roData:' 	roDataMax=INT)?
+	('data:' 	dataMax=INT)?
+	('bss:' 	bssMax=INT)?
+	')'
+;
+
+UopConnection:
+	UopPubSubConnection |
+	UopClientServerConnection
+;
+UopClientServerConnection:
+	'csconn' name=ID description=STRING '->' realizes=[UopAbstractConnection|QN] '{'
+	 	'period:' period=FLOAT
+	 	'synch:' synchronizationStyle=UopSynchronizationStyle
+	 		 '[' requestType=UopMessageType '/' responseType=UopMessageType ']'
+	 	'role:' role=UoPClientServerRole
+	'}' ';'
+;
+
+
+UopPubSubConnection:
+	UopQueueingConnection |
+	UopSingleInstanceMessageConnection
+;
+
+UopQueueingConnection:
+	'qconn' name=ID description=STRING '->' realizes=[UopAbstractConnection|QN] '{'
+	 	'period:' period=FLOAT
+	 	'msg:' 	synchronizationStyle=UopSynchronizationStyle 
+	 			messageExchangeType=UopMessageExchangeType 
+	 			messageType=[UopMessageType|QN]
+		'depth:' depth=INT
+		'}' ';'
+;
+
+UopSingleInstanceMessageConnection:
+	'simconn' name=ID description=STRING '->' realizes=[UopAbstractConnection|QN] '{'
+	 	'period:' period=FLOAT
+	 	'msg:' 	synchronizationStyle=UopSynchronizationStyle 
+	 			messageExchangeType=UopMessageExchangeType 
+	 			messageType=[UopMessageType|QN]
+		'}' ';'
+;
+
+UopLifeCycleManagementPort:
+	'(' messageExchangeType=UopMessageExchangeType lcmMessageType=[UopMessageType|QN] ')'
+;
+
+UopMessageType:
+	UopTemplate |
+	UopCompositeTemplate
+;
+
+UopCompositeTemplate:
+	'ctempl' name=ID description=STRING ('->' realizes=[uddl::LogicalCompositeQuery|QN])? '{'
+		isUnion?='isUnion'
+		composition+=UopTemplateComposition (composition+=UopTemplateComposition)+
+	'}' ';'
+;
+
+UopTemplateComposition:
+	type=[UopMessageType|QN] rolename=STRING ('->' realizes=[uddl::LogicalQueryComposition|QN])?
+;
+
+UopTemplate:
+	'templ' name=ID description=STRING  '{'
+		'spec:' specification=STRING
+		('bound:' boundQuery=[uddl::PlatformQuery|QN])?
+		('effective:' effectiveQuery=[uddl::PlatformQuery|QN])?
+	'}' ';'	
+;
+
+// -------------- Integration -----------
+IntegrationTSNodePortBase:
+	IntegrationUoPEndPoint |
+	IntegrationTSNodePort
+;
+
+
+// ----
+IntegrationIntegrationModel:
+	'im' name=ID description=STRING '{'
+		(im+=IntegrationIntegrationModel | element+=IntegrationElement)*
+	'}' ';'
+;
+
+IntegrationElement:
+	IntegrationUoPInstance |
+	IntegrationTransportChannel |
+	IntegrationIntegrationContext
+;
+
+IntegrationIntegrationContext:
+	'ic' name=ID description=STRING '{'
+		('conn:' '['connection+=IntegrationTSNodeConnection+ ']')?
+	'}' ';'
+;
+
+IntegrationTSNodeConnection:
+	'(' source=[IntegrationTSNodePortBase|QN] '->' destination=[IntegrationTSNodePortBase|QN] ')' 
+;
+
+IntegrationUoPInstance:
+	'uinst' name=ID description=STRING '->' realizes=[UopUnitOfPortability|QN]  '{'
+		('uri:' configurationURI=STRING)?
+		('input:' '[' input+=IntegrationUoPInputEndPoint+ ']')?
+		('output' '[' output+=IntegrationUoPOutputEndPoint+ ']')?
+	'}' ';'
+;
+
+IntegrationUoPEndPoint:
+	IntegrationUoPInputEndPoint |
+	IntegrationUoPOutputEndPoint
+;
+
+IntegrationUoPInputEndPoint:
+	'i' connection=[UopConnection|QN] ';'
+;
+
+IntegrationUoPOutputEndPoint:
+	'o' connection=[UopConnection|QN] ';'
+;
+
+IntegrationTrasportNode:
+	IntegrationViewTransporter |
+	IntegrationViewAggregation |
+	IntegrationViewTransformation |
+	IntegrationViewFilter |
+	IntegrationViewSink |
+	IntegrationViewSource
+;
+
+
+IntegrationTSNodePort:
+	IntegrationTSNodeOutputPort | 
+	IntegrationTSNodeInputPort	
+;
+
+IntegrationTSNodeInputPort:
+	'ti' view=[uddl::PlatformView|QN]	';'
+;
+
+IntegrationTSNodeOutputPort: 
+	'to' view=[uddl::PlatformView|QN]	';'
+;
+
+IntegrationViewAggregation:
+	'agg' name=ID description=STRING '{'
+		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
+		('output' '[' output=IntegrationTSNodeOutputPort ']')?
+	'}' ';'
+;
+
+IntegrationViewFilter:
+	'filter' name=ID description=STRING '{'
+		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
+		('output' '[' output=IntegrationTSNodeOutputPort ']')?
+	'}' ';'
+;
+
+IntegrationViewSink:
+	'sink' name=ID description=STRING '{'
+		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
+		('output' '[' output=IntegrationTSNodeOutputPort ']')?
+	'}' ';'
+;
+
+IntegrationViewSource:
+	'sink' name=ID description=STRING '{'
+		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
+		('output' '[' output=IntegrationTSNodeOutputPort ']')?
+	'}' ';'
+;
+
+IntegrationViewTransformation:
+	'xform' name=ID description=STRING '{'
+		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
+		('output' '[' output=IntegrationTSNodeOutputPort ']')?
+	'}' ';'
+;
+
+IntegrationViewTransporter:
+	'xport' name=ID description=STRING '{'
+		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
+		('output' '[' output=IntegrationTSNodeOutputPort ']')?
+		'chan:' channel=IntegrationTransportChannel
+	'}' ';'
+;
+
+IntegrationTransportChannel:
+	'xchan' name=ID description=STRING ';'
+;

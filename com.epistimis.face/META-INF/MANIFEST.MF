@@ -2,11 +2,12 @@ Manifest-Version: 1.0
 Automatic-Module-Name: com.epistimis.face
 Bundle-ManifestVersion: 2
 Bundle-Name: com.epistimis.face
-Bundle-Vendor: My Company
+Bundle-Vendor: Epistimis
 Bundle-Version: 1.0.0.qualifier
 Bundle-SymbolicName: com.epistimis.face; singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.xtext,
  org.eclipse.xtext.xbase,
- org.eclipse.equinox.common;bundle-version="3.5.0"
+ org.eclipse.equinox.common;bundle-version="3.5.0",
+ com.epistimis.uddl;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-11

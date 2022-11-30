@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Automatic-Module-Name: com.epistimis.face.ui
 Bundle-ManifestVersion: 2
 Bundle-Name: com.epistimis.face.ui
-Bundle-Vendor: My Company
+Bundle-Vendor: Epistimis
 Bundle-Version: 1.0.0.qualifier
 Bundle-SymbolicName: com.epistimis.face.ui; singleton:=true
 Bundle-ActivationPolicy: lazy
@@ -12,6 +12,7 @@ Require-Bundle: com.epistimis.face,
  org.eclipse.xtext.ui.shared,
  org.eclipse.xtext.ui.codetemplates.ui,
  org.eclipse.ui.editors;bundle-version="3.5.0",
- org.eclipse.ui.ide;bundle-version="3.5.0"
+ org.eclipse.ui.ide;bundle-version="3.5.0",
+ com.epistimis.uddl.ui;bundle-version="1.0.0"
 Import-Package: org.apache.log4j
 Bundle-RequiredExecutionEnvironment: JavaSE-11
