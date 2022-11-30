@@ -1,0 +1,9 @@
+grammar com.epistimist.face.Face with org.eclipse.xtext.common.Terminals
+
+generate face "http://www.epistimist.com/face/Face"
+
+Model:
+	greetings+=Greeting*;
+	
+Greeting:
+	'Hello' name=ID '!';
