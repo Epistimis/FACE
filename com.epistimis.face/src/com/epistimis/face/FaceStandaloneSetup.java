@@ -3,7 +3,7 @@
  */
 package com.epistimis.face;
 
-import com.epistimist.face.FaceStandaloneSetupGenerated;
+import com.epistimis.face.FaceStandaloneSetupGenerated;
 
 /**
  * Initialization support for running Xtext languages without Equinox extension registry.

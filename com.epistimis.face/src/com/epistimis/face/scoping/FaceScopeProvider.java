@@ -3,7 +3,7 @@
  */
 package com.epistimis.face.scoping;
 
-import com.epistimist.face.scoping.AbstractFaceScopeProvider;
+import com.epistimis.face.scoping.AbstractFaceScopeProvider;
 
 /**
  * This class contains custom scoping description.

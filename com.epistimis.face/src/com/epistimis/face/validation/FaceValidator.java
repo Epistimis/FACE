@@ -3,7 +3,7 @@
  */
 package com.epistimis.face.validation;
 
-import com.epistimist.face.validation.AbstractFaceValidator;
+import com.epistimis.face.validation.AbstractFaceValidator;
 
 /**
  * This class contains custom validation rules. 
