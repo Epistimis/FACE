@@ -13,5 +13,5 @@ Require-Bundle: com.epistimis.face,
  com.epistimis.uddl.ide;bundle-version="1.0.0",
  com.epistimis.uddl;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Export-Package: com.epistimist.face.ide.contentassist.antlr.internal,
- com.epistimist.face.ide.contentassist.antlr
+Export-Package: com.epistimis.face.ide.contentassist.antlr.internal,
+ com.epistimis.face.ide.contentassist.antlr

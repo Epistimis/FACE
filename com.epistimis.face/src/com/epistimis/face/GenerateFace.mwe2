@@ -1,4 +1,4 @@
-module com.epistimist.face.GenerateFace
+module com.epistimis.face.GenerateFace
 
 import org.eclipse.xtext.xtext.generator.*
 import org.eclipse.xtext.xtext.generator.model.project.*
@@ -31,7 +31,7 @@ Workflow {
 			}
 		}
 		language = StandardLanguage {
-			name = "com.epistimist.face.Face"
+			name = "com.epistimis.face.Face"
 			fileExtensions = "face"
 			referencedResource="platform:/resource/com.epistimis.uddl/model/generated/Uddl.genmodel"
 			

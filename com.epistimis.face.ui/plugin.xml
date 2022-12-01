@@ -4,48 +4,48 @@
 	<extension
 		point="org.eclipse.ui.editors">
 		<editor
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.XtextEditor"
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.XtextEditor"
 			contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
 			default="true"
 			extensions="face"
-			id="com.epistimist.face.Face"
+			id="com.epistimis.face.Face"
 			name="Face Editor">
 		</editor>
 	</extension>
 	<extension
 		point="org.eclipse.ui.handlers">
 		<handler
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.hyperlinking.OpenDeclarationHandler"
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.hyperlinking.OpenDeclarationHandler"
 			commandId="org.eclipse.xtext.ui.editor.hyperlinking.OpenDeclaration">
 			<activeWhen>
 				<reference
-					definitionId="com.epistimist.face.Face.Editor.opened">
+					definitionId="com.epistimis.face.Face.Editor.opened">
 				</reference>
 			</activeWhen>
 		</handler>
 		<handler
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.handler.ValidateActionHandler"
-			commandId="com.epistimist.face.Face.validate">
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.handler.ValidateActionHandler"
+			commandId="com.epistimis.face.Face.validate">
 			<activeWhen>
 				<reference
-					definitionId="com.epistimist.face.Face.Editor.opened">
+					definitionId="com.epistimis.face.Face.Editor.opened">
 				</reference>
 			</activeWhen>
 		</handler>
 		<!-- copy qualified name -->
 		<handler
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.copyqualifiedname.EditorCopyQualifiedNameHandler"
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.copyqualifiedname.EditorCopyQualifiedNameHandler"
 			commandId="org.eclipse.xtext.ui.editor.copyqualifiedname.EditorCopyQualifiedName">
 			<activeWhen>
-				<reference definitionId="com.epistimist.face.Face.Editor.opened" />
+				<reference definitionId="com.epistimis.face.Face.Editor.opened" />
 			</activeWhen>
 		</handler>
 		<handler
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.copyqualifiedname.OutlineCopyQualifiedNameHandler"
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.copyqualifiedname.OutlineCopyQualifiedNameHandler"
 			commandId="org.eclipse.xtext.ui.editor.copyqualifiedname.OutlineCopyQualifiedName">
 			<activeWhen>
 				<and>
-					<reference definitionId="com.epistimist.face.Face.XtextEditor.opened" />
+					<reference definitionId="com.epistimis.face.Face.XtextEditor.opened" />
 					<iterate>
 						<adapt type="org.eclipse.xtext.ui.editor.outline.IOutlineNode" />
 					</iterate>
@@ -54,22 +54,22 @@
 		</handler>
 	</extension>
 	<extension point="org.eclipse.core.expressions.definitions">
-		<definition id="com.epistimist.face.Face.Editor.opened">
+		<definition id="com.epistimis.face.Face.Editor.opened">
 			<and>
 				<reference definitionId="isActiveEditorAnInstanceOfXtextEditor"/>
 				<with variable="activeEditor">
 					<test property="org.eclipse.xtext.ui.editor.XtextEditor.languageName"
-						value="com.epistimist.face.Face"
+						value="com.epistimis.face.Face"
 						forcePluginActivation="true"/>
 				</with>
 			</and>
 		</definition>
-		<definition id="com.epistimist.face.Face.XtextEditor.opened">
+		<definition id="com.epistimis.face.Face.XtextEditor.opened">
 			<and>
 				<reference definitionId="isXtextEditorActive"/>
 				<with variable="activeEditor">
 					<test property="org.eclipse.xtext.ui.editor.XtextEditor.languageName"
-						value="com.epistimist.face.Face"
+						value="com.epistimis.face.Face"
 						forcePluginActivation="true"/>
 				</with>
 			</and>
@@ -78,33 +78,33 @@
 	<extension
 			point="org.eclipse.ui.preferencePages">
 		<page
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.preferences.LanguageRootPreferencePage"
-			id="com.epistimist.face.Face"
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.preferences.LanguageRootPreferencePage"
+			id="com.epistimis.face.Face"
 			name="Face">
-			<keywordReference id="com.epistimist.face.ui.keyword_Face"/>
+			<keywordReference id="com.epistimis.face.ui.keyword_Face"/>
 		</page>
 		<page
-			category="com.epistimist.face.Face"
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.syntaxcoloring.SyntaxColoringPreferencePage"
-			id="com.epistimist.face.Face.coloring"
+			category="com.epistimis.face.Face"
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.syntaxcoloring.SyntaxColoringPreferencePage"
+			id="com.epistimis.face.Face.coloring"
 			name="Syntax Coloring">
-			<keywordReference id="com.epistimist.face.ui.keyword_Face"/>
+			<keywordReference id="com.epistimis.face.ui.keyword_Face"/>
 		</page>
 		<page
-			category="com.epistimist.face.Face"
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.templates.XtextTemplatePreferencePage"
-			id="com.epistimist.face.Face.templates"
+			category="com.epistimis.face.Face"
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.templates.XtextTemplatePreferencePage"
+			id="com.epistimis.face.Face.templates"
 			name="Templates">
-			<keywordReference id="com.epistimist.face.ui.keyword_Face"/>
+			<keywordReference id="com.epistimis.face.ui.keyword_Face"/>
 		</page>
 	</extension>
 	<extension
 			point="org.eclipse.ui.propertyPages">
 		<page
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.preferences.LanguageRootPreferencePage"
-			id="com.epistimist.face.Face"
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.preferences.LanguageRootPreferencePage"
+			id="com.epistimis.face.Face"
 			name="Face">
-			<keywordReference id="com.epistimist.face.ui.keyword_Face"/>
+			<keywordReference id="com.epistimis.face.ui.keyword_Face"/>
 			<enabledWhen>
 				<adapt type="org.eclipse.core.resources.IProject"/>
 			</enabledWhen>
@@ -114,14 +114,14 @@
 	<extension
 		point="org.eclipse.ui.keywords">
 		<keyword
-			id="com.epistimist.face.ui.keyword_Face"
+			id="com.epistimis.face.ui.keyword_Face"
 			label="Face"/>
 	</extension>
 	<extension
 		point="org.eclipse.ui.commands">
 		<command
 			description="Trigger expensive validation"
-			id="com.epistimist.face.Face.validate"
+			id="com.epistimis.face.Face.validate"
 			name="Validate">
 		</command>
 		<!-- copy qualified name -->
@@ -142,12 +142,12 @@
 		<menuContribution
 			locationURI="popup:#TextEditorContext?after=group.edit">
 			<command
-				commandId="com.epistimist.face.Face.validate"
+				commandId="com.epistimis.face.Face.validate"
 				style="push"
 				tooltip="Trigger expensive validation">
 				<visibleWhen checkEnabled="false">
 					<reference
-						definitionId="com.epistimist.face.Face.Editor.opened">
+						definitionId="com.epistimis.face.Face.Editor.opened">
 					</reference>
 				</visibleWhen>
 			</command>
@@ -157,7 +157,7 @@
 			<command commandId="org.eclipse.xtext.ui.editor.copyqualifiedname.EditorCopyQualifiedName"
 				style="push" tooltip="Copy Qualified Name">
 				<visibleWhen checkEnabled="false">
-					<reference definitionId="com.epistimist.face.Face.Editor.opened" />
+					<reference definitionId="com.epistimis.face.Face.Editor.opened" />
 				</visibleWhen>
 			</command>
 		</menuContribution>
@@ -165,7 +165,7 @@
 			<command commandId="org.eclipse.xtext.ui.editor.copyqualifiedname.EditorCopyQualifiedName"
 				style="push" tooltip="Copy Qualified Name">
 				<visibleWhen checkEnabled="false">
-					<reference definitionId="com.epistimist.face.Face.Editor.opened" />
+					<reference definitionId="com.epistimis.face.Face.Editor.opened" />
 				</visibleWhen>
 			</command>
 		</menuContribution>
@@ -174,7 +174,7 @@
 				style="push" tooltip="Copy Qualified Name">
 				<visibleWhen checkEnabled="false">
 					<and>
-						<reference definitionId="com.epistimist.face.Face.XtextEditor.opened" />
+						<reference definitionId="com.epistimis.face.Face.XtextEditor.opened" />
 						<iterate>
 							<adapt type="org.eclipse.xtext.ui.editor.outline.IOutlineNode" />
 						</iterate>
@@ -187,7 +187,7 @@
 		<menuContribution locationURI="popup:#TextEditorContext?endof=group.find">
 			<command commandId="org.eclipse.xtext.ui.editor.FindReferences">
 				<visibleWhen checkEnabled="false">
-					<reference definitionId="com.epistimist.face.Face.Editor.opened">
+					<reference definitionId="com.epistimis.face.Face.Editor.opened">
 					</reference>
 				</visibleWhen>
 			</command>
@@ -195,11 +195,11 @@
 	</extension>
 	<extension point="org.eclipse.ui.handlers">
 		<handler
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.findrefs.FindReferencesHandler"
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.findrefs.FindReferencesHandler"
 			commandId="org.eclipse.xtext.ui.editor.FindReferences">
 			<activeWhen>
 				<reference
-					definitionId="com.epistimist.face.Face.Editor.opened">
+					definitionId="com.epistimis.face.Face.Editor.opened">
 				</reference>
 			</activeWhen>
 		</handler>
@@ -208,7 +208,7 @@
 		<content-type
 			base-type="org.eclipse.core.runtime.text"
 			file-extensions="face"
-			id="com.epistimist.face.Face.contenttype"
+			id="com.epistimis.face.Face.contenttype"
 			name="Face File"
 			priority="normal">
 		</content-type>
@@ -217,17 +217,17 @@
 	<extension
 		point="org.eclipse.emf.ecore.extension_parser">
 		<parser
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.resource.IResourceFactory"
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.resource.IResourceFactory"
 			type="face">
 		</parser>
 	</extension>
 	<extension point="org.eclipse.xtext.extension_resourceServiceProvider">
 		<resourceServiceProvider
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.resource.IResourceUIServiceProvider"
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.resource.IResourceUIServiceProvider"
 			uriExtension="face">
 		</resourceServiceProvider>
 	</extension>
-	<!-- marker definitions for com.epistimist.face.Face -->
+	<!-- marker definitions for com.epistimis.face.Face -->
 	<extension
 			id="face.check.fast"
 			name="Face Problem"
@@ -251,34 +251,34 @@
 	</extension>
 	<extension point="org.eclipse.ui.preferencePages">
 		<page
-			category="com.epistimist.face.Face"
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.validation.ValidatorPreferencePage"
-			id="com.epistimist.face.Face.validator.preferencePage"
+			category="com.epistimis.face.Face"
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.validation.ValidatorPreferencePage"
+			id="com.epistimis.face.Face.validator.preferencePage"
 			name="Errors/Warnings">
-			<keywordReference id="com.epistimist.face.ui.keyword_Face"/>
+			<keywordReference id="com.epistimis.face.ui.keyword_Face"/>
 		</page>
 	</extension>
 	<extension point="org.eclipse.xtext.builder.participant">
 		<participant
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.builder.IXtextBuilderParticipant"
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.builder.IXtextBuilderParticipant"
 			fileExtensions="face"/>
 	</extension>
 	<extension point="org.eclipse.ui.preferencePages">
 		<page
-			category="com.epistimist.face.Face"
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.builder.preferences.BuilderPreferencePage"
-			id="com.epistimist.face.Face.compiler.preferencePage"
+			category="com.epistimis.face.Face"
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.builder.preferences.BuilderPreferencePage"
+			id="com.epistimis.face.Face.compiler.preferencePage"
 			name="Compiler">
-			<keywordReference id="com.epistimist.face.ui.keyword_Face"/>
+			<keywordReference id="com.epistimis.face.ui.keyword_Face"/>
 		</page>
 	</extension>
 	<extension point="org.eclipse.ui.propertyPages">
 		<page
-			category="com.epistimist.face.Face"
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.builder.preferences.BuilderPreferencePage"
-			id="com.epistimist.face.Face.compiler.propertyPage"
+			category="com.epistimis.face.Face"
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.builder.preferences.BuilderPreferencePage"
+			id="com.epistimis.face.Face.compiler.propertyPage"
 			name="Compiler">
-			<keywordReference id="com.epistimist.face.ui.keyword_Face"/>
+			<keywordReference id="com.epistimis.face.ui.keyword_Face"/>
 			<enabledWhen>
 				<adapt type="org.eclipse.core.resources.IProject"/>
 			</enabledWhen>
@@ -289,20 +289,20 @@
 		<menuContribution locationURI="popup:#TextEditorContext?after=xtext.ui.openDeclaration">
 			<command
 				commandId="org.eclipse.xtext.ui.OpenGeneratedFileCommand"
-				id="com.epistimist.face.Face.OpenGeneratedCode"
+				id="com.epistimis.face.Face.OpenGeneratedCode"
 				style="push">
 				<visibleWhen checkEnabled="false">
-					<reference definitionId="com.epistimist.face.Face.Editor.opened" />
+					<reference definitionId="com.epistimis.face.Face.Editor.opened" />
 				</visibleWhen>
 			</command>
 		</menuContribution>
 	</extension>
 	<extension point="org.eclipse.ui.handlers">
 		<handler
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.generator.trace.OpenGeneratedFileHandler"
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.generator.trace.OpenGeneratedFileHandler"
 			commandId="org.eclipse.xtext.ui.OpenGeneratedFileCommand">
 			<activeWhen>
-				<reference definitionId="com.epistimist.face.Face.Editor.opened" />
+				<reference definitionId="com.epistimis.face.Face.Editor.opened" />
 			</activeWhen>
 		</handler>
 	</extension>
@@ -310,11 +310,11 @@
 	<extension
 		point="org.eclipse.ui.handlers">
 		<handler
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.outline.quickoutline.ShowQuickOutlineActionHandler"
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.outline.quickoutline.ShowQuickOutlineActionHandler"
 			commandId="org.eclipse.xtext.ui.editor.outline.QuickOutline">
 			<activeWhen>
 				<reference
-					definitionId="com.epistimist.face.Face.Editor.opened">
+					definitionId="com.epistimis.face.Face.Editor.opened">
 				</reference>
 			</activeWhen>
 		</handler>
@@ -334,16 +334,16 @@
 				style="push"
 				tooltip="Open Quick Outline">
 				<visibleWhen checkEnabled="false">
-					<reference definitionId="com.epistimist.face.Face.Editor.opened"/>
+					<reference definitionId="com.epistimis.face.Face.Editor.opened"/>
 				</visibleWhen>
 			</command>
 		</menuContribution>
 	</extension>
-	<!-- quickfix marker resolution generator for com.epistimist.face.Face -->
+	<!-- quickfix marker resolution generator for com.epistimis.face.Face -->
 	<extension
 			point="org.eclipse.ui.ide.markerResolution">
 		<markerResolutionGenerator
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.quickfix.MarkerResolutionGenerator"
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.quickfix.MarkerResolutionGenerator"
 			markerType="com.epistimis.face.ui.face.check.fast">
 			<attribute
 				name="FIXABLE_KEY"
@@ -351,7 +351,7 @@
 			</attribute>
 		</markerResolutionGenerator>
 		<markerResolutionGenerator
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.quickfix.MarkerResolutionGenerator"
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.quickfix.MarkerResolutionGenerator"
 			markerType="com.epistimis.face.ui.face.check.normal">
 			<attribute
 				name="FIXABLE_KEY"
@@ -359,7 +359,7 @@
 			</attribute>
 		</markerResolutionGenerator>
 		<markerResolutionGenerator
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.quickfix.MarkerResolutionGenerator"
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.quickfix.MarkerResolutionGenerator"
 			markerType="com.epistimis.face.ui.face.check.expensive">
 			<attribute
 				name="FIXABLE_KEY"
@@ -370,11 +370,11 @@
 	<!-- Rename Refactoring -->
 	<extension point="org.eclipse.ui.handlers">
 		<handler
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.refactoring.ui.DefaultRenameElementHandler"
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.refactoring.ui.DefaultRenameElementHandler"
 			commandId="org.eclipse.xtext.ui.refactoring.RenameElement">
 			<activeWhen>
 				<reference
-					definitionId="com.epistimist.face.Face.Editor.opened">
+					definitionId="com.epistimis.face.Face.Editor.opened">
 				</reference>
 			</activeWhen>
 		</handler>
@@ -386,7 +386,7 @@
 				style="push">
 				<visibleWhen checkEnabled="false">
 					<reference
-						definitionId="com.epistimist.face.Face.Editor.opened">
+						definitionId="com.epistimis.face.Face.Editor.opened">
 					</reference>
 				</visibleWhen>
 			</command>
@@ -394,34 +394,34 @@
 	</extension>
 	<extension point="org.eclipse.ui.preferencePages">
 		<page
-			category="com.epistimist.face.Face"
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.refactoring.ui.RefactoringPreferencePage"
-			id="com.epistimist.face.Face.refactoring"
+			category="com.epistimis.face.Face"
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.refactoring.ui.RefactoringPreferencePage"
+			id="com.epistimis.face.Face.refactoring"
 			name="Refactoring">
-			<keywordReference id="com.epistimist.face.ui.keyword_Face"/>
+			<keywordReference id="com.epistimis.face.ui.keyword_Face"/>
 		</page>
 	</extension>
 	<extension point="org.eclipse.compare.contentViewers">
-		<viewer id="com.epistimist.face.Face.compare.contentViewers"
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.compare.InjectableViewerCreator"
+		<viewer id="com.epistimis.face.Face.compare.contentViewers"
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.compare.InjectableViewerCreator"
 			extensions="face">
 		</viewer>
 		<contentTypeBinding
-			contentTypeId="com.epistimist.face.Face.contenttype"
-			contentViewerId="com.epistimist.face.Face.compare.contentViewers" />
+			contentTypeId="com.epistimis.face.Face.contenttype"
+			contentViewerId="com.epistimis.face.Face.compare.contentViewers" />
 	</extension>
 	<extension point="org.eclipse.compare.contentMergeViewers">
-		<viewer id="com.epistimist.face.Face.compare.contentMergeViewers"
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.compare.InjectableViewerCreator"
+		<viewer id="com.epistimis.face.Face.compare.contentMergeViewers"
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.compare.InjectableViewerCreator"
 			extensions="face" label="Face Compare">
 		</viewer>
 		<contentTypeBinding
-			contentTypeId="com.epistimist.face.Face.contenttype"
-			contentMergeViewerId="com.epistimist.face.Face.compare.contentMergeViewers" />
+			contentTypeId="com.epistimis.face.Face.contenttype"
+			contentMergeViewerId="com.epistimis.face.Face.compare.contentMergeViewers" />
 	</extension>
 	<extension point="org.eclipse.ui.editors.documentProviders">
-		<provider id="com.epistimist.face.Face.editors.documentProviders"
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.model.XtextDocumentProvider"
+		<provider id="com.epistimis.face.Face.editors.documentProviders"
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.editor.model.XtextDocumentProvider"
 			extensions="face">
 		</provider>
 	</extension>
@@ -433,12 +433,12 @@
 	</extension>
 	<extension
 		point="org.eclipse.ui.newWizards">
-		<category id="com.epistimist.face.ui.category" name="Face">
+		<category id="com.epistimis.face.ui.category" name="Face">
 		</category>
 		<wizard
-			category="com.epistimist.face.ui.category"
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.wizard.template.TemplateNewProjectWizard"
-			id="com.epistimist.face.ui.wizard.FaceNewProjectWizard"
+			category="com.epistimis.face.ui.category"
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.wizard.template.TemplateNewProjectWizard"
+			id="com.epistimis.face.ui.wizard.FaceNewProjectWizard"
 			name="Face Project"
 			icon="icons/new_Face_proj.gif"
 			project="true">
@@ -447,27 +447,27 @@
 	<extension
 		point="org.eclipse.xtext.ui.projectTemplate">
 		<projectTemplateProvider
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:com.epistimist.face.ui.wizard.FaceProjectTemplateProvider"
-			grammarName="com.epistimist.face.Face">
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:com.epistimis.face.ui.wizard.FaceProjectTemplateProvider"
+			grammarName="com.epistimis.face.Face">
 		</projectTemplateProvider>
 	</extension>
 	<extension
 		point="org.eclipse.ui.perspectiveExtensions">
 		<perspectiveExtension targetID="org.eclipse.ui.resourcePerspective">
-			<newWizardShortcut id="com.epistimist.face.ui.wizard.FaceNewProjectWizard"/>
+			<newWizardShortcut id="com.epistimis.face.ui.wizard.FaceNewProjectWizard"/>
 		</perspectiveExtension>
 		<perspectiveExtension targetID="org.eclipse.jdt.ui.JavaPerspective">
-			<newWizardShortcut id="com.epistimist.face.ui.wizard.FaceNewProjectWizard"/>
+			<newWizardShortcut id="com.epistimis.face.ui.wizard.FaceNewProjectWizard"/>
 		</perspectiveExtension>
 	</extension>
 	<extension
 		point="org.eclipse.ui.newWizards">
-		<category id="com.epistimist.face.ui.category" name="Face">
+		<category id="com.epistimis.face.ui.category" name="Face">
 		</category>
 		<wizard
-			category="com.epistimist.face.ui.category"
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.wizard.template.TemplateNewFileWizard"
-			id="com.epistimist.face.ui.wizard.FaceNewFileWizard"
+			category="com.epistimis.face.ui.category"
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.wizard.template.TemplateNewFileWizard"
+			id="com.epistimis.face.ui.wizard.FaceNewFileWizard"
 			name="Face File"
 			icon="icons/new_Face_file.png">
 		</wizard>
@@ -475,17 +475,17 @@
 	<extension
 		point="org.eclipse.xtext.ui.fileTemplate">
 		<fileTemplateProvider
-			class="com.epistimist.face.ui.FaceExecutableExtensionFactory:com.epistimist.face.ui.wizard.FaceFileTemplateProvider"
-			grammarName="com.epistimist.face.Face">
+			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:com.epistimis.face.ui.wizard.FaceFileTemplateProvider"
+			grammarName="com.epistimis.face.Face">
 		</fileTemplateProvider>
 	</extension>
 	<extension
 		point="org.eclipse.ui.perspectiveExtensions">
 		<perspectiveExtension targetID="org.eclipse.ui.resourcePerspective">
-			<newWizardShortcut id="com.epistimist.face.ui.wizard.FaceNewFileWizard"/>
+			<newWizardShortcut id="com.epistimis.face.ui.wizard.FaceNewFileWizard"/>
 		</perspectiveExtension>
 		<perspectiveExtension targetID="org.eclipse.jdt.ui.JavaPerspective">
-			<newWizardShortcut id="com.epistimist.face.ui.wizard.FaceNewFileWizard"/>
+			<newWizardShortcut id="com.epistimis.face.ui.wizard.FaceNewFileWizard"/>
 		</perspectiveExtension>
 	</extension>
 </plugin>

@@ -1,6 +1,6 @@
-grammar com.epistimist.face.Face with com.epistimis.uddl.Uddl
+grammar com.epistimis.face.Face with com.epistimis.uddl.Uddl
 
-generate face "http://www.epistimist.com/face/Face"
+generate face "http://www.epistimis.com/face/Face"
 
 import "http://www.epistimis.com/uddl/Uddl" as uddl
 
