@@ -4,15 +4,11 @@ generate face "http://www.epistimis.com/face/Face"
 
 import "http://www.epistimis.com/uddl/Uddl" as uddl
 
-Model:
-	greetings+=Greeting*;
-	
-Greeting:
-	'Hello' name=ID '!';
-
 	
 ArchitectureModel:
+	'am' name=ID description=STRING '{'
 	(dm+=DataModel | um+=UopUoPModel | im+=IntegrationIntegrationModel)+
+	'}'
 ;
 
 
@@ -59,7 +55,7 @@ enum UopThreadType:
 
 
 UopUoPModel:
-	name=ID description=STRING '{'
+	'um' name=ID description=STRING '{'
 		(um+=UopUoPModel | element +=UopElement)+
 	'}' ';'
 ;
@@ -156,11 +152,11 @@ UopClientServerConnection:
 
 
 UopPubSubConnection:
-	UopQueueingConnection |
+	UopQueuingConnection |
 	UopSingleInstanceMessageConnection
 ;
 
-UopQueueingConnection:
+UopQueuingConnection:
 	'qconn' name=ID description=STRING '->' realizes=[UopAbstractConnection|QN] '{'
 	 	'period:' period=FLOAT
 	 	'msg:' 	synchronizationStyle=UopSynchronizationStyle 
@@ -230,6 +226,7 @@ IntegrationElement:
 IntegrationIntegrationContext:
 	'ic' name=ID description=STRING '{'
 		('conn:' '['connection+=IntegrationTSNodeConnection+ ']')?
+		('xport:''[' node+=IntegrationTransportNode+ ']')?
 	'}' ';'
 ;
 
@@ -258,7 +255,7 @@ IntegrationUoPOutputEndPoint:
 	'o' connection=[UopConnection|QN] ';'
 ;
 
-IntegrationTrasportNode:
+IntegrationTransportNode:
 	IntegrationViewTransporter |
 	IntegrationViewAggregation |
 	IntegrationViewTransformation |
