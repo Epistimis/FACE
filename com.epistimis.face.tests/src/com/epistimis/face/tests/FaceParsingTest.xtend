@@ -3,7 +3,7 @@
  */
 package com.epistimis.face.tests
 
-import com.epistimis.face.face.Model
+import com.epistimis.face.face.ArchitectureModel
 import com.google.inject.Inject
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
@@ -16,7 +16,7 @@ import org.junit.jupiter.api.^extension.ExtendWith
 @InjectWith(FaceInjectorProvider)
 class FaceParsingTest {
 	@Inject
-	ParseHelper<Model> parseHelper
+	ParseHelper<ArchitectureModel> parseHelper
 	
 	@Test
 	def void loadModel() {

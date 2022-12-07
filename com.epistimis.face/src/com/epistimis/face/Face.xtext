@@ -300,7 +300,7 @@ IntegrationViewSink:
 ;
 
 IntegrationViewSource:
-	'sink' name=ID description=STRING '{'
+	'src' name=ID description=STRING '{'
 		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
 		('output' '[' output=IntegrationTSNodeOutputPort ']')?
 	'}' ';'

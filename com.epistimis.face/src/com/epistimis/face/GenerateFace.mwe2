@@ -34,7 +34,7 @@ Workflow {
 			name = "com.epistimis.face.Face"
 			fileExtensions = "face"
 			referencedResource="platform:/resource/com.epistimis.uddl/model/generated/Uddl.genmodel"
-			
+
 			serializer = {
 				generateStub = false
 			}
@@ -46,6 +46,9 @@ Workflow {
 			generator = {
 				generateXtendStub = true
 			}
+			formatter ={
+				generateStub = true
+			}			
 			junitSupport = {
 				junitVersion = "5"
 			}
