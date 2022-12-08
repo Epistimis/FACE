@@ -1,0 +1,110 @@
+import uddl : 'platform:/resource/com.epistimis.uddl/model/generated/Uddl.ecore'
+import  '../../../../../model/generated/Face.ecore'
+
+-- include 'platform.ocl'
+
+package face
+
+  context UopElement
+    /*
+     * All UoP Elements have a unique name.
+     */
+    inv hasUniqueName:
+      not UopElement.allInstances()->excluding(self)
+                                ->collect(name)
+                                ->includes(self.name)
+
+  context UopConnection
+    /*
+     * Helper method that gets the Views associated with a UopConnection.
+     */
+    def: getViews() : Set(UopMessageType) =
+      if self.oclIsKindOf(UopPubSubConnection) then
+         self.oclAsType(UopPubSubConnection).messageType.oclAsSet()
+      else -- self.oclIsTypeOf(UopClientServerConnection)
+        self.oclAsType(UopClientServerConnection).requestType
+          ->including(self.oclAsType(UopClientServerConnection).responseType)
+      endif
+  
+    /* 
+     * If a UopConnection realizes an AbstractConnection,
+     * its requestType or responseType or both (for ClientServerConnections) or
+     * its messageType (for PubSubConnections) realizes either the
+     * AbstractConnection's logicalView or a logical View that realizes the
+     * AbstractConnection's conceptualView.
+     */
+    inv realizationTypeConsistent:
+      self.realizes <> null implies
+           
+      self.getViews()->exists(view | 
+      
+      if view.oclIsTypeOf(UopCompositeTemplate) then
+        let cTemplate
+          = view.oclAsType(UopCompositeTemplate) in
+      
+        if self.realizes.logicalView <> null then
+          cTemplate.realizes <> null and
+          cTemplate.realizes = self.realizes.logicalView
+        else -- self.realizes.conceptualView <> null
+          cTemplate.realizes <> null and
+          cTemplate.realizes.realizes <> null and
+          cTemplate.realizes.realizes = self.realizes.conceptualView
+        endif
+ 
+
+      else -- self.requestType.oclIsTypeOf(Template)
+        let lbTemplate = view.oclAsType(UopTemplate) in
+         
+        lbTemplate.effectiveQuery <> null implies
+        
+        if self.realizes.logicalView <> null then
+          lbTemplate.effectiveQuery.realizes <> null and
+          lbTemplate.effectiveQuery.realizes = self.realizes.logicalView
+        else -- self.realizes.conceptualView <> null
+          lbTemplate.effectiveQuery.realizes <> null and
+          lbTemplate.effectiveQuery.realizes.realizes <> null and
+          lbTemplate.effectiveQuery.realizes.realizes
+            = self.realizes.conceptualView
+        endif
+       
+   
+
+      endif
+      )
+
+  context UopQueuingConnection
+    /*
+     * A UopQueuingConnection's queue depth is greater than zero.
+     */
+    inv depthValid:
+      self.depth > 0
+
+  context UopAbstractUoP
+    /*
+     * An UopAbstractUoP is entirely logical or entirely conceptual.
+     * (Its AbstractConnections all have their logicalView set and
+     * conceptualView not set or all have their conceptualView set and
+     * logicalView not set.)
+     */
+    inv onlyLogicalOrOnlyConceptual:      
+      self.connection->collect(logicalView)->forAll(lv | lv <> null) xor
+      self.connection->collect(conceptualView)->forAll(cv | cv <> null)
+   
+   context UopUnitOfPortability
+    /*
+     * If a UoP "A" realizes an UopAbstractUoP "B", then A and B
+     * have the same number of connections, and every UopConnection in A
+     * realizes a unique AbstractConnection in B.
+     * If a UoP does not realize an UopAbstractUoP, none of its Connections
+     * realize.
+     */
+    -- This differs from FACE 3.0 spec, because the Kepler engine:
+    --  - requires asBag() reject oclIsUndefined() (for some reason...)
+    inv connectionsConsistentWithUoPRealization:
+      if self.realizes <> null then
+        self.connection->collect(realizes) = self.realizes.connection->asBag()->reject(oclIsUndefined())
+      else
+        self.connection->collect(realizes)->forAll(ac | ac = null)
+      endif
+      
+endpackage

@@ -1,0 +1,45 @@
+import uddl : 'platform:/resource/com.epistimis.uddl/model/generated/Uddl.ecore'
+import  '../../../../../model/generated/Face.ecore'
+
+-- include 'conceptual.ocl'
+-- include 'logical.ocl'
+-- include 'platform.ocl'
+-- include 'uop.ocl'
+-- include 'integration.ocl'
+
+package uddl
+
+
+endpackage
+
+package face
+       
+/*
+ * XText enforces unique names automatically so this is redundant
+ */       
+--  context ArchitectureModel  
+
+    /*
+     * Every uddl::Element in an ArchitectureModel has a unique name.
+	 * 
+	 * Note: This is equivalent constraint to hasUniqueName. 
+	 *		Original constraint modified to work with Kepler
+     */
+--    inv childModelsHaveUniqueNames:
+--    /* This set isn't all uddl::Element */
+--      let children : Set(uddl::Element)= 
+--       /* dm contains uddl::Element */
+--        self.dm.oclAsType(uddl::Element)->union(
+--        	/* UoPUoPModel recursively containss itself and UopElement */
+--        self.um.oclAsType(UopElement)->union(
+--        	/* im contains IntegrationIntegrationModel and IntegrationElement */
+--        self.im.oclAsType(IntegrationElement)
+--        /*->union(self.tm.oclAsType(uddl::Element))) */ /* traceability model not included */
+--        )) 
+--        
+--        in
+--        
+--      children->isUnique(name.toLowerCase())
+	  
+
+endpackage

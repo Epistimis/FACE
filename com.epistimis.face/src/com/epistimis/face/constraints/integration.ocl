@@ -1,0 +1,314 @@
+import uddl : 'platform:/resource/com.epistimis.uddl/model/generated/Uddl.ecore'
+import  '../../../../../model/generated/Face.ecore'
+
+include 'uop.ocl'
+
+package face
+
+  context IntegrationElement
+    /*
+     * All Integration Elements have a unique name.
+     */
+    inv hasUniqueName:
+      not IntegrationElement.allInstances()->excluding(self)
+                                ->collect(name.toLowerCase())
+                                ->includes(self.name.toLowerCase())
+                                
+  context IntegrationUoPInstance
+    /*
+     * If a IntegrationUoPInstance "A" realizes an UoP "B", then A has one unique 
+     * IntegrationUoPEndPoint that realizes each of B's PubSubConnections, one unique
+     * IntegrationUoPInputEndPoint that realizes each of B's ClientServerConnections,
+     * and one IntegrationUoPOutputEndPoint that realizes each of B's
+     * ClientServerConnections. A has no additional IntegrationUoPEndPoints.
+     */
+    -- This differs from FACE 3.0 spec, because the Kepler engine:
+    --  - seems to require explicit casts to from UoPIn/OutputEndpoint to IntegrationUoPEndPoint,
+    --  - requires asBag() reject oclIsUndefined() (for some reason...)
+    inv endPointsConsistentWithRealization:    
+      let uopOutputs = self.output->collect(oclAsType(IntegrationUoPEndPoint)) in
+      let uopInputs = self.input->collect(oclAsType(IntegrationUoPEndPoint)) in
+      let IntegrationUoPEndPointConnections = uopOutputs->union(uopInputs)->collect(connection) in
+      
+      let IntegrationUoPEndPoints_PubSub = IntegrationUoPEndPointConnections->selectByKind(UopPubSubConnection) in
+      let uopInputs_ClientServer = uopInputs->collect(connection)->selectByKind(UopClientServerConnection) in
+      let uopOutputs_Client_Server = uopOutputs->collect(connection)->selectByKind(UopClientServerConnection) in
+      	
+      let realizedUoPConnections = self.realizes.connection->asBag()->reject(oclIsUndefined()) in
+      let realizedUoPClientServerConnections = self.realizes.connection->selectByKind(UopClientServerConnection)->asBag()->reject(oclIsUndefined()) in
+      
+      IntegrationUoPEndPointConnections = realizedUoPConnections->union(realizedUoPClientServerConnections)
+                        
+        and
+        
+      self.output->collect(connection)
+                 ->selectByKind(UopClientServerConnection)
+        = self.input->collect(connection)
+                    ->selectByKind(UopClientServerConnection)
+
+  context IntegrationTSNodePortBase
+    /*
+     * Helper method that gets the IntegrationTransportNode containing a given
+     * IntegrationTSNodePortBase
+     */
+    def: getParentTransportNode() : IntegrationTransportNode =
+      IntegrationTransportNode.allInstances()->select(tn | tn.inPort->includes(self) or
+                                                tn.outPort->includes(self))
+                                  ->any(true)
+                                    
+    /*
+     * Helper method that gets the MessageType (and by implication, the View) used by a IntegrationTSNodePortBase.
+     * If a IntegrationUoPInputEndPoint's connection is a ClientServerConnection, then
+     * its View is the connection's responseType.
+     * If a IntegrationUoPOutputEndPoint's connection is a ClientServerConnection, then
+     * its View is the connection's requestType.
+     * 
+     */
+    def: getMessageType() : UopMessageType=
+      if self.oclIsKindOf(IntegrationTSNodePort) then
+        self.oclAsType(IntegrationTSNodePort).view
+      else -- self.oclIsKindOf(IntegrationUoPEndPoint)
+        let uopConnection = self.oclAsType(IntegrationUoPEndPoint).connection in
+        if uopConnection.oclIsKindOf(UopPubSubConnection) then
+          uopConnection.oclAsType(UopPubSubConnection).messageType
+        else -- uopConnection.oclIsTypeOf(UopClientServerConnection)
+          let clientServerConnection =
+            uopConnection.oclAsType(UopClientServerConnection) in
+          if self.oclIsTypeOf(IntegrationUoPInputEndPoint) then
+            clientServerConnection.responseType
+          else
+            clientServerConnection.requestType
+          endif
+        endif
+      endif
+      
+      
+    /*
+     * A IntegrationTSNodePortBase is connected by a IntegrationTSNodeConnection.
+     */
+    inv isConnected:
+      IntegrationTSNodeConnection.allInstances()->collect(source)->union(
+      IntegrationTSNodeConnection.allInstances()->collect(destination))->includes(self)
+      
+  context IntegrationTSNodeConnection
+    /*
+     * A IntegrationTSNodeConnection uses the same MessageType on its source and destination.
+     * 
+     * NOTE: This is actually stricter than requiring that they realize the same uddl::PlatformView
+     */
+    inv sourceViewMatchesDestinationView:
+      self.source.getMessageType() = self.destination.getMessageType()
+
+    /*
+     * A IntegrationTSNodeConnection's source is an output.
+     */
+    inv sourceIsOutput:
+      self.source.oclIsTypeOf(IntegrationUoPOutputEndPoint) or
+      self.source.oclIsTypeOf(IntegrationTSNodeOutputPort)
+
+    /*
+     * A IntegrationTSNodeConnection's destination is an input.
+     */
+    inv destinationIsInput:
+      self.destination.oclIsTypeOf(IntegrationUoPInputEndPoint) or
+      self.destination.oclIsTypeOf(IntegrationTSNodeInputPort)
+
+    /*
+     * A IntegrationTSNodeConnection connects TransportNodes that
+     * are in the same IntegrationIntegrationContext as the IntegrationTSNodeConnection.
+     */
+    -- This differs from FACE 3.0 spec, because the Kepler engine:
+    --  - was getting non-boolean results when unioning TSNodeInput/Output port collections
+    inv connectWithinSameContext:
+      let parentContext
+        = IntegrationIntegrationContext.allInstances()->any(x | x.connection
+                                                      ->includes(self)) in
+      
+      (self.source.oclIsKindOf(IntegrationTSNodeOutputPort)
+         implies
+       parentContext.node->collect(outPort)->includes(self.source))
+      
+        and
+      
+      (self.destination.oclIsKindOf(IntegrationTSNodeInputPort)
+         implies
+       parentContext.node->collect(inPort)->includes(self.destination))
+    
+    /*
+     * There is at least one IntegrationViewTransporter on a path
+     * between any two UoPInstances.
+     */   
+    inv transporterOnPath:
+      self.destination.oclIsTypeOf(IntegrationUoPInputEndPoint)
+        implies
+      self.source.oclIsTypeOf(IntegrationTSNodeOutputPort) and
+      self.source.getParentTransportNode()
+                 ->closure(getPreviousNodes())
+                 ->including(self.source.getParentTransportNode())
+                 ->exists(n | n.oclIsTypeOf(IntegrationViewTransporter) or
+                              n.oclIsTypeOf(IntegrationViewSource))
+
+  context IntegrationTSNodeInputPort
+    /*
+     * A IntegrationTSNodeInputPort is the destination of at most one IntegrationTSNodeConnection.
+     */
+    inv onlyOneConnection:
+        IntegrationTSNodeConnection.allInstances()
+            ->select(x | x.destination = self)->size() <= 1
+
+  context IntegrationUoPInputEndPoint
+    /*
+     * A IntegrationUoPInputEndPoint's connection is either a ClientServerConnection
+     * or a PubSubConnection whose messageExchangeType is InboundMessage.
+     */
+    inv IntegrationUoPEndPointConsistentWithRealization:
+      self.connection.oclIsTypeOf(UopClientServerConnection)
+      
+        or
+        
+      (self.connection.oclIsKindOf(UopPubSubConnection) and
+       self.connection.oclAsType(UopPubSubConnection)
+                      .messageExchangeType
+         = UopMessageExchangeType::INBOUND_MESSAGE)
+  
+    /*
+     * A IntegrationUoPInputEndPoint is the destination of at most one IntegrationTSNodeConnection.
+     */
+    inv onlyOneConnection:
+        IntegrationTSNodeConnection.allInstances()
+            ->select(x | x.destination = self)->size() <= 1
+
+  context IntegrationUoPOutputEndPoint
+    /*
+     * A IntegrationUoPInputEndPoint's connection is either a ClientServerConnection
+     * or a PubSubConnection whose messageExchangeType is OutboundMessage.
+     */
+    inv IntegrationUoPEndPointConsistentWithRealization:
+      self.connection.oclIsTypeOf(UopClientServerConnection)
+      
+        or
+        
+      (self.connection.oclIsKindOf(UopPubSubConnection) and
+       self.connection.oclAsType(UopPubSubConnection)
+                      .messageExchangeType
+         = UopMessageExchangeType::OUTBOUND_MESSAGE)
+            
+  context IntegrationTransportNode
+    /*
+     * Helper method that gets the set of TransportNodes that are
+     * "upstream" from a given IntegrationTransportNode.
+     */
+    def: getPreviousNodes() : Set(IntegrationTransportNode) =
+      IntegrationTSNodeConnection.allInstances()
+                      ->select(c | self.outPort->includes(c.destination))
+                      ->collect(source)
+                      ->selectByKind(IntegrationTSNodeOutputPort)
+                      ->collect(oclAsType(IntegrationTSNodePortBase))
+                      ->collect(getParentTransportNode())
+                      ->asSet()
+    /*
+     * Helper method that gets the set of TransportNodes that are
+     * "downstream" from a given IntegrationTransportNode.
+     */
+    def: getNextNodes() : Set(IntegrationTransportNode) =
+      IntegrationTSNodeConnection.allInstances()
+                      ->select(c | self.outPort->includes(c.source))
+                      ->collect(destination)
+                      ->selectByKind(IntegrationTSNodeInputPort)
+                      ->collect(oclAsType(IntegrationTSNodePortBase))
+                      ->collect(getParentTransportNode())
+                      ->asSet()
+  
+    /*
+     * An IntegrationIntegrationContext has no cycles.
+     */
+    inv noCycles:
+      not self->closure(getNextNodes())->includes(self)
+
+    /*
+     * A IntegrationViewSource has no inputs.
+     * A IntegrationViewSink, IntegrationViewFilter, IntegrationViewTransformation, or IntegrationViewTransporter 
+     * has one input.
+     * A IntegrationViewAggregation has more than one input.
+     */
+    inv hasCorrectInputCount:
+     (self.oclIsTypeOf(IntegrationViewSource)
+        implies
+      self.inPort->size() = 0)
+      
+        and
+    
+     (self.oclIsTypeOf(IntegrationViewSink) or
+      self.oclIsTypeOf(IntegrationViewFilter) or
+      self.oclIsTypeOf(IntegrationViewTransformation) or
+      self.oclIsTypeOf(IntegrationViewTransporter)
+        implies
+      self.inPort->size() = 1)
+      
+        and
+        
+     (self.oclIsTypeOf(IntegrationViewAggregation)
+        implies
+      self.inPort->size() > 1)         
+       
+    /*
+     * A IntegrationViewSink has no outputs.
+     * A IntegrationViewSource, IntegrationViewFilter, IntegrationViewAggregation, IntegrationViewTransformation,
+     * or IntegrationViewTransporter has one output.
+     */
+    inv hasCorrectOutputCount:
+     (self.oclIsTypeOf(IntegrationViewSink)
+        implies
+      self.outPort->size() = 0)
+        
+        and
+     
+     (self.oclIsTypeOf(IntegrationViewSource) or
+      self.oclIsTypeOf(IntegrationViewFilter) or
+      self.oclIsTypeOf(IntegrationViewAggregation) or
+      self.oclIsTypeOf(IntegrationViewTransformation) or
+      self.oclIsTypeOf(IntegrationViewTransporter)
+        implies
+      self.outPort->size() = 1)
+       
+  context IntegrationViewSource
+    /*
+     * A IntegrationViewSource is connected to a IntegrationUoPInputEndPoint.
+     */
+    inv viewSourceConnectedToUoPInputEndPoint:
+      IntegrationTSNodeConnection.allInstances()
+                      ->select(x | self.outPort->includes(x.source))
+                      ->collect(destination)
+                      ->forAll(oclIsTypeOf(IntegrationUoPInputEndPoint))
+       
+  context IntegrationViewSink        
+    /*
+     * A IntegrationViewSink is connected to a IntegrationUoPOutputEndPoint.
+     */
+    inv viewSinkConnectedToUoPOutputEndPoint:
+      IntegrationTSNodeConnection.allInstances()
+                      ->select(x | self.inPort->includes(x.destination))
+                      ->collect(source)
+                      ->forAll(oclIsTypeOf(IntegrationUoPOutputEndPoint))
+       
+  context IntegrationViewFilter
+    /*
+     * A IntegrationViewFilter uses the same View on its input and output.
+     */
+    inv viewIsConsistent:
+      self.inPort->size() = 1 and
+      self.outPort->size() = 1
+        implies
+      self.inPort->any(true).view = self.outPort->any(true).view
+      
+  context IntegrationViewTransporter
+    /*
+     * A IntegrationViewTransporter uses the same View on its input and output.
+     */
+    inv viewIsConsistent:
+      self.inPort->size() = 1 and
+      self.outPort->size() = 1
+        implies
+      self.inPort->any(true).view = self.outPort->any(true).view
+
+endpackage
