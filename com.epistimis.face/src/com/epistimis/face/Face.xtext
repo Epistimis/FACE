@@ -11,6 +11,12 @@ ArchitectureModel:
 	'}'
 ;
 
+FaceElement:
+	ArchitectureModel |
+	UopUoPModel |
+	IntegrationIntegrationModel |
+	UopElement
+;
 
 enum UoPClientServerRole:
 	CLIENT='client' | SERVER='server'
@@ -281,42 +287,42 @@ IntegrationTSNodeOutputPort:
 IntegrationViewAggregation:
 	'agg' name=ID description=STRING '{'
 		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
-		('output' '[' output=IntegrationTSNodeOutputPort ']')?
+		('output' '[' outPort=IntegrationTSNodeOutputPort ']')?
 	'}' ';'
 ;
 
 IntegrationViewFilter:
 	'filter' name=ID description=STRING '{'
 		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
-		('output' '[' output=IntegrationTSNodeOutputPort ']')?
+		('output' '[' outPort=IntegrationTSNodeOutputPort ']')?
 	'}' ';'
 ;
 
 IntegrationViewSink:
 	'sink' name=ID description=STRING '{'
 		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
-		('output' '[' output=IntegrationTSNodeOutputPort ']')?
+		('output' '[' outPort=IntegrationTSNodeOutputPort ']')?
 	'}' ';'
 ;
 
 IntegrationViewSource:
 	'src' name=ID description=STRING '{'
 		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
-		('output' '[' output=IntegrationTSNodeOutputPort ']')?
+		('output' '[' outPort=IntegrationTSNodeOutputPort ']')?
 	'}' ';'
 ;
 
 IntegrationViewTransformation:
 	'xform' name=ID description=STRING '{'
 		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
-		('output' '[' output=IntegrationTSNodeOutputPort ']')?
+		('output' '[' outPort=IntegrationTSNodeOutputPort ']')?
 	'}' ';'
 ;
 
 IntegrationViewTransporter:
 	'xport' name=ID description=STRING '{'
 		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
-		('output' '[' output=IntegrationTSNodeOutputPort ']')?
+		('output' '[' outPort=IntegrationTSNodeOutputPort ']')?
 		'chan:' channel=IntegrationTransportChannel
 	'}' ';'
 ;
