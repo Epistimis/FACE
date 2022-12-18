@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Automatic-Module-Name: com.epistimis.face.ide
 Bundle-ManifestVersion: 2
 Bundle-Name: com.epistimis.face.ide
-Bundle-Vendor: Epistimis
+Bundle-Vendor: Epistimis LLC
 Bundle-Version: 1.0.0.qualifier
 Bundle-SymbolicName: com.epistimis.face.ide; singleton:=true
 Bundle-ActivationPolicy: lazy
