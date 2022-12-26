@@ -35,6 +35,10 @@ Workflow {
 			fileExtensions = "face"
 			referencedResource="platform:/resource/com.epistimis.uddl/model/generated/Uddl.genmodel"
 
+		    fragment = io.typefox.xtext2langium.Xtext2LangiumFragment {
+		        outputPath = './langium'
+		    }
+
 			serializer = {
 				generateStub = false
 			}
@@ -60,6 +64,7 @@ Workflow {
 			projectWizard = {
 				generate = true
 			}			
+
 		}
 	}
 }

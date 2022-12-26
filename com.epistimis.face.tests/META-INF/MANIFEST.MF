@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Automatic-Module-Name: com.epistimis.face.tests
 Bundle-ManifestVersion: 2
 Bundle-Name: com.epistimis.face.tests
-Bundle-Vendor: Epistimis LLC
+Bundle-Vendor: My Company
 Bundle-Version: 1.0.0.qualifier
 Bundle-SymbolicName: com.epistimis.face.tests; singleton:=true
 Bundle-ActivationPolicy: lazy

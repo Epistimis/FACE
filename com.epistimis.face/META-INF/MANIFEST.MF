@@ -9,20 +9,18 @@ Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.xtext,
  org.eclipse.xtext.xbase,
  org.eclipse.equinox.common;bundle-version="3.5.0",
+ io.typefox.xtext2langium;bundle-version="0.3.0",
  com.epistimis.uddl;bundle-version="1.0.0",
  org.eclipse.emf.ecore,
  org.eclipse.xtext.xbase.lib;bundle-version="2.14.0",
  org.eclipse.xtext.util,
  org.eclipse.emf.common,
  org.antlr.runtime;bundle-version="[3.2.0,3.2.1)",
- org.eclipse.ocl.pivot;bundle-version="1.17.0",
- org.eclipse.ocl.xtext.completeocl;bundle-version="1.17.0",
- org.eclipse.ocl;bundle-version="3.17.0",
- org.eclipse.ocl.xtext.oclstdlib;bundle-version="1.17.0",
  org.eclipse.emf.validation;bundle-version="1.8.1",
- io.typefox.xtext2langium;bundle-version="0.2.0"
+ org.eclipse.ocl.xtext.completeocl;bundle-version="1.17.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Export-Package: com.epistimis.face.validation,
+Export-Package: com.epistimis.face.parser.antlr,
+ com.epistimis.face.validation,
  com.epistimis.face.scoping,
  com.epistimis.face.formatting2,
  com.epistimis.face.face.impl,
@@ -31,8 +29,6 @@ Export-Package: com.epistimis.face.validation,
  com.epistimis.face.generator,
  com.epistimis.face.face,
  com.epistimis.face,
- com.epistimis.face.services,
- com.epistimis.face.parser.antlr,
- com.epistimis.face.parser.antlr.internal
-Import-Package: org.apache.log4j,
- org.eclipse.emf.ecore
+ com.epistimis.face.parser.antlr.internal,
+ com.epistimis.face.services
+Import-Package: org.apache.log4j
