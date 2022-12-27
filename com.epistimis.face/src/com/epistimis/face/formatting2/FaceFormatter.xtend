@@ -5,6 +5,9 @@ package com.epistimis.face.formatting2
 
 import com.epistimis.face.face.ArchitectureModel
 import com.epistimis.face.face.IntegrationIntegrationContext
+import com.epistimis.face.face.IntegrationIntegrationModel
+import com.epistimis.face.face.IntegrationTransportNode
+import com.epistimis.face.face.IntegrationUoPInstance
 import com.epistimis.face.face.UopClientServerConnection
 import com.epistimis.face.face.UopCompositeTemplate
 import com.epistimis.face.face.UopConnection
@@ -17,33 +20,11 @@ import com.epistimis.face.face.UopUnitOfPortability
 import com.epistimis.face.face.UopUoPModel
 import com.epistimis.face.services.FaceGrammarAccess
 import com.epistimis.uddl.formatting2.UddlFormatter
-import com.epistimis.uddl.uddl.LogicalAssociation
-import com.epistimis.uddl.uddl.LogicalCharacteristic
-import com.epistimis.uddl.uddl.LogicalComposition
-import com.epistimis.uddl.uddl.LogicalCoordinateSystem
-import com.epistimis.uddl.uddl.LogicalEntity
-import com.epistimis.uddl.uddl.LogicalEnumerated
-import com.epistimis.uddl.uddl.LogicalMeasurementSystem
-import com.epistimis.uddl.uddl.LogicalParticipant
-import com.epistimis.uddl.uddl.LogicalReferencePoint
-import com.epistimis.uddl.uddl.LogicalReferencePointPart
-import com.epistimis.uddl.uddl.LogicalValueTypeUnit
-import com.epistimis.uddl.uddl.PlatformAssociation
-import com.epistimis.uddl.uddl.PlatformCharacteristic
-import com.epistimis.uddl.uddl.PlatformComposition
-import com.epistimis.uddl.uddl.PlatformElement
-import com.epistimis.uddl.uddl.PlatformEntity
-import com.epistimis.uddl.uddl.PlatformParticipant
 import com.google.inject.Inject
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.formatting2.IFormattableDocument
 
 import static com.epistimis.face.face.FacePackage.Literals.*
-import static com.epistimis.uddl.uddl.UddlPackage.Literals.*
-import com.epistimis.face.face.IntegrationIntegrationModel
-import com.epistimis.face.face.IntegrationUoPInstance
-import com.epistimis.face.face.IntegrationViewAggregation
-import com.epistimis.face.face.IntegrationTransportNode
 
 class FaceFormatter extends UddlFormatter {
 	
