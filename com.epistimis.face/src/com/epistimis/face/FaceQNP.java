@@ -14,11 +14,12 @@ import com.epistimis.face.face.IntegrationUoPInstance;
 import com.epistimis.face.face.IntegrationUoPOutputEndPoint;
 import com.epistimis.face.face.UopCompositeTemplate;
 import com.epistimis.face.face.UopTemplateComposition;
+import com.epistimis.uddl.UddlQNP;
 import com.epistimis.uddl.uddl.LogicalCharacteristic;
 import com.epistimis.uddl.uddl.LogicalEntity;
 
 
-public class FaceQNP extends DefaultDeclarativeQualifiedNameProvider {
+public class FaceQNP extends UddlQNP {
 
 	// UoP
 	public static QualifiedName qualifiedName(UopTemplateComposition obj) {

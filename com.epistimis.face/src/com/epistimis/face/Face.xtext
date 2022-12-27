@@ -63,7 +63,7 @@ enum UopThreadType:
 UopUoPModel:
 	'um' name=ID description=STRING '{'
 		(um+=UopUoPModel | element +=UopElement)+
-	'}' ';'
+	'};'
 ;
 
 UopElement: 
@@ -81,7 +81,7 @@ UopSupportingComponent:
 UopLanguageRuntime:
 	'lr' name=ID description=STRING '{'
 		version=STRING
-	'}' ';'
+	'};'
 ;
 
 
@@ -89,13 +89,13 @@ UopLanguageRuntime:
 UopComponentFramework:
 	'cf' name=ID description=STRING '{'
 		version=STRING
-	'}' ';'
+	'};'
 ;
 
 UopAbstractUoP:
 	'aUoP' name=ID description=STRING '{'
 		(connection+=UopAbstractConnection)*
-	'}' ';'	
+	'};'	
 ;
 
 
@@ -103,7 +103,7 @@ UopAbstractConnection:
 	'aconn' name=ID description=STRING '{'
 		( 'c' conceptualView=[uddl::ConceptualView|QN])? 
 		( 'l' logicalView=[uddl::LogicalView|QN])?
-	'}' ';'	
+	'};'	
 ;
 
 UopUnitOfPortability:	
@@ -118,7 +118,7 @@ UopUnitOfPortability:
 		('support:' '[' supportingComponent+=[UopSupportingComponent|QN]+ ']')? 
 		'conn:' '[' connection+=UopConnection+ ']'
 		('lcm:' '[' lcmPort+=UopLifeCycleManagementPort lcmPort+=UopLifeCycleManagementPort? ']' )?
-	'}' ';'
+	'};'
 ;
 
 
@@ -150,10 +150,10 @@ UopConnection:
 UopClientServerConnection:
 	'csconn' name=ID description=STRING '->' realizes=[UopAbstractConnection|QN] '{'
 	 	'period:' period=FLOAT
-	 	'synch:' synchronizationStyle=UopSynchronizationStyle
+	 	'msg:' synchronizationStyle=UopSynchronizationStyle
 	 		 '[' requestType=UopMessageType '/' responseType=UopMessageType ']'
 	 	'role:' role=UoPClientServerRole
-	'}' ';'
+	'};'
 ;
 
 
@@ -169,7 +169,7 @@ UopQueuingConnection:
 	 			messageExchangeType=UopMessageExchangeType 
 	 			messageType=[UopMessageType|QN]
 		'depth:' depth=INT
-		'}' ';'
+		'};'
 ;
 
 UopSingleInstanceMessageConnection:
@@ -178,7 +178,7 @@ UopSingleInstanceMessageConnection:
 	 	'msg:' 	synchronizationStyle=UopSynchronizationStyle 
 	 			messageExchangeType=UopMessageExchangeType 
 	 			messageType=[UopMessageType|QN]
-		'}' ';'
+		'};'
 ;
 
 UopLifeCycleManagementPort:
@@ -194,7 +194,7 @@ UopCompositeTemplate:
 	'ctempl' name=ID description=STRING ('->' realizes=[uddl::LogicalCompositeQuery|QN])? '{'
 		isUnion?='isUnion'
 		composition+=UopTemplateComposition (composition+=UopTemplateComposition)+
-	'}' ';'
+	'};'
 ;
 
 UopTemplateComposition:
@@ -206,7 +206,7 @@ UopTemplate:
 		'spec:' specification=STRING
 		('bound:' boundQuery=[uddl::PlatformQuery|QN])?
 		('effective:' effectiveQuery=[uddl::PlatformQuery|QN])?
-	'}' ';'	
+	'};'	
 ;
 
 // -------------- Integration -----------
@@ -220,7 +220,7 @@ IntegrationTSNodePortBase:
 IntegrationIntegrationModel:
 	'im' name=ID description=STRING '{'
 		(im+=IntegrationIntegrationModel | element+=IntegrationElement)*
-	'}' ';'
+	'};'
 ;
 
 IntegrationElement:
@@ -233,7 +233,7 @@ IntegrationIntegrationContext:
 	'ic' name=ID description=STRING '{'
 		('conn:' '['connection+=IntegrationTSNodeConnection+ ']')?
 		('xport:''[' node+=IntegrationTransportNode+ ']')?
-	'}' ';'
+	'};'
 ;
 
 IntegrationTSNodeConnection:
@@ -245,7 +245,7 @@ IntegrationUoPInstance:
 		('uri:' configurationURI=STRING)?
 		('input:' '[' input+=IntegrationUoPInputEndPoint+ ']')?
 		('output' '[' output+=IntegrationUoPOutputEndPoint+ ']')?
-	'}' ';'
+	'};'
 ;
 
 IntegrationUoPEndPoint:
@@ -288,35 +288,35 @@ IntegrationViewAggregation:
 	'agg' name=ID description=STRING '{'
 		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
 		('output' '[' outPort=IntegrationTSNodeOutputPort ']')?
-	'}' ';'
+	'};'
 ;
 
 IntegrationViewFilter:
 	'filter' name=ID description=STRING '{'
 		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
 		('output' '[' outPort=IntegrationTSNodeOutputPort ']')?
-	'}' ';'
+	'};'
 ;
 
 IntegrationViewSink:
 	'sink' name=ID description=STRING '{'
 		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
 		('output' '[' outPort=IntegrationTSNodeOutputPort ']')?
-	'}' ';'
+	'};'
 ;
 
 IntegrationViewSource:
 	'src' name=ID description=STRING '{'
 		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
 		('output' '[' outPort=IntegrationTSNodeOutputPort ']')?
-	'}' ';'
+	'};'
 ;
 
 IntegrationViewTransformation:
 	'xform' name=ID description=STRING '{'
 		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
 		('output' '[' outPort=IntegrationTSNodeOutputPort ']')?
-	'}' ';'
+	'};'
 ;
 
 IntegrationViewTransporter:
@@ -324,7 +324,7 @@ IntegrationViewTransporter:
 		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
 		('output' '[' outPort=IntegrationTSNodeOutputPort ']')?
 		'chan:' channel=IntegrationTransportChannel
-	'}' ';'
+	'};'
 ;
 
 IntegrationTransportChannel:
