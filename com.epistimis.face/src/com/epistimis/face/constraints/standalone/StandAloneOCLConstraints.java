@@ -1,17 +1,36 @@
 package com.epistimis.face.constraints.standalone;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+
 //Cloned from FACE 3.1 Conformance Test Suite DMVT
 
 import java.nio.file.CopyOption;
-import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import org.w3c.dom.Node;
-import java.io.File;
-import org.w3c.dom.Document;
+import java.nio.file.attribute.FileAttribute;
+import java.util.HashMap;
+
 import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.ocl.pivot.internal.resource.StandaloneProjectMap;
+import org.eclipse.ocl.pivot.internal.utilities.PivotEnvironmentFactory;
+import org.eclipse.ocl.pivot.internal.validation.PivotEObjectValidator;
+import org.eclipse.ocl.pivot.model.OCLstdlib;
+import org.eclipse.ocl.pivot.resource.ProjectManager;
 import org.eclipse.ocl.pivot.utilities.EnvironmentFactory;
-import java.io.InputStream;
+import org.eclipse.ocl.xtext.completeocl.CompleteOCLStandaloneSetup;
 import org.eclipse.ocl.xtext.completeocl.validation.CompleteOCLEObjectValidator;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.xml.sax.helpers.DefaultHandler;
+
 //import face.v31.face.traceability.TraceabilityPackage;
 //import face.v31.face.integration.IntegrationPackage;
 //import face.v31.face.uop.UopPackage;
@@ -21,22 +40,6 @@ import org.eclipse.ocl.xtext.completeocl.validation.CompleteOCLEObjectValidator;
 //import uddl.v10.datamodel.DatamodelPackage;
 //import face.v31.face.FacePackage;
 import com.epistimis.face.face.FacePackage;
-import org.eclipse.emf.common.util.URI;
-import org.w3c.dom.Element;
-import java.nio.file.Files;
-import java.nio.file.attribute.FileAttribute;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.helpers.DefaultHandler;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.ocl.pivot.resource.ProjectManager;
-import org.eclipse.ocl.pivot.internal.utilities.PivotEnvironmentFactory;
-import org.eclipse.ocl.pivot.internal.resource.StandaloneProjectMap;
-import javax.xml.parsers.DocumentBuilderFactory;
-import org.eclipse.ocl.pivot.model.OCLstdlib;
-import org.eclipse.ocl.xtext.completeocl.CompleteOCLStandaloneSetup;
-import org.eclipse.ocl.pivot.internal.validation.PivotEObjectValidator;
-import org.eclipse.emf.ecore.EPackage;
-import java.util.HashMap;
 
 public class StandAloneOCLConstraints
 {

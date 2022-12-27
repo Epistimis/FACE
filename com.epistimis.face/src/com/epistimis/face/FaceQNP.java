@@ -36,7 +36,7 @@ public class FaceQNP extends UddlQNP {
 	 * @return
 	 */
 	public static QualifiedName qualifiedName(IntegrationUoPInputEndPoint obj) {
-		IntegrationUoPInstance ce = (IntegrationUoPInstance) obj.eContainer();
+		IntegrationUoPInstance inst = (IntegrationUoPInstance) obj.eContainer();
 		EStructuralFeature instanceInput = obj.eContainingFeature();
 
 		return null;
@@ -44,7 +44,7 @@ public class FaceQNP extends UddlQNP {
 	}
 
 	public static QualifiedName qualifiedName(IntegrationUoPOutputEndPoint obj) {
-		IntegrationUoPInstance ce = (IntegrationUoPInstance) obj.eContainer();
+		IntegrationUoPInstance inst = (IntegrationUoPInstance) obj.eContainer();
 		EStructuralFeature instanceInput = obj.eContainingFeature();
 
 		return null;
@@ -53,7 +53,7 @@ public class FaceQNP extends UddlQNP {
 
 
 	public static QualifiedName qualifiedName(IntegrationTSNodeInputPort obj) {
-		IntegrationTransportNode ce = (IntegrationTransportNode) obj.eContainer();
+		IntegrationTransportNode inst = (IntegrationTransportNode) obj.eContainer();
 		EStructuralFeature instanceInput = obj.eContainingFeature();
 
 		return null;
@@ -61,7 +61,7 @@ public class FaceQNP extends UddlQNP {
 	}
 
 	public static QualifiedName qualifiedName(IntegrationTSNodeOutputPort obj) {
-		IntegrationTransportNode ce = (IntegrationTransportNode) obj.eContainer();
+		IntegrationTransportNode inst = (IntegrationTransportNode) obj.eContainer();
 		EStructuralFeature instanceInput = obj.eContainingFeature();
 
 		return null;
