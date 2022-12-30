@@ -3,10 +3,345 @@
  */
 package com.epistimis.face.ui.contentassist;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.xtext.Assignment;
+import org.eclipse.xtext.CrossReference;
+import org.eclipse.xtext.EcoreUtil2;
+import org.eclipse.xtext.RuleCall;
+import org.eclipse.xtext.naming.IQualifiedNameProvider;
+import org.eclipse.xtext.scoping.IScopeProvider;
+import org.eclipse.xtext.ui.editor.contentassist.ContentAssistContext;
+import org.eclipse.xtext.ui.editor.contentassist.ICompletionProposalAcceptor;
+
+import com.epistimis.face.FaceQNP;
+import com.epistimis.face.face.IntegrationIntegrationContext;
+import com.epistimis.face.face.IntegrationTSNodeConnection;
+import com.epistimis.face.face.IntegrationTSNodeInputPort;
+import com.epistimis.face.face.IntegrationTSNodeOutputPort;
+import com.epistimis.face.face.IntegrationTransportNode;
+import com.epistimis.face.face.IntegrationUoPInputEndPoint;
+import com.epistimis.face.face.IntegrationUoPInstance;
+import com.epistimis.face.face.IntegrationUoPOutputEndPoint;
+import com.epistimis.face.face.UoPClientServerRole;
+import com.epistimis.face.face.UopClientServerConnection;
+import com.epistimis.face.face.UopConnection;
+import com.epistimis.face.face.UopMessageExchangeType;
+import com.epistimis.face.face.UopMessageType;
+import com.epistimis.face.face.UopPubSubConnection;
+import com.epistimis.face.face.UopUnitOfPortability;
+import com.epistimis.uddl.UddlQNP;
+import com.google.inject.Inject;
 
 /**
- * See https://www.eclipse.org/Xtext/documentation/310_eclipse_support.html#content-assist
+ * See
+ * https://www.eclipse.org/Xtext/documentation/310_eclipse_support.html#content-assist
  * on how to customize the content assistant.
  */
 public class FaceProposalProvider extends AbstractFaceProposalProvider {
+	@Inject
+	IQualifiedNameProvider qnp;
+	@Inject
+	IScopeProvider sp;
+
+	private static String proposalPrefix = "";
+	private static String proposalSuffix = "";
+
+//	@Override
+//	public void complete_UopConnection(EObject model, RuleCall ruleCall, ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
+//		// subclasses may override
+//	}
+//
+//	@Override
+//	public void completeUopUnitOfPortability_Connection(EObject model, Assignment assignment, ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
+//		completeRuleCall(((RuleCall)assignment.getTerminal()), context, acceptor);
+//	}
+//
+//	@Override
+//	public void completeUopClientServerConnection_RequestType(EObject model, Assignment assignment, ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
+//		lookupCrossReference(((CrossReference)assignment.getTerminal()), context, acceptor);
+//	}
+//
+//	@Override
+//	public void completeUopClientServerConnection_ResponseType(EObject model, Assignment assignment, ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
+//		lookupCrossReference(((CrossReference)assignment.getTerminal()), context, acceptor);
+//	}
+//	
+//	@Override
+//	public void completeUopQueuingConnection_MessageType(EObject model, Assignment assignment, ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
+//		lookupCrossReference(((CrossReference)assignment.getTerminal()), context, acceptor);
+//	}
+//
+//	@Override
+//	public void completeUopSingleInstanceMessageConnection_MessageType(EObject model, Assignment assignment, ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
+//		lookupCrossReference(((CrossReference)assignment.getTerminal()), context, acceptor);
+//	}
+//
+//	@Override
+//	public void completeUopLifeCycleManagementPort_MessageExchangeType(EObject model, Assignment assignment, ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
+//		completeRuleCall(((RuleCall)assignment.getTerminal()), context, acceptor);
+//	}
+//
+//	@Override
+//	public void completeUopLifeCycleManagementPort_LcmMessageType(EObject model, Assignment assignment, ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
+//		lookupCrossReference(((CrossReference)assignment.getTerminal()), context, acceptor);
+//	}
+//	
+
+	private List<UopMessageType> extractUConnMessageTypes(UopConnection uConn) {
+		List<UopMessageType> msgTypes = new ArrayList<>();
+		if (uConn instanceof UopPubSubConnection) {
+			UopPubSubConnection conn = (UopPubSubConnection) uConn;
+			msgTypes.add(conn.getMessageType());
+		}
+		if (uConn instanceof UopClientServerConnection) {
+			UopClientServerConnection conn = (UopClientServerConnection) uConn;
+			msgTypes.add(conn.getRequestType());
+			msgTypes.add(conn.getResponseType());
+		}
+
+		return msgTypes;
+	}
+
+	@Override
+	public void completeIntegrationTSNodeConnection_Source(EObject model, Assignment assignment,
+			ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
+//		super.completeIntegrationTSNodeConnection_Source(model, assignment, context, acceptor);
+
+		/**
+		 * Find only those things that can fit here - these are either
+		 * IntegrationUoPOutputEndPoint or IntegrationTSNodeOutputPort And if the
+		 * destination has already been specified, only propose those choices that use
+		 * the same data structure
+		 */
+		if (model instanceof IntegrationIntegrationContext)  {
+			return;
+		}
+
+		IntegrationTSNodeConnection tsNodeConn = (IntegrationTSNodeConnection) model;
+		// use a list because C/S uses a pair of UopMessageType
+		List<UopMessageType> destMsgTypes = new ArrayList<>();
+		if (tsNodeConn.getDestination() instanceof IntegrationUoPInputEndPoint) {
+			IntegrationUoPInputEndPoint destEndPt = (IntegrationUoPInputEndPoint) tsNodeConn.getDestination();
+			UopConnection destConn = destEndPt.getConnection();
+			destMsgTypes = extractUConnMessageTypes(destConn);
+		}
+		if (tsNodeConn.getDestination() instanceof IntegrationTSNodeInputPort) {
+			IntegrationTSNodeInputPort destEndPt = (IntegrationTSNodeInputPort) tsNodeConn.getDestination();
+			destMsgTypes.add(destEndPt.getMessageType());
+		}
+
+		EObject rootElement = EcoreUtil2.getRootContainer(model);
+		List<IntegrationUoPOutputEndPoint> uopCandidates = EcoreUtil2.getAllContentsOfType(rootElement,
+				IntegrationUoPOutputEndPoint.class);
+		List<IntegrationTSNodeOutputPort> tsCandidates = EcoreUtil2.getAllContentsOfType(rootElement,
+				IntegrationTSNodeOutputPort.class);
+
+		for (IntegrationUoPOutputEndPoint candidate : uopCandidates) {
+			List<UopMessageType> srcMsgTypes = extractUConnMessageTypes(candidate.getConnection());
+			// The source can send more than the destination can take - the rest just gets
+			// ignored
+			if (destMsgTypes.isEmpty() || srcMsgTypes.containsAll(destMsgTypes)) {
+				String insertionText = qnp.getFullyQualifiedName(candidate).toString();
+				acceptor.accept(createCompletionProposal(insertionText, proposalPrefix + insertionText + proposalSuffix,
+						null, context));
+			}
+		}
+		for (IntegrationTSNodeOutputPort candidate : tsCandidates) {
+			if (destMsgTypes.isEmpty() || destMsgTypes.contains(candidate.getMessageType())) {
+				String insertionText = qnp.getFullyQualifiedName(candidate).toString();
+				acceptor.accept(createCompletionProposal(insertionText, proposalPrefix + insertionText + proposalSuffix,
+						null, context));
+			}
+		}
+
+//		lookupCrossReference(((CrossReference)assignment.getTerminal()), context, acceptor);
+	}
+
+	@Override
+	public void completeIntegrationTSNodeConnection_Destination(EObject model, Assignment assignment,
+			ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
+//		super.completeIntegrationTSNodeConnection_Source(model, assignment, context, acceptor);
+
+		/**
+		 * Find only those things that can fit here - these are either
+		 * IntegrationUoPOutputEndPoint or IntegrationTSNodeOutputPort And if the source
+		 * has already been specified, only propose those choices that use the same data
+		 * structure
+		 */
+		if (model instanceof IntegrationIntegrationContext)  {
+			return;
+		}
+		
+		IntegrationTSNodeConnection tsNodeConn = (IntegrationTSNodeConnection) model;
+		// use a list because C/S uses a pair of UopMessageType
+		List<UopMessageType> srcMsgTypes = new ArrayList<>();
+		if (tsNodeConn.getSource() instanceof IntegrationUoPOutputEndPoint) {
+			IntegrationUoPOutputEndPoint srcEndPt = (IntegrationUoPOutputEndPoint) tsNodeConn.getSource();
+			UopConnection srcConn = srcEndPt.getConnection();
+			srcMsgTypes = extractUConnMessageTypes(srcConn);
+		}
+		if (tsNodeConn.getDestination() instanceof IntegrationTSNodeOutputPort) {
+			IntegrationTSNodeOutputPort srcEndPt = (IntegrationTSNodeOutputPort) tsNodeConn.getSource();
+			srcMsgTypes.add(srcEndPt.getMessageType());
+		}
+
+		// Find only those things that can fit here - these are either
+		// IntegrationUoPInputEndPoint or IntegrationTSNodeInputPort
+		EObject rootElement = EcoreUtil2.getRootContainer(model);
+		List<IntegrationUoPInputEndPoint> uopCandidates = EcoreUtil2.getAllContentsOfType(rootElement,
+				IntegrationUoPInputEndPoint.class);
+		List<IntegrationTSNodeInputPort> tsCandidates = EcoreUtil2.getAllContentsOfType(rootElement,
+				IntegrationTSNodeInputPort.class);
+
+		for (IntegrationUoPInputEndPoint candidate : uopCandidates) {
+			List<UopMessageType> destMsgTypes = extractUConnMessageTypes(candidate.getConnection());
+			// The source can send more than the destination can take - the rest just gets
+			// ignored
+			if (srcMsgTypes.isEmpty() || srcMsgTypes.containsAll(destMsgTypes)) {
+				String insertionText = qnp.getFullyQualifiedName(candidate).toString();
+				acceptor.accept(createCompletionProposal(insertionText, proposalPrefix + insertionText + proposalSuffix,
+						null, context));
+			}
+		}
+		for (IntegrationTSNodeInputPort candidate : tsCandidates) {
+			if (srcMsgTypes.isEmpty() || srcMsgTypes.contains(candidate.getMessageType())) {
+				String insertionText = qnp.getFullyQualifiedName(candidate).toString();
+				acceptor.accept(createCompletionProposal(insertionText, proposalPrefix + insertionText + proposalSuffix,
+						null, context));
+			}
+		}
+
+//		lookupCrossReference(((CrossReference)assignment.getTerminal()), context, acceptor);
+	}
+
+	@Override
+	public void completeIntegrationUoPInputEndPoint_Connection(EObject model, Assignment assignment,
+			ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
+//		lookupCrossReference(((CrossReference)assignment.getTerminal()), context, acceptor);
+		/**
+		 * Should only propose connections defined in the containing
+		 * IntegrationUoPInstance's realized UopUnitOfPortability - And only those that
+		 * have not already been included
+		 */
+		IntegrationUoPInstance inst = (IntegrationUoPInstance) model;
+		if (inst == null)
+			return;
+
+		UopUnitOfPortability realizes = inst.getRealizes();
+		if (realizes == null)
+			return;
+
+		List<IntegrationUoPInputEndPoint> currentEndPts = inst.getInput();
+		List<UopConnection> currentConnections = new ArrayList<>();
+		for (IntegrationUoPInputEndPoint endPt : currentEndPts) {
+			currentConnections.add(endPt.getConnection());
+		}
+
+		for (UopConnection candidate : realizes.getConnection()) {
+			// Whether or not something is a valid candidate depends on the direction -
+			// which depends on the connection type
+			// (R/R) client for output, server for input
+			// Others - incoming for input, outgoing for output
+			if (candidate instanceof UopPubSubConnection) {
+				UopPubSubConnection conn = (UopPubSubConnection) candidate;
+				if (conn.getMessageExchangeType() == UopMessageExchangeType.INBOUND_MESSAGE) {
+					if (!currentConnections.contains(conn)) {
+						String insertionText = ((FaceQNP) qnp).relativeQualifiedName(conn, model).toString();
+						acceptor.accept(createCompletionProposal(insertionText,
+								proposalPrefix + conn.getName() + proposalSuffix, null, context));
+					}
+				}
+			}
+			if (candidate instanceof UopClientServerConnection) {
+				UopClientServerConnection conn = (UopClientServerConnection) candidate;
+				if (conn.getRole() == UoPClientServerRole.SERVER) {
+					if (!currentConnections.contains(conn)) {
+						String insertionText = ((FaceQNP) qnp).relativeQualifiedName(conn, model).toString();
+						acceptor.accept(createCompletionProposal(insertionText,
+								proposalPrefix + conn.getName() + proposalSuffix, null, context));
+					}
+				}
+
+			}
+		}
+
+	}
+
+	@Override
+	public void completeIntegrationUoPOutputEndPoint_Connection(EObject model, Assignment assignment,
+			ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
+//		lookupCrossReference(((CrossReference)assignment.getTerminal()), context, acceptor);
+
+		/**
+		 * Should only propose connections defined in the containing
+		 * IntegrationUoPInstance's realized UopUnitOfPortability And only those that
+		 * have not already been included
+		 */
+		IntegrationUoPInstance inst = (IntegrationUoPInstance) model;
+		if (inst == null)
+			return;
+
+		UopUnitOfPortability realizes = inst.getRealizes();
+		if (realizes == null)
+			return;
+
+		List<IntegrationUoPOutputEndPoint> currentEndPts = inst.getOutput();
+		List<UopConnection> currentConnections = new ArrayList<>();
+		for (IntegrationUoPOutputEndPoint endPt : currentEndPts) {
+			currentConnections.add(endPt.getConnection());
+		}
+
+		for (UopConnection candidate : realizes.getConnection()) {
+			// Whether or not something is a valid candidate depends on the direction -
+			// which depends on the connection type
+			// (R/R) client for output, server for input
+			// Others - incoming for input, outgoing for output
+			if (candidate instanceof UopPubSubConnection) {
+				UopPubSubConnection conn = (UopPubSubConnection) candidate;
+				if (conn.getMessageExchangeType() == UopMessageExchangeType.OUTBOUND_MESSAGE) {
+					if (!currentConnections.contains(conn)) {
+						String insertionText = ((FaceQNP) qnp).relativeQualifiedName(conn, model).toString();
+						acceptor.accept(createCompletionProposal(insertionText,
+								proposalPrefix + conn.getName() + proposalSuffix, null, context));
+					}
+				}
+			}
+			if (candidate instanceof UopClientServerConnection) {
+				UopClientServerConnection conn = (UopClientServerConnection) candidate;
+				if (conn.getRole() == UoPClientServerRole.CLIENT) {
+					if (!currentConnections.contains(conn)) {
+						String insertionText = ((FaceQNP) qnp).relativeQualifiedName(conn, model).toString();
+						acceptor.accept(createCompletionProposal(insertionText,
+								proposalPrefix + conn.getRequestType() + proposalSuffix, null, context));
+					}
+				}
+			}
+		}
+
+	}
+
+//	@Override
+//	public void completeIntegrationTSNodeInputPort_MessageType(EObject model, Assignment assignment, ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
+////		lookupCrossReference(((CrossReference)assignment.getTerminal()), context, acceptor);
+//
+//	}
+//
+//	@Override
+//	public void completeIntegrationTSNodeOutputPort_MessageType(EObject model, Assignment assignment, ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
+////		lookupCrossReference(((CrossReference)assignment.getTerminal()), context, acceptor);
+//	}
+
+//	@Override
+//	public void completeIntegrationViewAggregation_InPort(EObject model, Assignment assignment, ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
+////		completeRuleCall(((RuleCall)assignment.getTerminal()), context, acceptor);
+//
+//
+//	}
+//	public void completeIntegrationViewAggregation_OutPort(EObject model, Assignment assignment, ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
+////		completeRuleCall(((RuleCall)assignment.getTerminal()), context, acceptor);
+//	}
+
 }
