@@ -48,7 +48,9 @@ enum UopPartitionType:
 ;
 
 enum UopProgrammingLanguage:
-	C='C' | CPP='cpp' | JAVA='Java' | ADA='Ada'
+	C='C' | CPP='cpp' | JAVA='Java' | ADA='Ada' 
+	// EXTENSION: Additional languages not supported by FACE
+	| GO='Go' | JS='Javascript' | PYTHON='Python' | RUST = 'Rust' | SQL='SQL'
 ;
 
 enum UopSynchronizationStyle:
@@ -63,14 +65,46 @@ enum UopThreadType:
 UopUoPModel:
 	'um' name=ID description=STRING '{'
 		(um+=UopUoPModel | element +=UopElement)+
-	'};'
+	'}'
 ;
 
 UopElement: 
 	UopSupportingComponent |
 	UopUnitOfPortability |
-	UopAbstractUoP
+	UopAbstractUoP |
+	UopMessageType
+	// EXTENSION: The following are not in the FACE spec
+	| PurposeBase
 ;
+
+// Instead of a different type, use an enum to define purposes? This means that the grammar can't enforce 
+// Which enumeration is used. That hasn't be done with OCL. For now just use a new set of grammar rules
+/**
+ * EXTENSION Defines a purpose for a component.
+ */
+PurposeEnumerated:
+	'purpose' 	name=ID (description=STRING)? 
+		'['
+		label+=(PurposeLabel | PurposeSet) ','? (label+=(PurposeLabel| PurposeSet) ','?)*
+		']'
+		';'
+		;
+// EXTENSION
+PurposeBase:
+	PurposeSet |
+	PurposeLabel |
+	PurposeEnumerated
+;
+// EXTENSION
+PurposeSet:
+		'(' name=ID (description=STRING)? 
+		'['
+		label+=(PurposeLabel | PurposeSet) ','? (label+=(PurposeLabel| PurposeSet) ','?)*
+		'])'
+		;
+// EXTENSION
+PurposeLabel:	name=ID |	'(' name=ID description=STRING ')' ;
+
 
 
 UopSupportingComponent:
@@ -79,17 +113,11 @@ UopSupportingComponent:
 ;
 
 UopLanguageRuntime:
-	'lr' name=ID description=STRING '{'
-		version=STRING
-	'};'
+	'runtime' name=ID ':' version=ID description=STRING ';'
 ;
 
-
-
 UopComponentFramework:
-	'cf' name=ID description=STRING '{'
-		version=STRING
-	'};'
+	'framework' name=ID ':' version=ID description=STRING ';'
 ;
 
 UopAbstractUoP:
@@ -107,14 +135,15 @@ UopAbstractConnection:
 ;
 
 UopUnitOfPortability:	
-	({UopPortableComponent}'pc' | {UopPlatformSpecificComponent} 'psc') name=ID description=STRING '->' realizes=[UopAbstractUoP|QN] '{'
+	({UopPortableComponent}'pc' | {UopPlatformSpecificComponent} 'psc') name=ID description=STRING ('->' realizes=[UopAbstractUoP|QN])? '{'
+		'purpose:' '[' purpose=[PurposeBase|QN]+ ']'  // EXTENSION: purpose is not in the FACE spec
 		'lang:' transportAPILanguage=UopProgrammingLanguage
-		'part:' partitionType=UopPartitionType
-		'prof:' faceProfile=UopFaceProfile
+		('part:' partitionType=UopPartitionType)? 	// EXTENSION: making partitionType optional
+		('prof:' faceProfile=UopFaceProfile)?  		// EXTENSION: making faceProfile optional
 		('DAL:' designAssuranceLevel=UopDesignAssuranceLevel)?
 		('DAS:' designAssuranceStandard=UopDesignAssuranceStandard)?
-		'RAM:' memoryRequirements=UopRAMMemoryRequirements
-		'thread:' '[' thread+=UopThread+ ']'
+		('RAM:' memoryRequirements=UopRAMMemoryRequirements)? // EXTENSION: making memoryRequirements optional
+		('thread:' '[' thread+=UopThread+ ']')?		// EXTENSION: making thread optional
 		('support:' '[' supportingComponent+=[UopSupportingComponent|QN]+ ']')? 
 		'conn:' '[' connection+=UopConnection+ ']'
 		('lcm:' '[' lcmPort+=UopLifeCycleManagementPort lcmPort+=UopLifeCycleManagementPort? ']' )?
@@ -148,12 +177,12 @@ UopConnection:
 	UopClientServerConnection
 ;
 UopClientServerConnection:
-	'csconn' name=ID description=STRING '->' realizes=[UopAbstractConnection|QN] '{'
-	 	'period:' period=FLOAT
-	 	'msg:' synchronizationStyle=UopSynchronizationStyle
-	 		 '[' requestType=UopMessageType '/' responseType=UopMessageType ']'
+	'csconn' name=ID description=STRING ('->' realizes=[UopAbstractConnection|QN])? '{'
+	 	'msg:' '[' requestType=[UopMessageType|QN] '/' responseType=[UopMessageType|QN] ']'
+	 		   (synchronizationStyle=UopSynchronizationStyle)?
 	 	'role:' role=UoPClientServerRole
-	'};'
+	 	('period:' period=FLOAT)?
+	'}'
 ;
 
 
@@ -163,22 +192,22 @@ UopPubSubConnection:
 ;
 
 UopQueuingConnection:
-	'qconn' name=ID description=STRING '->' realizes=[UopAbstractConnection|QN] '{'
-	 	'period:' period=FLOAT
-	 	'msg:' 	synchronizationStyle=UopSynchronizationStyle 
-	 			messageExchangeType=UopMessageExchangeType 
+	'qconn' name=ID description=STRING ('->' realizes=[UopAbstractConnection|QN])? '{'
+	 	'msg:'  messageExchangeType=UopMessageExchangeType 
 	 			messageType=[UopMessageType|QN]
-		'depth:' depth=INT
-		'};'
+	 			(synchronizationStyle=UopSynchronizationStyle)? 
+		('depth:' depth=INT)?
+	 	('period:' period=FLOAT)?
+		'}'
 ;
 
 UopSingleInstanceMessageConnection:
-	'simconn' name=ID description=STRING '->' realizes=[UopAbstractConnection|QN] '{'
-	 	'period:' period=FLOAT
-	 	'msg:' 	synchronizationStyle=UopSynchronizationStyle 
-	 			messageExchangeType=UopMessageExchangeType 
+	'simconn' name=ID description=STRING ('->' realizes=[UopAbstractConnection|QN])? '{'
+	 	'msg:'  messageExchangeType=UopMessageExchangeType 
 	 			messageType=[UopMessageType|QN]
-		'};'
+	 			(synchronizationStyle=UopSynchronizationStyle )?
+	 	('period:' period=FLOAT)?
+		'}'
 ;
 
 UopLifeCycleManagementPort:
@@ -210,17 +239,18 @@ UopTemplate:
 ;
 
 // -------------- Integration -----------
-IntegrationTSNodePortBase:
-	IntegrationUoPEndPoint |
-	IntegrationTSNodePort
-;
+
+//IntegrationTSNodePortBase:
+//	IntegrationUoPEndPoint |
+//	IntegrationTSNodePort
+//;
 
 
 // ----
 IntegrationIntegrationModel:
 	'im' name=ID description=STRING '{'
 		(im+=IntegrationIntegrationModel | element+=IntegrationElement)*
-	'};'
+	'}'
 ;
 
 IntegrationElement:
@@ -231,34 +261,39 @@ IntegrationElement:
 
 IntegrationIntegrationContext:
 	'ic' name=ID description=STRING '{'
-		('conn:' '['connection+=IntegrationTSNodeConnection+ ']')?
 		('xport:''[' node+=IntegrationTransportNode+ ']')?
-	'};'
+		('conn:' '['connection+=IntegrationTSNodeConnection+ ']')?
+	'}'
 ;
 
 IntegrationTSNodeConnection:
-	'(' source=[IntegrationTSNodePortBase|QN] '->' destination=[IntegrationTSNodePortBase|QN] ')' 
+	// Could make U2U the default
+	'(' ('U2U')? source=[IntegrationUoPOutputEndPoint|QN] '->' destination=[IntegrationUoPInputEndPoint|QN] ')' |
+	'(' 'U2T' source=[IntegrationUoPOutputEndPoint|QN] '->' destination=[IntegrationTSNodeInputPort|QN] ')' |
+	'(' 'T2U' source=[IntegrationTSNodeOutputPort|QN] '->' destination=[IntegrationUoPInputEndPoint|QN] ')' |
+	'(' 'T2T' source=[IntegrationTSNodeOutputPort|QN] '->' destination=[IntegrationTSNodeInputPort|QN] ')' 
 ;
 
 IntegrationUoPInstance:
 	'uinst' name=ID description=STRING '->' realizes=[UopUnitOfPortability|QN]  '{'
 		('uri:' configurationURI=STRING)?
 		('input:' '[' input+=IntegrationUoPInputEndPoint+ ']')?
-		('output' '[' output+=IntegrationUoPOutputEndPoint+ ']')?
+		('output:' '[' output+=IntegrationUoPOutputEndPoint+ ']')?
 	'};'
 ;
 
-IntegrationUoPEndPoint:
-	IntegrationUoPInputEndPoint |
-	IntegrationUoPOutputEndPoint
-;
+// EXTENSION: Technically, the IntegrationTSNodeConnection rule sidesteps any need for this rule.
+//IntegrationUoPEndPoint:
+//	IntegrationUoPInputEndPoint |
+//	IntegrationUoPOutputEndPoint
+//;
 
 IntegrationUoPInputEndPoint:
-	'i' connection=[UopConnection|QN] ';'
+	connection=[UopConnection|QN]
 ;
 
 IntegrationUoPOutputEndPoint:
-	'o' connection=[UopConnection|QN] ';'
+	 connection=[UopConnection|QN] 
 ;
 
 IntegrationTransportNode:
@@ -270,63 +305,64 @@ IntegrationTransportNode:
 	IntegrationViewSource
 ;
 
-
-IntegrationTSNodePort:
-	IntegrationTSNodeOutputPort | 
-	IntegrationTSNodeInputPort	
-;
+// EXTENSION: Technically, the IntegrationTSNodeConnection rule sidesteps any need for this rule.
+// To ensure proper inheritance
+//IntegrationTSNodePort:
+//	IntegrationTSNodeOutputPort | 
+//	IntegrationTSNodeInputPort	
+//;
 
 IntegrationTSNodeInputPort:
-	'ti' view=[uddl::PlatformView|QN]	';'
+	 messageType=[UopMessageType|QN]
 ;
 
 IntegrationTSNodeOutputPort: 
-	'to' view=[uddl::PlatformView|QN]	';'
+	 messageType=[UopMessageType|QN]
 ;
 
 IntegrationViewAggregation:
 	'agg' name=ID description=STRING '{'
 		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
-		('output' '[' outPort=IntegrationTSNodeOutputPort ']')?
+		('output:'  outPort=IntegrationTSNodeOutputPort )?
 	'};'
 ;
 
 IntegrationViewFilter:
 	'filter' name=ID description=STRING '{'
 		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
-		('output' '[' outPort=IntegrationTSNodeOutputPort ']')?
+		('output:'  outPort=IntegrationTSNodeOutputPort )?
 	'};'
 ;
 
 IntegrationViewSink:
 	'sink' name=ID description=STRING '{'
 		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
-		('output' '[' outPort=IntegrationTSNodeOutputPort ']')?
+		('output:'  outPort=IntegrationTSNodeOutputPort )?
 	'};'
 ;
 
 IntegrationViewSource:
 	'src' name=ID description=STRING '{'
 		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
-		('output' '[' outPort=IntegrationTSNodeOutputPort ']')?
+		('output:'  outPort=IntegrationTSNodeOutputPort )?
 	'};'
 ;
 
 IntegrationViewTransformation:
 	'xform' name=ID description=STRING '{'
 		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
-		('output' '[' outPort=IntegrationTSNodeOutputPort ']')?
+		('output:'  outPort=IntegrationTSNodeOutputPort )?
 	'};'
 ;
 
 IntegrationViewTransporter:
 	'xport' name=ID description=STRING '{'
 		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
-		('output' '[' outPort=IntegrationTSNodeOutputPort ']')?
-		'chan:' channel=IntegrationTransportChannel
+		('output:'  outPort=IntegrationTSNodeOutputPort )?
+		'chan:' channel=[IntegrationTransportChannel|QN]
 	'};'
 ;
 
 IntegrationTransportChannel:
-	'xchan' name=ID description=STRING ';'
+	name=ID description=STRING ';'
 ;
