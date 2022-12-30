@@ -57,6 +57,7 @@ class FaceFormatter extends UddlFormatter {
 
 	def dispatch void format(ArchitectureModel architectureModel, extension IFormattableDocument document) {
 		// TODO: format HiddenRegions around keywords, attributes, cross references, etc. 
+		architectureModel.formatContainer(document)
 		for (dataModel : architectureModel.dm) {
 			dataModel.format
 		}
@@ -70,6 +71,7 @@ class FaceFormatter extends UddlFormatter {
 
 	def dispatch void format(UopUoPModel uopUoPModel, extension IFormattableDocument document) {
 		// TODO: format HiddenRegions around keywords, attributes, cross references, etc. 
+		uopUoPModel.formatContainer(document)
 		for (_uopUoPModel : uopUoPModel.um) {
 			_uopUoPModel.format
 		}

@@ -3,23 +3,38 @@
  */
 package com.epistimis.face.validation;
 
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.ocl.xtext.completeocl.validation.CompleteOCLEObjectValidator;
+import org.eclipse.xtext.validation.EValidatorRegistrar;
+
+import com.epistimis.face.face.FacePackage;
 
 /**
- * This class contains custom validation rules. 
+ * This class contains custom validation rules.
  *
- * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
+ * See
+ * https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
 public class FaceValidator extends AbstractFaceValidator {
+
+	protected static String ISSUE_CODE_PREFIX = "com.epistimis.face.";
+	//public static String ENTITY_NEEDS_2_ELEMENTS = ISSUE_CODE_PREFIX + "EntityNeeds2Elements";
 	
-//	public static final String INVALID_NAME = "invalidName";
-//
-//	@Check
-//	public void checkGreetingStartsWithCapital(Greeting greeting) {
-//		if (!Character.isUpperCase(greeting.getName().charAt(0))) {
-//			warning("Name should start with a capital",
-//					FacePackage.Literals.GREETING__NAME,
-//					INVALID_NAME);
-//		}
-//	}
-	
+	private void loadAndRegister(EValidatorRegistrar registrar, String resourceAddress) {
+		FacePackage ePackage = FacePackage.eINSTANCE;
+		URI oclURI = URI.createPlatformResourceURI(resourceAddress, true);
+		registrar.register(ePackage, new CompleteOCLEObjectValidator(ePackage, oclURI));
+	}
+
+	@Override
+	public void register(EValidatorRegistrar registrar) {
+		super.register(registrar);
+		loadAndRegister(registrar, "/com.epistimis.face/src/com/epistimis/face/constraints/face.ocl");
+		loadAndRegister(registrar, "/com.epistimis.uddl/src/com/epistimis/uddl/constraints/uop.ocl");
+		// TODO: Before registering this, need to fix issues that are the result of grammar changes - or fix grammar
+		// to avoid them
+		//loadAndRegister(registrar, "/com.epistimis.uddl/src/com/epistimis/uddl/constraints/integration.ocl");
+		loadAndRegister(registrar, "/com.epistimis.uddl/src/com/epistimis/uddl/constraints/purpose.ocl");
+	}
+
 }
