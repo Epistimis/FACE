@@ -136,7 +136,7 @@ UopAbstractConnection:
 
 UopUnitOfPortability:	
 	({UopPortableComponent}'pc' | {UopPlatformSpecificComponent} 'psc') name=ID description=STRING ('->' realizes=[UopAbstractUoP|QN])? '{'
-		'purpose:' '[' purpose=[PurposeBase|QN]+ ']'  // EXTENSION: purpose is not in the FACE spec
+		'purpose:' '[' purpose+=[PurposeBase|QN]+ ']'  // EXTENSION: purpose is not in the FACE spec
 		'lang:' transportAPILanguage=UopProgrammingLanguage
 		('part:' partitionType=UopPartitionType)? 	// EXTENSION: making partitionType optional
 		('prof:' faceProfile=UopFaceProfile)?  		// EXTENSION: making faceProfile optional
@@ -233,7 +233,7 @@ UopTemplateComposition:
 UopTemplate:
 	'templ' name=ID description=STRING  '{'
 		'spec:' specification=STRING
-		('bound:' boundQuery=[uddl::PlatformQuery|QN])?
+		'bound:' boundQuery=[uddl::PlatformQuery|QN]
 		('effective:' effectiveQuery=[uddl::PlatformQuery|QN])?
 	'};'	
 ;
