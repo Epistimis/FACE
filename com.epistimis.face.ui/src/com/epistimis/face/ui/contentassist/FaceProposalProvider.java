@@ -8,9 +8,7 @@ import java.util.List;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.Assignment;
-import org.eclipse.xtext.CrossReference;
 import org.eclipse.xtext.EcoreUtil2;
-import org.eclipse.xtext.RuleCall;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.scoping.IScopeProvider;
 import org.eclipse.xtext.ui.editor.contentassist.ContentAssistContext;
@@ -21,7 +19,6 @@ import com.epistimis.face.face.IntegrationIntegrationContext;
 import com.epistimis.face.face.IntegrationTSNodeConnection;
 import com.epistimis.face.face.IntegrationTSNodeInputPort;
 import com.epistimis.face.face.IntegrationTSNodeOutputPort;
-import com.epistimis.face.face.IntegrationTransportNode;
 import com.epistimis.face.face.IntegrationUoPInputEndPoint;
 import com.epistimis.face.face.IntegrationUoPInstance;
 import com.epistimis.face.face.IntegrationUoPOutputEndPoint;
@@ -32,7 +29,6 @@ import com.epistimis.face.face.UopMessageExchangeType;
 import com.epistimis.face.face.UopMessageType;
 import com.epistimis.face.face.UopPubSubConnection;
 import com.epistimis.face.face.UopUnitOfPortability;
-import com.epistimis.uddl.UddlQNP;
 import com.google.inject.Inject;
 
 /**
