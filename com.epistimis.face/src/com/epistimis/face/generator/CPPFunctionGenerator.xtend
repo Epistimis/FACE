@@ -1,38 +1,40 @@
 package com.epistimis.face.generator
 
+import com.epistimis.face.face.FaceElement
 import com.epistimis.face.face.IntegrationUoPInstance
 import com.epistimis.face.face.UoPClientServerRole
 import com.epistimis.face.face.UopClientServerConnection
+import com.epistimis.face.face.UopCompositeTemplate
+import com.epistimis.face.face.UopMessageType
 import com.epistimis.face.face.UopPlatformSpecificComponent
 import com.epistimis.face.face.UopPortableComponent
 import com.epistimis.face.face.UopProgrammingLanguage
 import com.epistimis.face.face.UopQueuingConnection
 import com.epistimis.face.face.UopSingleInstanceMessageConnection
 import com.epistimis.face.face.UopSynchronizationStyle
+import com.epistimis.face.face.UopTemplate
 import com.epistimis.face.face.UopUnitOfPortability
+import com.epistimis.uddl.generator.CppDataStructureGenerator
+import com.epistimis.uddl.uddl.PlatformDataModel
+import com.epistimis.uddl.uddl.PlatformEntity
+import java.util.ArrayList
+import java.util.List
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess2
+import org.eclipse.xtext.generator.IGenerator2
 import org.eclipse.xtext.generator.IGeneratorContext
-import com.epistimis.face.face.UopMessageType
-import com.epistimis.face.face.UopCompositeTemplate
-import com.epistimis.face.face.UopTemplate
-import com.epistimis.uddl.generator.CppDataStructureGenerator
-import java.util.List
-import java.util.ArrayList
-import com.epistimis.face.face.FaceElement
-import com.epistimis.uddl.generator.QueryProcessor
-import com.google.inject.Inject
-import com.epistimis.uddl.uddl.PlatformEntity
-import com.epistimis.uddl.uddl.PlatformDataModel
 
 class CPPFunctionGenerator extends CppDataStructureGenerator implements IFaceLangGenerator {
 
 	static String SRC_EXT = ".cpp";
 
 	List<UopUnitOfPortability> processedComponents;
-//	@Inject QueryProcessor qproc;
 
-	FaceGenerator fg;
+	//@Inject
+	IGenerator2  fg;
+	
+	//@Inject 
+	QueryUtilities qu;
 
 	/**
 	 * Eventually this code generator can look at the version of language (look up SupportingComponents for runtimes and see
@@ -40,9 +42,9 @@ class CPPFunctionGenerator extends CppDataStructureGenerator implements IFaceLan
 	 * language features from that version if desired)
 	 */
 	
-	new(FaceGenerator fg) {
+	new(QueryUtilities qu) {
 		initialize();
-		this.fg = fg;
+		this.qu = qu;
 	}
 	
 	override void initialize() {
@@ -51,9 +53,7 @@ class CPPFunctionGenerator extends CppDataStructureGenerator implements IFaceLan
  		if (processedComponents === null) {
 	 		processedComponents = new ArrayList<UopUnitOfPortability>();
 		}
-//		if (qproc === null) {
-//			qproc = new QueryProcessor();
-//		}
+
 	}
 	
 	override void cleanup() {
@@ -90,7 +90,7 @@ class CPPFunctionGenerator extends CppDataStructureGenerator implements IFaceLan
 			return;
 		}
 		
-		val List<PlatformEntity> entities = fg.getReferencedEntities(inst.realizes);
+		val List<PlatformEntity> entities = qu.getReferencedEntities(inst.realizes);
 		
 		processAComponent(inst.realizes,entities, fsa, context);
 			
@@ -150,7 +150,7 @@ class CPPFunctionGenerator extends CppDataStructureGenerator implements IFaceLan
 	«FOR ent: entities»
 		«ent.generateInclude(pdmIncludes, entityIncludes)»
 	«ENDFOR»
-	public void «uop.name»(«FOR conn: uop.connection  SEPARATOR ','» «fg.getReferencedEntities(conn).get(0).typeString» «conn.name»«ENDFOR»)
+	public void «uop.name»(«FOR conn: uop.connection  SEPARATOR ','» «qu.getReferencedEntities(conn).get(0).typeString» «conn.name»«ENDFOR»)
 	{
 		/** The first step in this function must be a check for runtime privacy issues (e.g. where individual choices matter like Consent).
 		 *  This might be a null function

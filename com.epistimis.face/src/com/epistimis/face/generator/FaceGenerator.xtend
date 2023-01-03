@@ -46,14 +46,10 @@ class FaceGenerator extends AbstractGenerator {
 	@Inject extension IQualifiedNameProvider qnp;
 	@Inject extension IndexUtilities ndxUtil;
 
-	QueryProcessor qp; // = new QueryProcessor(ndxUtil);
+	@Inject extension QueryProcessor qp; 
+	@Inject extension QueryUtilities qu;
 
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
-//		fsa.generateFile('greetings.txt', 'People to greet: ' + 
-//			resource.allContents
-//				.filter(Greeting)
-//				.map[name]
-//				.join(', '))
 //		/**
 //		 * Generate all the data structures
 //		 */
@@ -63,12 +59,11 @@ class FaceGenerator extends AbstractGenerator {
 //		 */
 //		uddlGen.doGenerate(resource, fsa, context);
 
-		qp = new QueryProcessor(ndxUtil);
 		/**
 		 * Set up the map of programming language specific generators
 		 */
 		val Map<UopProgrammingLanguage, IFaceLangGenerator> languageSpecificGenerators = new HashMap<UopProgrammingLanguage, IFaceLangGenerator>();
-		languageSpecificGenerators.put(UopProgrammingLanguage.CPP, new CPPFunctionGenerator(this));
+		languageSpecificGenerators.put(UopProgrammingLanguage.CPP, new CPPFunctionGenerator(qu));
 
 		/**
 		 * Generate the functions
@@ -91,89 +86,5 @@ class FaceGenerator extends AbstractGenerator {
 
 	}
 
-	def dispatch List<PlatformEntity> getReferencedEntities(UopUnitOfPortability comp) {
-		// Figure out which Entities are referenced by this component
-		var referencedQueries = new TreeMap<String, PlatformQuery>();
-		for (conn : comp.connection) {
-			referencedQueries.putAll(conn.queriesMap);
-		}
-		/**
-		 * Now get all the QuerySpecifications from these queries and, from those, get all the referenced Entities
-		 */
-		var List<PlatformEntity> entities = new ArrayList<PlatformEntity>();
-		for (Map.Entry<String,PlatformQuery> entry : referencedQueries.entrySet) {
-			val PlatformQuery query = entry.value
-			val QuerySpecification spec = qp.processQuery(query);
-			entities.addAll(qp.matchQuerytoUDDL(query, spec));
-		}
-
-		return entities;
-	}
-
-	def dispatch List<PlatformEntity> getReferencedEntities(UopConnection conn) {
-		// Figure out which Entities are referenced by this component
-		var referencedQueries = conn.queriesMap;
-
-		/**
-		 * Now get all the QuerySpecifications from these queries and, from those, get all the referenced Entities
-		 */
-		var List<PlatformEntity> entities = new ArrayList<PlatformEntity>();
-		for (Map.Entry<String,PlatformQuery> entry : referencedQueries.entrySet) {
-			val PlatformQuery query = entry.value
-			val QuerySpecification spec = qp.processQuery(query);
-			entities.addAll(qp.matchQuerytoUDDL(query, spec));
-		}
-
-		return entities;
-	}
-
-	/**
-	 * Get all the queries referenced by this Template/Connection. Recurses down through Composites to find everything, keeping only
-	 * a single reference, ordered by the FQN of the query. Note that this returns only PlatformQuery, not PlatformCompositeQuery - 
-	 * effectively flattening the list.
-	 */
-	def dispatch SortedMap<String, PlatformQuery> queriesMap(UopTemplate templ) {
-		var result = new TreeMap<String, PlatformQuery>();
-		result.put(qnp.getFullyQualifiedName(templ.boundQuery).toString, templ.boundQuery);
-		return result;
-	}
-
-	def dispatch SortedMap<String, PlatformQuery> queriesMap(UopCompositeTemplate templ) {
-		var result = new TreeMap<String, PlatformQuery>();
-		for (UopTemplateComposition comp : templ.composition) {
-			result.putAll(comp.type.queriesMap);
-		}
-		return result;
-	}
-
-	def dispatch SortedMap<String, PlatformQuery> queriesMap(UopQueuingConnection conn) {
-		return conn.messageType.queriesMap;
-	}
-
-	def dispatch SortedMap<String, PlatformQuery> queriesMap(UopSingleInstanceMessageConnection conn) {
-		return conn.messageType.queriesMap;
-	}
-
-	def dispatch SortedMap<String, PlatformQuery> queriesMap(UopClientServerConnection conn) {
-		var req = conn.requestType.queriesMap;
-		var resp = conn.responseType.queriesMap;
-
-		req.putAll(resp);
-		return req;
-	}
-
-	def dispatch SortedMap<String, PlatformQuery> queriesMap(PlatformQuery query) {
-		var result = new TreeMap<String, PlatformQuery>();
-		result.put(qnp.getFullyQualifiedName(query).toString, query);
-		return result;
-	}
-
-	def dispatch SortedMap<String, PlatformQuery> queriesMap(PlatformCompositeQuery query) {
-		var result = new TreeMap<String, PlatformQuery>();
-		for (PlatformQueryComposition comp : query.composition) {
-			result.putAll(comp.type.queriesMap);
-		}
-		return result;
-	}
 
 }

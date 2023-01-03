@@ -5,6 +5,8 @@ package com.epistimis.face;
 
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 
+import com.epistimis.face.generator.QueryUtilities;
+
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
  */
@@ -15,7 +17,12 @@ public class FaceRuntimeModule extends AbstractFaceRuntimeModule {
 		// TODO Auto-generated method stub
 		return FaceQNP.class;
 	}
-	
+
+	public Class<? extends QueryUtilities> bindQueryUtilities() {
+		return QueryUtilities.class;
+	}
+
+
 	/** Enable this if there are performance issues with name resolution. And then look at the strategy to see what should
 	 * be excluded from the index
 	 * */
