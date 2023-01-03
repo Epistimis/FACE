@@ -34,6 +34,7 @@ Workflow {
 			name = "com.epistimis.face.Face"
 			fileExtensions = "face"
 			referencedResource="platform:/resource/com.epistimis.uddl/model/generated/Uddl.genmodel"
+			referencedResource="platform:/resource/com.epistimis.uddl.query/model/generated/Query.genmodel"
 
 		    fragment = io.typefox.xtext2langium.Xtext2LangiumFragment {
 		        outputPath = './langium'
