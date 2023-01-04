@@ -14,7 +14,7 @@ package face
 
   context PurposeEnumerated
     /*
-     * Helper method - flattens the hierarchy. Can't just use 'flatten' because it expects a collection only , not objects that include collections
+     * Helper method - flattens the hierarchy. Can't just use 'flatten' because that function expects a collection only , not objects that include collections
      * as members.
 	 *
 	 *	NOTE: Should this include 'self' at this level because the enum name is not itself a label? This is different than a PurposeSet, where the 
@@ -63,4 +63,4 @@ package face
    	def: flattenLabels(): Bag(PurposeBase) =
    		Bag{self.oclAsType(PurposeBase)}
   
- endpackage
+endpackage

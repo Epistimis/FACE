@@ -1,0 +1,19 @@
+import uddl  : 'platform:/resource/com.epistimis.uddl/model/generated/Uddl.ecore'
+import query : 'platform:/resource/com.epistimis.uddl.query/model/generated/Query.ecore'
+
+import  '../../../../../model/generated/Face.ecore'
+
+include 'purpose.ocl'
+include 'uop.ocl'
+include 'uddlquery.ocl'
+
+/**
+ * This contains example privacy rules. 
+ */
+
+package face 
+
+--  context UopUnitOfPortability
+ 
+  
+endpackage
