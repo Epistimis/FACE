@@ -86,7 +86,11 @@ public class FaceValidator extends AbstractFaceValidator {
 
 
 	Map<String, List<CompleteOCLEObjectValidator>> conditionalValidators = new HashMap<String, List<CompleteOCLEObjectValidator>>();
-	Map<String, List<String>> conditionalChecks = new HashMap<String, List<String>>();
+	/**
+	 * outer key is the FQN of the Purpose, inner key is the invariant name. 
+	 * We use invariant name just to make this easier to understand
+	 */
+	Map<String, Map<String,String>> conditionalChecks = new HashMap<String, Map<String,String>>();
 
 	@Override
 	protected  @NonNull URI getInputURI(@NonNull String localFileName) {
@@ -261,25 +265,25 @@ public class FaceValidator extends AbstractFaceValidator {
 
 
 
-	private void loadConditionalCheck(PurposeBase p, EPackage pkg, String checkString) {
+	private void loadConditionalCheck(PurposeBase p, EPackage pkg, String invName, String checkString) {
 		String fqn = qnp.getFullyQualifiedName(p).toString();
-		List<String> vs = conditionalChecks.get(fqn);
+		Map<String,String> vs = conditionalChecks.get(fqn);
 		if (vs == null) {
-			vs = new ArrayList<String>();
+			vs = new HashMap<String,String>();
 			conditionalChecks.put(fqn, vs);
 		}
-		vs.add(checkString);
+		vs.put(invName,checkString);
 	}
 
-	private void loadCheckForPurposes(List<PurposeBase> purposes, EPackage pkg, String checkString) {
+	private void loadCheckForPurposes(List<PurposeBase> purposes, EPackage pkg, String invName, String checkString) {
 		for (PurposeBase p : purposes) {
 			String fqn = qnp.getFullyQualifiedName(p).toString();
-			List<String> vs = conditionalChecks.get(fqn);
+			Map<String,String> vs = conditionalChecks.get(fqn);
 			if (vs == null) {
-				vs = new ArrayList<String>();
+				vs = new HashMap<String,String>();
 				conditionalChecks.put(fqn, vs);
 			}
-			vs.add(checkString);
+			vs.put(invName,checkString);
 		}
 	}
 
@@ -288,7 +292,7 @@ public class FaceValidator extends AbstractFaceValidator {
 	 * FALSE means we're breaking some rule.
 	 */
 //	final static String SAMPLE_INVARIANT_TEXT = "constituentObservables()->flatten()->collect(type.name.toLowerCase())->contains('health') = false"; 
-	//final static String SAMPLE_INVARIANT_TEXT = "realizes.realizes.composition->collect(type.name.toLowerCase())->includes('health') = false"; 
+	final static String SAMPLE_INVARIANT_NAME = "noHealthDataUsed";
 	final static String SAMPLE_INVARIANT_TEXT = "composition->collect(realizes.realizes.type.name.toLowerCase())->includes('health') = false"; 
 	
 	private synchronized void loadConditionalChecks(EObject context) {
@@ -304,8 +308,7 @@ public class FaceValidator extends AbstractFaceValidator {
 			List<String> names = Arrays.asList(new String[] { "LegitimateInterests", "Accounting", "PromoQuotes",
 					"AdTracking", "Support", "Improve" });
 			List<PurposeBase> purposes = getPurposesForNames(names, context);
-			loadCheckForPurposes(purposes, UddlPackage.eINSTANCE,
-					SAMPLE_INVARIANT_TEXT);
+			loadCheckForPurposes(purposes, UddlPackage.eINSTANCE,SAMPLE_INVARIANT_NAME,SAMPLE_INVARIANT_TEXT);
 
 			conditionalsRegistered = true;
 		}
@@ -317,25 +320,25 @@ public class FaceValidator extends AbstractFaceValidator {
 	 * in that set. Therefore, we must drill down into all the contained purposes of
 	 * the specified one and retrieve all those checks as well.
 	 * 
-	 * NOTE: This uses a set to ensure that there are no duplicate checks in the
-	 * resulting list.
+	 * NOTE: This uses a Map (not a multimap) to ensure that there are no duplicate checks in the
+	 * resulting list. Note that this assumes no name collisions
 	 * 
 	 * @param p
 	 * @return
 	 */
-	private Set<String> getRelevantChecks(PurposeBase p) {
-		Set<String> results = new HashSet<String>();
+	private Map<String,String> getRelevantChecks(PurposeBase p) {
+		Map<String,String> results = new HashMap<String,String>();
 		String fqn = qnp.getFullyQualifiedName(p).toString();
-		List<String> checks = conditionalChecks.get(fqn);
+		Map<String,String> checks = conditionalChecks.get(fqn);
 		if (checks != null) {
-			results.addAll(checks);
+			results.putAll(checks);
 		}
 		for (EObject tp : IteratorExtensions.<EObject>toIterable(p.eAllContents())) {
 			if (tp instanceof PurposeBase) {
 				fqn = qnp.getFullyQualifiedName(tp).toString();
 				checks = conditionalChecks.get(fqn);
 				if (checks != null) {
-					results.addAll(checks);
+					results.putAll(checks);
 				}
 			} else {
 				System.out.println(MessageFormat.format("Purpose {0} contains a non purpose: {1}",
@@ -383,25 +386,31 @@ public class FaceValidator extends AbstractFaceValidator {
 				boolean netCheckResult = true; // assume true - any failure makes false
 				for (PurposeBase purpose : purposes) {
 					// Process all the constraints for that Purpose and Entity type
-					Set<String> checks = getRelevantChecks(purpose);
-					for (String check: checks) {
+					Map<String,String> checks = getRelevantChecks(purpose);
+					for (Map.Entry<String,String> check: checks.entrySet()) {
 						//System.out.println(MessageFormat.format("Obtained check {0} ", check.toString()));
 						// only process checks not previously used on this ent
-						if (!processedChecks.contains(check)) {
+						if (!processedChecks.contains(check.getKey())) {
 							try {
-		//						final @NonNull ExpressionInOCL constraint = ocl
-		//								.createInvariant(UddlPackage.Literals.PLATFORM_ENTITY, SAMPLE_INVARIANT_TEXT);
-								final ExpressionInOCL asQuery = ocl.createQuery(UddlPackage.Literals.PLATFORM_ENTITY, check);
-								Query queryEval = ocl.createQuery(asQuery);
-								boolean currentResult = ((Boolean) queryEval.evaluateUnboxed(ent)).booleanValue();
+								// Process an invariant - which can only return true/false
+								final @NonNull ExpressionInOCL invariant = ocl.createInvariant(UddlPackage.Literals.PLATFORM_ENTITY, check.getValue());
+								invariant.setName(check.getKey());
+								Query constraintEval = ocl.createQuery(invariant);
+								boolean currentResult = constraintEval.checkEcore(ent);
+//								// This code evaluates it as a query - a query can return anything
+//								final ExpressionInOCL asQuery = ocl.createQuery(UddlPackage.Literals.PLATFORM_ENTITY, check);
+//								Query queryEval = ocl.createQuery(asQuery);
+//								boolean currentResult = ((Boolean) queryEval.evaluateUnboxed(ent)).booleanValue();
+								// End of OCL query evaluation
 								//System.out.println("QueryEval result:" + currentResult);
 								netCheckResult = netCheckResult && currentResult;
 								if (!currentResult) {
 									String fmttedMessage = MessageFormat.format(
-											"UoP {0} has purpose {1} but attempts to use Entity {2} on connection {3} violating an invariant: \nDetailed diagnostics: {4}",
+											"UoP {0} has purpose {1} but attempts to use Entity {2} on connection {3} violating an invariant: {4} \nThis check should be true: {5}",
 											qnp.getFullyQualifiedName(uop).toString(), purpose.getName(),
 											qnp.getFullyQualifiedName(ent).toString(), conn.getName(),
-											check);
+											invariant.getName(),
+											check.getValue());
 									error(fmttedMessage, FacePackage.eINSTANCE.getUopUnitOfPortability_Connection(), ndx,
 											CONSTRAINT_VIOLATION, qnp.getFullyQualifiedName(conn).toString());									
 								}
@@ -410,7 +419,7 @@ public class FaceValidator extends AbstractFaceValidator {
 										MessageFormat.format("Exception processing constraints: {0} ", e.getMessage()));
 								e.printStackTrace(System.out);
 							}
-							processedChecks.add(check);
+							processedChecks.add(check.getKey());
 						}
 						else {
 							//System.out.println("... That check already used against this ent");							
