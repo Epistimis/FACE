@@ -3,6 +3,7 @@
  */
 package com.epistimis.face;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 
 import com.epistimis.face.generator.QueryUtilities;
@@ -11,7 +12,18 @@ import com.epistimis.face.generator.QueryUtilities;
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
  */
 public class FaceRuntimeModule extends AbstractFaceRuntimeModule {
-	
+
+	/**
+	 * Concept taken from org.eclipse.ocl.examples.pivot.tests.PivotTestCase.java
+	 * It appears that the idea is to uniquely identify the plugin. So the question is 
+	 * "Where should this identifier be?" 
+	 * 
+	 * It seemed to me that the RuntimeModule is a [Schelling point](https://en.wikipedia.org/wiki/Focal_point_(game_theory))
+	 * 
+	 * The value should be the package name. If we can dynamically determine this, so much the better.
+	 */
+	public static final @NonNull String PLUGIN_ID = "com.epistimis.face";
+
 	@Override
 	public Class<? extends IQualifiedNameProvider> bindIQualifiedNameProvider() {
 		// TODO Auto-generated method stub

@@ -86,91 +86,11 @@ public class FaceValidator extends AbstractFaceValidator {
 
 
 	Map<String, List<CompleteOCLEObjectValidator>> conditionalValidators = new HashMap<String, List<CompleteOCLEObjectValidator>>();
+	Map<String, List<String>> conditionalChecks = new HashMap<String, List<String>>();
 
-
-	/**
-	 * NOTE: This does not override the method with the same name from
-	 * UddlValidator. That is so that anything registered by the
-	 * UddlValidator.register method is registered for the UddlPackage.
-	 * 
-	 * NOTE: These do not initialize here. The assumption is that, since they are registered,
-	 * they will be lazy initialized before use
-	 * 
-	 * See https://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.ocl.doc%2Fhelp%2FInstallation.html
-	 * @param registrar
-	 * @param resourceAddress
-	 */
-	private void loadAndRegister(EValidatorRegistrar registrar, String resourceAddress) {
-		FacePackage ePackage = FacePackage.eINSTANCE;
-//		URI oclURI = URI.createPlatformResourceURI(resourceAddress, true);
-        URI oclURI = getInputURI(resourceAddress);
-		registrar.register(ePackage, new CompleteOCLEObjectValidator(ePackage, oclURI));
-	}
-
-	private void loadConditionalValidator(PurposeBase p, EPackage pkg, String resourceAddress) {
-//		URI oclURI = URI.createPlatformResourceURI(resourceAddress, true);
-        URI oclURI = getInputURI(resourceAddress);
-		String fqn = qnp.getFullyQualifiedName(p).toString();
-		CompleteOCLEObjectValidator validator = new CompleteOCLEObjectValidator(pkg, oclURI);
-		validator.initialize(ThreadLocalExecutor.basicGetEnvironmentFactory());
-		List<CompleteOCLEObjectValidator> vs = conditionalValidators.get(fqn);
-		if (vs == null) {
-			vs = new ArrayList<CompleteOCLEObjectValidator>();
-			conditionalValidators.put(fqn, vs);
-		}
-		vs.add(validator);
-	}
-
-	private void loadValidatorForPurposes(List<PurposeBase> purposes, EPackage pkg, String resourceAddress) {
-//		URI oclURI = URI.createPlatformResourceURI(resourceAddress, true);
-        URI oclURI = getInputURI(resourceAddress);
-		CompleteOCLEObjectValidator validator = new CompleteOCLEObjectValidator(pkg, oclURI);
-		validator.initialize(ThreadLocalExecutor.basicGetEnvironmentFactory());
-		System.out.println(MessageFormat.format("Created validator for pkg {0} and URI {1}", pkg.toString(),
-				oclURI.toPlatformString(true)));
-		for (PurposeBase p : purposes) {
-			String fqn = qnp.getFullyQualifiedName(p).toString();
-			List<CompleteOCLEObjectValidator> vs = conditionalValidators.get(fqn);
-			if (vs == null) {
-				vs = new ArrayList<CompleteOCLEObjectValidator>();
-				conditionalValidators.put(fqn, vs);
-			}
-			vs.add(validator);
-		}
-	}
-
-	/**
-	 * Retrieve all the validators that are relevant to this purpose. Note that
-	 * validators stored for a PurposeSet are applicable to every purpose contained
-	 * in that set. Therefore, we must drill down into all the contained purposes of
-	 * the specified one and retrieve all those validators as well.
-	 * 
-	 * NOTE: This uses a set to ensure that there are no duplicate validators in the
-	 * resulting list.
-	 * 
-	 * @param p
-	 * @return
-	 */
-	private Set<CompleteOCLEObjectValidator> getRelevantValidators(PurposeBase p) {
-		Set<CompleteOCLEObjectValidator> results = new HashSet<CompleteOCLEObjectValidator>();
-		String fqn = qnp.getFullyQualifiedName(p).toString();
-		List<CompleteOCLEObjectValidator> validators = conditionalValidators.get(fqn);
-		if (validators != null) {
-			results.addAll(validators);
-		}
-		for (EObject tp : IteratorExtensions.<EObject>toIterable(p.eAllContents())) {
-			if (tp instanceof PurposeBase) {
-				fqn = qnp.getFullyQualifiedName(tp).toString();
-				validators = conditionalValidators.get(fqn);
-				if (validators != null) {
-					results.addAll(validators);
-				}
-			} else {
-				System.out.println(MessageFormat.format("Purpose {0} contains a non purpose: {1}",
-						qnp.getFullyQualifiedName(p), tp.toString()));
-			}
-		}
-		return results;
+	@Override
+	protected  @NonNull URI getInputURI(@NonNull String localFileName) {
+		return getInputURI(localFileName, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
 	}
 
 	/**
@@ -214,6 +134,25 @@ public class FaceValidator extends AbstractFaceValidator {
 		return purposes;
 	}
 
+	/**
+	 * NOTE: This does not override the method with the same name from
+	 * UddlValidator. That is so that anything registered by the
+	 * UddlValidator.register method is registered for the UddlPackage.
+	 * 
+	 * NOTE: These do not initialize here. The assumption is that, since they are registered,
+	 * they will be lazy initialized before use
+	 * 
+	 * See https://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.ocl.doc%2Fhelp%2FInstallation.html
+	 * @param registrar
+	 * @param resourceAddress
+	 */
+	private void loadAndRegister(EValidatorRegistrar registrar, String resourceAddress) {
+		FacePackage ePackage = FacePackage.eINSTANCE;
+//		URI oclURI = URI.createPlatformResourceURI(resourceAddress, true);
+        URI oclURI = getInputURI(resourceAddress);
+		registrar.register(ePackage, new CompleteOCLEObjectValidator(ePackage, oclURI));
+	}
+
 	@Override
 	public void register(EValidatorRegistrar registrar) {
 		super.register(registrar);
@@ -227,6 +166,37 @@ public class FaceValidator extends AbstractFaceValidator {
 //		// to avoid them
 //		//loadAndRegister(registrar, "/com.epistimis.face/src/com/epistimis/face/constraints/integration.ocl");
 //		loadAndRegister(registrar, "/com.epistimis.face/src/com/epistimis/face/constraints/purpose.ocl");
+	}
+	private void loadConditionalValidator(PurposeBase p, EPackage pkg, String resourceAddress) {
+//		URI oclURI = URI.createPlatformResourceURI(resourceAddress, true);
+        URI oclURI = getInputURI(resourceAddress);
+		String fqn = qnp.getFullyQualifiedName(p).toString();
+		CompleteOCLEObjectValidator validator = new CompleteOCLEObjectValidator(pkg, oclURI);
+		validator.initialize(ThreadLocalExecutor.basicGetEnvironmentFactory());
+		List<CompleteOCLEObjectValidator> vs = conditionalValidators.get(fqn);
+		if (vs == null) {
+			vs = new ArrayList<CompleteOCLEObjectValidator>();
+			conditionalValidators.put(fqn, vs);
+		}
+		vs.add(validator);
+	}
+
+	private void loadValidatorForPurposes(List<PurposeBase> purposes, EPackage pkg, String resourceAddress) {
+//		URI oclURI = URI.createPlatformResourceURI(resourceAddress, true);
+        URI oclURI = getInputURI(resourceAddress);
+		CompleteOCLEObjectValidator validator = new CompleteOCLEObjectValidator(pkg, oclURI);
+		validator.initialize(ThreadLocalExecutor.basicGetEnvironmentFactory());
+		System.out.println(MessageFormat.format("Created validator for pkg {0} and URI {1}", pkg.toString(),
+				oclURI.toPlatformString(true)));
+		for (PurposeBase p : purposes) {
+			String fqn = qnp.getFullyQualifiedName(p).toString();
+			List<CompleteOCLEObjectValidator> vs = conditionalValidators.get(fqn);
+			if (vs == null) {
+				vs = new ArrayList<CompleteOCLEObjectValidator>();
+				conditionalValidators.put(fqn, vs);
+			}
+			vs.add(validator);
+		}
 	}
 
 	private synchronized void loadConditionalValidators(EObject context) {
@@ -255,6 +225,127 @@ public class FaceValidator extends AbstractFaceValidator {
 	}
 
 
+	/**
+	 * Retrieve all the validators that are relevant to this purpose. Note that
+	 * validators stored for a PurposeSet are applicable to every purpose contained
+	 * in that set. Therefore, we must drill down into all the contained purposes of
+	 * the specified one and retrieve all those validators as well.
+	 * 
+	 * NOTE: This uses a set to ensure that there are no duplicate validators in the
+	 * resulting list.
+	 * 
+	 * @param p
+	 * @return
+	 */
+	private Set<CompleteOCLEObjectValidator> getRelevantValidators(PurposeBase p) {
+		Set<CompleteOCLEObjectValidator> results = new HashSet<CompleteOCLEObjectValidator>();
+		String fqn = qnp.getFullyQualifiedName(p).toString();
+		List<CompleteOCLEObjectValidator> validators = conditionalValidators.get(fqn);
+		if (validators != null) {
+			results.addAll(validators);
+		}
+		for (EObject tp : IteratorExtensions.<EObject>toIterable(p.eAllContents())) {
+			if (tp instanceof PurposeBase) {
+				fqn = qnp.getFullyQualifiedName(tp).toString();
+				validators = conditionalValidators.get(fqn);
+				if (validators != null) {
+					results.addAll(validators);
+				}
+			} else {
+				System.out.println(MessageFormat.format("Purpose {0} contains a non purpose: {1}",
+						qnp.getFullyQualifiedName(p), tp.toString()));
+			}
+		}
+		return results;
+	}
+
+
+
+	private void loadConditionalCheck(PurposeBase p, EPackage pkg, String checkString) {
+		String fqn = qnp.getFullyQualifiedName(p).toString();
+		List<String> vs = conditionalChecks.get(fqn);
+		if (vs == null) {
+			vs = new ArrayList<String>();
+			conditionalChecks.put(fqn, vs);
+		}
+		vs.add(checkString);
+	}
+
+	private void loadCheckForPurposes(List<PurposeBase> purposes, EPackage pkg, String checkString) {
+		for (PurposeBase p : purposes) {
+			String fqn = qnp.getFullyQualifiedName(p).toString();
+			List<String> vs = conditionalChecks.get(fqn);
+			if (vs == null) {
+				vs = new ArrayList<String>();
+				conditionalChecks.put(fqn, vs);
+			}
+			vs.add(checkString);
+		}
+	}
+
+	/**
+	 * Checks must return TRUE if the implied invariant holds, FALSE if it doesn't. In other words, we want the result to be TRUE. A result of 
+	 * FALSE means we're breaking some rule.
+	 */
+//	final static String SAMPLE_INVARIANT_TEXT = "constituentObservables()->flatten()->collect(type.name.toLowerCase())->contains('health') = false"; 
+	//final static String SAMPLE_INVARIANT_TEXT = "realizes.realizes.composition->collect(type.name.toLowerCase())->includes('health') = false"; 
+	final static String SAMPLE_INVARIANT_TEXT = "composition->collect(realizes.realizes.type.name.toLowerCase())->includes('health') = false"; 
+	
+	private synchronized void loadConditionalChecks(EObject context) {
+		// Set up some conditional checks - but only if we haven't done it yet.
+		if (!conditionalsRegistered) {
+			/**
+			 * TODO: There is a non zero risk that the context passed in will mean that some
+			 * purposes are visible in this context and others aren't. Since we only load
+			 * these once (because of the flag), that means the first context used may
+			 * prevent something from being visible that would be in another context - and
+			 * need to be.
+			 */
+			List<String> names = Arrays.asList(new String[] { "LegitimateInterests", "Accounting", "PromoQuotes",
+					"AdTracking", "Support", "Improve" });
+			List<PurposeBase> purposes = getPurposesForNames(names, context);
+			loadCheckForPurposes(purposes, UddlPackage.eINSTANCE,
+					SAMPLE_INVARIANT_TEXT);
+
+			conditionalsRegistered = true;
+		}
+	}
+
+	/**
+	 * Retrieve all the checks that are relevant to this purpose. Note that
+	 * checks stored for a PurposeSet are applicable to every purpose contained
+	 * in that set. Therefore, we must drill down into all the contained purposes of
+	 * the specified one and retrieve all those checks as well.
+	 * 
+	 * NOTE: This uses a set to ensure that there are no duplicate checks in the
+	 * resulting list.
+	 * 
+	 * @param p
+	 * @return
+	 */
+	private Set<String> getRelevantChecks(PurposeBase p) {
+		Set<String> results = new HashSet<String>();
+		String fqn = qnp.getFullyQualifiedName(p).toString();
+		List<String> checks = conditionalChecks.get(fqn);
+		if (checks != null) {
+			results.addAll(checks);
+		}
+		for (EObject tp : IteratorExtensions.<EObject>toIterable(p.eAllContents())) {
+			if (tp instanceof PurposeBase) {
+				fqn = qnp.getFullyQualifiedName(tp).toString();
+				checks = conditionalChecks.get(fqn);
+				if (checks != null) {
+					results.addAll(checks);
+				}
+			} else {
+				System.out.println(MessageFormat.format("Purpose {0} contains a non purpose: {1}",
+						qnp.getFullyQualifiedName(p), tp.toString()));
+			}
+		}
+		return results;
+	}
+
+
 	@Override
 	protected EPackage.Registry createMinimalRegistry() {
 		EPackage.Registry registry = super.createMinimalRegistry(); 
@@ -262,19 +353,16 @@ public class FaceValidator extends AbstractFaceValidator {
 		return registry;
 	}
 	
-//	final static String SAMPLE_INVARIANT_TEXT = "constituentObservables()->contains('health')"; // == false
-	final static String SAMPLE_INVARIANT_TEXT = "realizes.realizes.composition->collect(type.name.toLowerCase())->includes('health')"; // == false
 
 	@Check(CheckType.NORMAL)
 	public void checkUsagePurposeViolates(UopUnitOfPortability uop) {
-		//loadConditionalValidators(uop);
+		loadConditionalChecks(uop);
 		ResourceSet rs = uop.eResource().getResourceSet();
 		//EPackage.Registry reg = rs.getPackageRegistry();
 		
 		// Create a new OCL associated with this ResourceSet and already loaded OCL models
-//		if(ocl == null) {
 		OCL ocl = OCL.newInstance(rs);
-//		}
+
 //		URI oclURI = getInputURI("src/com/epistimis/face/constraints/realizedObservables.ocl");
 //		//Resource asResource = ClassUtil.nonNullState(ocl.parse(oclURI)); 
 //		Resource asResource = ocl.parse(oclURI); 
@@ -291,45 +379,47 @@ public class FaceValidator extends AbstractFaceValidator {
 			// For each connection, get the Entities referenced by that connection.
 			List<PlatformEntity> referencedEntities = qu.getReferencedEntities(conn);
 			for (PlatformEntity ent : referencedEntities) {
+				List<String> processedChecks = new ArrayList<String>();
+				boolean netCheckResult = true; // assume true - any failure makes false
 				for (PurposeBase purpose : purposes) {
 					// Process all the constraints for that Purpose and Entity type
-					// For now we use a hard coded a constraint
-					try {
-//						final @NonNull ExpressionInOCL constraint = ocl
-//								.createInvariant(UddlPackage.Literals.PLATFORM_ENTITY, SAMPLE_INVARIANT_TEXT);
-						final ExpressionInOCL asQuery = ocl.createQuery(UddlPackage.Literals.PLATFORM_ENTITY, SAMPLE_INVARIANT_TEXT);
-						Query queryEval = ocl.createQuery(asQuery);
-						Object result = queryEval.evaluateUnboxed(ent);
-						System.out.println("QueryEval result:" + result.toString());
-						//Object result = ocl.evaluate(ent, asQuery);
-						if (((Boolean) result).booleanValue()) {
-							String fmttedMessage = MessageFormat.format(
-									"UoP {0} has purpose {1} but attempts to use Entity {2} on connection {3} violating an invariant: \nDetailed diagnostics: {4}",
-									qnp.getFullyQualifiedName(uop).toString(), purpose.getName(),
-									qnp.getFullyQualifiedName(ent).toString(), conn.getName(),
-									SAMPLE_INVARIANT_TEXT);
-
-//						Diagnostic diagnostics = diagnostician.validate(ent);
-//						if (diagnostics.getSeverity() != Diagnostic.OK) {
-//							String formattedDiagnostics = PivotUtil.formatDiagnostics(diagnostics, "\n");
-//							// The constraint was not met, so that's an error
-//							String fmttedMessage = MessageFormat.format(
-//										"UoP {0} has purpose {1} but attempts to use Entity {2} on connection {3} violating an invariant: \nDetailed diagnostics: {4}",
-//										qnp.getFullyQualifiedName(uop).toString(), purpose.getName(),
-//										qnp.getFullyQualifiedName(ent).toString(), conn.getName(),
-//										formattedDiagnostics);
-								error(fmttedMessage, FacePackage.eINSTANCE.getUopUnitOfPortability_Connection(), ndx,
-										CONSTRAINT_VIOLATION, qnp.getFullyQualifiedName(conn).toString());
-
+					Set<String> checks = getRelevantChecks(purpose);
+					for (String check: checks) {
+						//System.out.println(MessageFormat.format("Obtained check {0} ", check.toString()));
+						// only process checks not previously used on this ent
+						if (!processedChecks.contains(check)) {
+							try {
+		//						final @NonNull ExpressionInOCL constraint = ocl
+		//								.createInvariant(UddlPackage.Literals.PLATFORM_ENTITY, SAMPLE_INVARIANT_TEXT);
+								final ExpressionInOCL asQuery = ocl.createQuery(UddlPackage.Literals.PLATFORM_ENTITY, check);
+								Query queryEval = ocl.createQuery(asQuery);
+								boolean currentResult = ((Boolean) queryEval.evaluateUnboxed(ent)).booleanValue();
+								//System.out.println("QueryEval result:" + currentResult);
+								netCheckResult = netCheckResult && currentResult;
+								if (!currentResult) {
+									String fmttedMessage = MessageFormat.format(
+											"UoP {0} has purpose {1} but attempts to use Entity {2} on connection {3} violating an invariant: \nDetailed diagnostics: {4}",
+											qnp.getFullyQualifiedName(uop).toString(), purpose.getName(),
+											qnp.getFullyQualifiedName(ent).toString(), conn.getName(),
+											check);
+									error(fmttedMessage, FacePackage.eINSTANCE.getUopUnitOfPortability_Connection(), ndx,
+											CONSTRAINT_VIOLATION, qnp.getFullyQualifiedName(conn).toString());									
+								}
+							} catch (final Exception e) {
+								System.out.println(
+										MessageFormat.format("Exception processing constraints: {0} ", e.getMessage()));
+								e.printStackTrace(System.out);
 							}
-
-					} catch (final Exception e) {
-						System.out.println(
-								MessageFormat.format("Exception processing constraints: {0} ", e.getMessage()));
-						e.printStackTrace(System.out);
-					}
-
+							processedChecks.add(check);
+						}
+						else {
+							//System.out.println("... That check already used against this ent");							
+						}
+		
+					}						
 				}
+				//System.out.println(MessageFormat.format("Net result after processing checks for {0} is {1} ", qnp.getFullyQualifiedName(ent),netCheckResult));
+
 			}
 		}
 		// Cannot dispose an OCL instance that is associated with preregistered OCL - because this throws away ALL the OCL
