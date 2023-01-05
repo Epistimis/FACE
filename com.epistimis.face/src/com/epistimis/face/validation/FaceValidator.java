@@ -4,12 +4,23 @@
 package com.epistimis.face.validation;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.impl.EPackageRegistryImpl;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.common.util.BasicDiagnostic;
+import org.eclipse.emf.common.util.DiagnosticChain;
 import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emf.ecore.util.Diagnostician;
 import org.eclipse.jdt.annotation.NonNull;
@@ -18,17 +29,22 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.ocl.pivot.Constraint;
 import org.eclipse.ocl.pivot.ExpressionInOCL;
 import org.eclipse.ocl.pivot.resource.ProjectManager;
+import org.eclipse.ocl.pivot.utilities.ClassUtil;
 import org.eclipse.ocl.pivot.utilities.OCL;
 import org.eclipse.ocl.pivot.utilities.OCLHelper;
 import org.eclipse.ocl.pivot.utilities.ParserException;
 import org.eclipse.ocl.pivot.utilities.PivotUtil;
 import org.eclipse.ocl.pivot.utilities.Query;
 
+import org.eclipse.ocl.pivot.utilities.ThreadLocalExecutor;
 import org.eclipse.ocl.xtext.completeocl.validation.CompleteOCLEObjectValidator;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
+import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.validation.Check;
 import org.eclipse.xtext.validation.CheckType;
 import org.eclipse.xtext.validation.EValidatorRegistrar;
+import org.eclipse.xtext.xbase.lib.IterableExtensions;
+import org.eclipse.xtext.xbase.lib.IteratorExtensions;
 
 import com.epistimis.face.face.FacePackage;
 import com.epistimis.face.face.PurposeBase;
@@ -37,6 +53,7 @@ import com.epistimis.face.face.UopUnitOfPortability;
 import com.epistimis.face.generator.FaceGenerator;
 import com.epistimis.face.generator.QueryUtilities;
 import com.epistimis.uddl.generator.QueryProcessor;
+import com.epistimis.uddl.scoping.IndexUtilities;
 import com.epistimis.uddl.uddl.ConceptualCharacteristic;
 import com.epistimis.uddl.uddl.ConceptualEntity;
 import com.epistimis.uddl.uddl.PlatformEntity;
@@ -51,31 +68,160 @@ import com.google.inject.Inject;
  */
 public class FaceValidator extends AbstractFaceValidator {
 
-	@Inject IQualifiedNameProvider qnp;
-	@Inject QueryProcessor qp;
-	@Inject QueryUtilities qu;
+	@Inject
+	IQualifiedNameProvider qnp;
+	@Inject
+	QueryProcessor qp;
+	@Inject
+	QueryUtilities qu;
+	@Inject
+	IndexUtilities ndxUtil;
+
+	boolean conditionalsRegistered = false;
 	
+	OCL ocl = null;
+
 	protected static String ISSUE_CODE_PREFIX = "com.epistimis.face.";
 	public static String CONSTRAINT_VIOLATION = ISSUE_CODE_PREFIX + "ConstraintViolation";
-	
+
+
+	Map<String, List<CompleteOCLEObjectValidator>> conditionalValidators = new HashMap<String, List<CompleteOCLEObjectValidator>>();
+
+
 	/**
-	 * NOTE: This does not override the method with the same name from UddlValidator. That is so that
-	 * anything registered by the UddlValidator.register method is registered for the UddlPackage.
+	 * NOTE: This does not override the method with the same name from
+	 * UddlValidator. That is so that anything registered by the
+	 * UddlValidator.register method is registered for the UddlPackage.
+	 * 
+	 * NOTE: These do not initialize here. The assumption is that, since they are registered,
+	 * they will be lazy initialized before use
+	 * 
+	 * See https://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.ocl.doc%2Fhelp%2FInstallation.html
 	 * @param registrar
 	 * @param resourceAddress
 	 */
 	private void loadAndRegister(EValidatorRegistrar registrar, String resourceAddress) {
 		FacePackage ePackage = FacePackage.eINSTANCE;
-		URI oclURI = URI.createPlatformResourceURI(resourceAddress, true);
+//		URI oclURI = URI.createPlatformResourceURI(resourceAddress, true);
+        URI oclURI = getInputURI(resourceAddress);
 		registrar.register(ePackage, new CompleteOCLEObjectValidator(ePackage, oclURI));
+	}
+
+	private void loadConditionalValidator(PurposeBase p, EPackage pkg, String resourceAddress) {
+//		URI oclURI = URI.createPlatformResourceURI(resourceAddress, true);
+        URI oclURI = getInputURI(resourceAddress);
+		String fqn = qnp.getFullyQualifiedName(p).toString();
+		CompleteOCLEObjectValidator validator = new CompleteOCLEObjectValidator(pkg, oclURI);
+		validator.initialize(ThreadLocalExecutor.basicGetEnvironmentFactory());
+		List<CompleteOCLEObjectValidator> vs = conditionalValidators.get(fqn);
+		if (vs == null) {
+			vs = new ArrayList<CompleteOCLEObjectValidator>();
+			conditionalValidators.put(fqn, vs);
+		}
+		vs.add(validator);
+	}
+
+	private void loadValidatorForPurposes(List<PurposeBase> purposes, EPackage pkg, String resourceAddress) {
+//		URI oclURI = URI.createPlatformResourceURI(resourceAddress, true);
+        URI oclURI = getInputURI(resourceAddress);
+		CompleteOCLEObjectValidator validator = new CompleteOCLEObjectValidator(pkg, oclURI);
+		validator.initialize(ThreadLocalExecutor.basicGetEnvironmentFactory());
+		System.out.println(MessageFormat.format("Created validator for pkg {0} and URI {1}", pkg.toString(),
+				oclURI.toPlatformString(true)));
+		for (PurposeBase p : purposes) {
+			String fqn = qnp.getFullyQualifiedName(p).toString();
+			List<CompleteOCLEObjectValidator> vs = conditionalValidators.get(fqn);
+			if (vs == null) {
+				vs = new ArrayList<CompleteOCLEObjectValidator>();
+				conditionalValidators.put(fqn, vs);
+			}
+			vs.add(validator);
+		}
+	}
+
+	/**
+	 * Retrieve all the validators that are relevant to this purpose. Note that
+	 * validators stored for a PurposeSet are applicable to every purpose contained
+	 * in that set. Therefore, we must drill down into all the contained purposes of
+	 * the specified one and retrieve all those validators as well.
+	 * 
+	 * NOTE: This uses a set to ensure that there are no duplicate validators in the
+	 * resulting list.
+	 * 
+	 * @param p
+	 * @return
+	 */
+	private Set<CompleteOCLEObjectValidator> getRelevantValidators(PurposeBase p) {
+		Set<CompleteOCLEObjectValidator> results = new HashSet<CompleteOCLEObjectValidator>();
+		String fqn = qnp.getFullyQualifiedName(p).toString();
+		List<CompleteOCLEObjectValidator> validators = conditionalValidators.get(fqn);
+		if (validators != null) {
+			results.addAll(validators);
+		}
+		for (EObject tp : IteratorExtensions.<EObject>toIterable(p.eAllContents())) {
+			if (tp instanceof PurposeBase) {
+				fqn = qnp.getFullyQualifiedName(tp).toString();
+				validators = conditionalValidators.get(fqn);
+				if (validators != null) {
+					results.addAll(validators);
+				}
+			} else {
+				System.out.println(MessageFormat.format("Purpose {0} contains a non purpose: {1}",
+						qnp.getFullyQualifiedName(p), tp.toString()));
+			}
+		}
+		return results;
+	}
+
+	/**
+	 * Since Purposes are not hardcoded, we need to look up all the purposes visible
+	 * to this validator.
+	 * 
+	 * @param name
+	 * @return The found Purpose, or null if we can't find it or can't determine
+	 *         which it is. TODO: Should probably throw exceptions for failure here.
+	 */
+	public PurposeBase getPurposeForName(String name, EObject context) {
+
+		EObject inst = ndxUtil.getUniqueObjectForName(context, FacePackage.eINSTANCE.getPurposeBase(), name);
+		if (inst == null) {
+			return null;
+		}
+		if (inst instanceof PurposeBase) {
+			return (PurposeBase) inst;
+		} else {
+			System.out.println(
+					MessageFormat.format("Search for Purpose {0} returned non purpose {1}", name, inst.toString()));
+			return null;
+		}
+	}
+
+	/**
+	 * Get a list of Purposes, one per name. Will never be null or contain nulls but
+	 * the list itself may be empty.
+	 * 
+	 * @param names
+	 * @return a (possibly empty) list of purposes.
+	 */
+	public List<PurposeBase> getPurposesForNames(List<String> names, EObject context) {
+		List<PurposeBase> purposes = new ArrayList<PurposeBase>();
+		for (String n : names) {
+			PurposeBase p = getPurposeForName(n, context);
+			if (p != null) {
+				purposes.add(p);
+			}
+		}
+		return purposes;
 	}
 
 	@Override
 	public void register(EValidatorRegistrar registrar) {
 		super.register(registrar);
-        loadAndRegister(registrar,"/com.epistimis.uddl/src/com/epistimis/uddl/constraints/specialCategoriesOfData.ocl");
+//		loadAndRegister(registrar,
+//				"src/com/epistimis/uddl/constraints/specialCategoriesOfData.ocl");
 
-		//		loadAndRegister(registrar, "/com.epistimis.face/src/com/epistimis/face/constraints/face.ocl");
+		// loadAndRegister(registrar,
+		// "/com.epistimis.face/src/com/epistimis/face/constraints/face.ocl");
 //		loadAndRegister(registrar, "/com.epistimis.face/src/com/epistimis/face/constraints/uop.ocl");
 //		// TODO: Before registering this, need to fix issues that are the result of grammar changes - or fix grammar
 //		// to avoid them
@@ -83,84 +229,146 @@ public class FaceValidator extends AbstractFaceValidator {
 //		loadAndRegister(registrar, "/com.epistimis.face/src/com/epistimis/face/constraints/purpose.ocl");
 	}
 
+	private synchronized void loadConditionalValidators(EObject context) {
+		// Set up some conditional validators - but only if we haven't done it yet.
+		if (!conditionalsRegistered) {
+			/**
+			 * TODO: There is a non zero risk that the context passed in will mean that some
+			 * purposes are visible in this context and others aren't. Since we only load
+			 * these once (because of the flag), that means the first context used may
+			 * prevent something from being visible that would be in another context - and
+			 * need to be.
+			 */
+			List<String> names = Arrays.asList(new String[] { "LegitimateInterests", "Accounting", "PromoQuotes",
+					"AdTracking", "Support", "Improve" });
+			List<PurposeBase> purposes = getPurposesForNames(names, context);
+			loadValidatorForPurposes(purposes, UddlPackage.eINSTANCE,
+					"src/com/epistimis/face/constraints/specialCategoriesOfData.ocl");
+//		loadConditionalValidator(getPurposeForName("LegitimateInterests"),UddlPackage.eINSTANCE,"/com.epistimis.face/src/com/epistimis/face/constraints/specialCategoriesOfData.ocl");
+//		loadConditionalValidator(getPurposeForName("Accounting"),UddlPackage.eINSTANCE,"/com.epistimis.face/src/com/epistimis/face/constraints/specialCategoriesOfData.ocl");
+//		loadConditionalValidator(getPurposeForName("PromoQuotes"),UddlPackage.eINSTANCE,"/com.epistimis.face/src/com/epistimis/face/constraints/specialCategoriesOfData.ocl");
+//		loadConditionalValidator(getPurposeForName("AdTracking"),UddlPackage.eINSTANCE,"/com.epistimis.face/src/com/epistimis/face/constraints/specialCategoriesOfData.ocl");
+//		loadConditionalValidator(getPurposeForName("Support"),UddlPackage.eINSTANCE,"/com.epistimis.face/src/com/epistimis/face/constraints/specialCategoriesOfData.ocl");
+
+			conditionalsRegistered = true;
+		}
+	}
+
+
+	@Override
+	protected EPackage.Registry createMinimalRegistry() {
+		EPackage.Registry registry = super.createMinimalRegistry(); 
+		registry.put(FacePackage.eNS_URI, FacePackage.eINSTANCE);
+		return registry;
+	}
 	
+//	final static String SAMPLE_INVARIANT_TEXT = "constituentObservables()->contains('health')"; // == false
+	final static String SAMPLE_INVARIANT_TEXT = "realizes.realizes.composition->collect(type.name.toLowerCase())->includes('health')"; // == false
+
 	@Check(CheckType.NORMAL)
 	public void checkUsagePurposeViolates(UopUnitOfPortability uop) {
-		//ResourceSet rs = uop.eResource().getResourceSet();
-		//OCL ocl = OCL.newInstance(ProjectManager.CLASS_PATH);
+		//loadConditionalValidators(uop);
+		ResourceSet rs = uop.eResource().getResourceSet();
+		//EPackage.Registry reg = rs.getPackageRegistry();
 		
-		
+		// Create a new OCL associated with this ResourceSet and already loaded OCL models
+//		if(ocl == null) {
+		OCL ocl = OCL.newInstance(rs);
+//		}
+//		URI oclURI = getInputURI("src/com/epistimis/face/constraints/realizedObservables.ocl");
+//		//Resource asResource = ClassUtil.nonNullState(ocl.parse(oclURI)); 
+//		Resource asResource = ocl.parse(oclURI); 
+//		assert(asResource != null); //
+
 		// Get the purpose hierarchies for this component
 		EList<PurposeBase> purposes = uop.getPurpose();
 		Diagnostician diagnostician = new Diagnostician();
-		// Need index to attach error to the correct connection - init to -1 because we increment at top of loop
+		// Need index to attach error to the correct connection - init to -1 because we
+		// increment at top of loop
 		int ndx = -1;
-		for (UopConnection conn: uop.getConnection()) {
+		for (UopConnection conn : uop.getConnection()) {
 			ndx++;
 			// For each connection, get the Entities referenced by that connection.
 			List<PlatformEntity> referencedEntities = qu.getReferencedEntities(conn);
-			for (PlatformEntity ent: referencedEntities) {
-				for (PurposeBase purpose: purposes) {
+			for (PlatformEntity ent : referencedEntities) {
+				for (PurposeBase purpose : purposes) {
 					// Process all the constraints for that Purpose and Entity type
 					// For now we use a hard coded a constraint
 					try {
-//						final @NonNull ExpressionInOCL constraint = ocl.createInvariant(UddlPackage.Literals.PLATFORM_ENTITY,SAMPLE_INVARIANT_TEXT);
-//					    final Query constraintEval = ocl.createQuery(constraint);
-//					    if (!constraintEval.checkEcore(ent)) {
-						Diagnostic diagnostics = diagnostician.validate(ent);
-						if (diagnostics.getSeverity() != Diagnostic.OK) {
-							String formattedDiagnostics = PivotUtil.formatDiagnostics(diagnostics, "\n");
-					    	// The constraint was not met, so that's an error
-							String fmttedMessage = MessageFormat.format("UoP {0} has purpose {1} but attempts to use Entity {2} on connection {3} violating an invariant: \nDetailed diagnostics: {4}",
-									qnp.getFullyQualifiedName(uop).toString(),
-									purpose.getName(),
-									qnp.getFullyQualifiedName(ent).toString(),
-									conn.getName(),
-									formattedDiagnostics);
-							error(fmttedMessage,
-							FacePackage.eINSTANCE.getUopUnitOfPortability_Connection(),ndx,
-							CONSTRAINT_VIOLATION, qnp.getFullyQualifiedName(conn).toString());
+//						final @NonNull ExpressionInOCL constraint = ocl
+//								.createInvariant(UddlPackage.Literals.PLATFORM_ENTITY, SAMPLE_INVARIANT_TEXT);
+						final ExpressionInOCL asQuery = ocl.createQuery(UddlPackage.Literals.PLATFORM_ENTITY, SAMPLE_INVARIANT_TEXT);
+						Query queryEval = ocl.createQuery(asQuery);
+						Object result = queryEval.evaluateUnboxed(ent);
+						System.out.println("QueryEval result:" + result.toString());
+						//Object result = ocl.evaluate(ent, asQuery);
+						if (((Boolean) result).booleanValue()) {
+							String fmttedMessage = MessageFormat.format(
+									"UoP {0} has purpose {1} but attempts to use Entity {2} on connection {3} violating an invariant: \nDetailed diagnostics: {4}",
+									qnp.getFullyQualifiedName(uop).toString(), purpose.getName(),
+									qnp.getFullyQualifiedName(ent).toString(), conn.getName(),
+									SAMPLE_INVARIANT_TEXT);
 
-					    }
-					  } catch (final Exception e) {
-						  System.out.println(MessageFormat.format("Exception processing constraints: {0} ", e.getMessage()));
-					  }
-					   
+//						Diagnostic diagnostics = diagnostician.validate(ent);
+//						if (diagnostics.getSeverity() != Diagnostic.OK) {
+//							String formattedDiagnostics = PivotUtil.formatDiagnostics(diagnostics, "\n");
+//							// The constraint was not met, so that's an error
+//							String fmttedMessage = MessageFormat.format(
+//										"UoP {0} has purpose {1} but attempts to use Entity {2} on connection {3} violating an invariant: \nDetailed diagnostics: {4}",
+//										qnp.getFullyQualifiedName(uop).toString(), purpose.getName(),
+//										qnp.getFullyQualifiedName(ent).toString(), conn.getName(),
+//										formattedDiagnostics);
+								error(fmttedMessage, FacePackage.eINSTANCE.getUopUnitOfPortability_Connection(), ndx,
+										CONSTRAINT_VIOLATION, qnp.getFullyQualifiedName(conn).toString());
+
+							}
+
+					} catch (final Exception e) {
+						System.out.println(
+								MessageFormat.format("Exception processing constraints: {0} ", e.getMessage()));
+						e.printStackTrace(System.out);
+					}
+
 				}
 			}
 		}
+		// Cannot dispose an OCL instance that is associated with preregistered OCL - because this throws away ALL the OCL
+		// And we don't get the preregistered stuff back with the conditional validators
 		//ocl.dispose();
 	}
 }
 
 /**
-In order to check UoPUnitOfPortability in the editor, we need validation. What we need to do is:
-1) Check the template -> query associated with each UopConnection. Determine the net PlatformEntity selected. (For 
-queries with JOIN, that means constructing the net result of the JOIN. ) 
-2) Evaluate a constraint 
-
-Could add purpose to data optionally (data should inherit purpose from function but this could be for demo).
-
-Rule receives purpose and 
-
-See https://www.tabnine.com/code/java/classes/org.eclipse.ocl.helper.OCLHelper
-
-Have a multimap keyed on Privacy value, value is  a collection of strings containing OCL (or could be URLs to OCL files to be registered).
-Use the component privacy value to lookup all the rules that should be evaluated.
-Use 
-
-final Permission permission = (Permission) permissionInstance.eClass();
-  permissionInstance.eSet(permission.getEStructuralFeature(IPermissionConstant.OBJECT), pObjectInstance);
-  final String expession = permission.getConstraint().getExpession();
-  final OCL<?, EClassifier, ?, ?, ?, ?, ?, ?, ?, Constraint, EClass, EObject> ocl = OCL.newInstance(EcoreEnvironmentFactory.INSTANCE);
-  final OCLHelper<EClassifier, ?, ?, Constraint> helper = ocl.createOCLHelper();
-  helper.setContext(permission);
-  try {
-    final Constraint constraint = helper.createInvariant(expession);
-    final Query<EClassifier, EClass, EObject> constraintEval = ocl.createQuery(constraint);
-    return constraintEval.check(permissionInstance);
-  } catch (final ParserException e) {
-    throw new UamClientException(MessageFormat.format("Incorrect expression: {0}. {1}", expession, e.getLocalizedMessage()), e); //$NON-NLS-1$
-  }
-
-*/
+ * In order to check UoPUnitOfPortability in the editor, we need validation.
+ * What we need to do is: 1) Check the template -> query associated with each
+ * UopConnection. Determine the net PlatformEntity selected. (For queries with
+ * JOIN, that means constructing the net result of the JOIN. ) 2) Evaluate a
+ * constraint
+ * 
+ * Could add purpose to data optionally (data should inherit purpose from
+ * function but this could be for demo).
+ * 
+ * Rule receives purpose and
+ * 
+ * See
+ * https://www.tabnine.com/code/java/classes/org.eclipse.ocl.helper.OCLHelper
+ * 
+ * Have a multimap keyed on Privacy value, value is a collection of strings
+ * containing OCL (or could be URLs to OCL files to be registered). Use the
+ * component privacy value to lookup all the rules that should be evaluated. Use
+ * 
+ * final Permission permission = (Permission) permissionInstance.eClass();
+ * permissionInstance.eSet(permission.getEStructuralFeature(IPermissionConstant.OBJECT),
+ * pObjectInstance); final String expession =
+ * permission.getConstraint().getExpession(); final OCL<?, EClassifier, ?, ?, ?,
+ * ?, ?, ?, ?, Constraint, EClass, EObject> ocl =
+ * OCL.newInstance(EcoreEnvironmentFactory.INSTANCE); final
+ * OCLHelper<EClassifier, ?, ?, Constraint> helper = ocl.createOCLHelper();
+ * helper.setContext(permission); try { final Constraint constraint =
+ * helper.createInvariant(expession); final Query<EClassifier, EClass, EObject>
+ * constraintEval = ocl.createQuery(constraint); return
+ * constraintEval.check(permissionInstance); } catch (final ParserException e) {
+ * throw new UamClientException(MessageFormat.format("Incorrect expression: {0}.
+ * {1}", expession, e.getLocalizedMessage()), e); //$NON-NLS-1$ }
+ * 
+ */
