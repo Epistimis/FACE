@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
@@ -25,7 +24,9 @@ import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emf.ecore.util.Diagnostician;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.ocl.pivot.Class;
 import org.eclipse.ocl.pivot.Constraint;
 import org.eclipse.ocl.pivot.ExpressionInOCL;
 import org.eclipse.ocl.pivot.resource.ProjectManager;
@@ -78,22 +79,27 @@ public class FaceValidator extends AbstractFaceValidator {
 	IndexUtilities ndxUtil;
 
 	boolean conditionalsRegistered = false;
-	
-	OCL ocl = null;
+
+	// OCL ocl = null;
 
 	protected static String ISSUE_CODE_PREFIX = "com.epistimis.face.";
 	public static String CONSTRAINT_VIOLATION = ISSUE_CODE_PREFIX + "ConstraintViolation";
 
-
 	Map<String, List<CompleteOCLEObjectValidator>> conditionalValidators = new HashMap<String, List<CompleteOCLEObjectValidator>>();
 	/**
-	 * outer key is the FQN of the Purpose, inner key is the invariant name. 
-	 * We use invariant name just to make this easier to understand
+	 * outer key is the FQN of the Purpose, inner key is the invariant name. We use
+	 * invariant name just to make this easier to understand
 	 */
-	Map<String, Map<String,String>> conditionalChecks = new HashMap<String, Map<String,String>>();
+	Map<String, Map<String, String>> conditionalChecks = new HashMap<String, Map<String, String>>();
+
+	/**
+	 * Outer key is the class the constraint applies to, inner key is the purpose
+	 * name. Innermost value is the constraints for that purpose and class
+	 */
+	Map<String, Map<String, Set<Constraint>>> purposedOCL = new HashMap<String, Map<String, Set<Constraint>>>();
 
 	@Override
-	protected  @NonNull URI getInputURI(@NonNull String localFileName) {
+	protected @NonNull URI getInputURI(@NonNull String localFileName) {
 		return getInputURI(localFileName, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
 	}
 
@@ -139,21 +145,72 @@ public class FaceValidator extends AbstractFaceValidator {
 	}
 
 	/**
+	 * When we want to check to see if an invariant affects something, we need to check for 
+	 * invariants associated with the Purpose under consideration. However, because Purposes
+	 * can be defined & used hierarchically, we also need to consider:
+	 * 
+	 * A) The entire containment hierarchy for the specified Purpose - because 'this' Purpose
+	 * 'is-a' Purpose for each of its containers. Because each Purpose specializes its containers,
+	 * every invariant that applies to one of its containers necessarily applies to it as well.
+	 * 
+	 * B) Its entire contents (everything contained within the Purpose under consideration) - 
+	 * because any code used for 'this' Purpose could be used for any of its specializing Purposes. 
+	 * Since invariants / constraints must be true for the specified Purpose, they must be true for
+	 * all instances of that Purpose, which include all specializations of that Purpose.  A)
+	 * differs from B) in that A) is a guaranteed problem, whereas B) could be a problem.
+	 * 
+	 * This implies several things:
+	 * 1) The Purpose hierarchy should be constructed assiduously.
+	 * 2) Constraints/invariants/checks should be associated with Purpose carefully
+	 * 
+	 * Without both of these, constraints can have unintended far reaching impact.
+	 * 
+	 * @param p
+	 * @return
+	 */
+	private List<PurposeBase> getAffectingPurposes(PurposeBase p) {
+		List<PurposeBase> results = new ArrayList<PurposeBase>();
+		results.add(p);
+		/**
+		 * Get all the containment hierarchy
+		 */
+		PurposeBase current = p;
+		while ((current.eContainer() != null) && (current.eContainer() instanceof PurposeBase)) {
+			current = (PurposeBase) current.eContainer();
+			results.add(current);
+		}
+		/**
+		 * We also get all the content of the original purpose, if it is a PurposeSet
+		 */
+		for (EObject tp : IteratorExtensions.<EObject>toIterable(p.eAllContents())) {
+			if (tp instanceof PurposeBase) {
+				results.add((PurposeBase) tp);
+			} else {
+				System.out.println(MessageFormat.format("Purpose {0} contains a non purpose: {1}",
+						qnp.getFullyQualifiedName(p), tp.toString()));
+			}
+		}
+		return results;
+	}
+
+	/**
 	 * NOTE: This does not override the method with the same name from
 	 * UddlValidator. That is so that anything registered by the
 	 * UddlValidator.register method is registered for the UddlPackage.
 	 * 
-	 * NOTE: These do not initialize here. The assumption is that, since they are registered,
-	 * they will be lazy initialized before use
+	 * NOTE: These do not initialize here. The assumption is that, since they are
+	 * registered, they will be lazy initialized before use
 	 * 
-	 * See https://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.ocl.doc%2Fhelp%2FInstallation.html
+	 * See
+	 * https://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.ocl.doc%2Fhelp%2FInstallation.html
+	 * 
 	 * @param registrar
 	 * @param resourceAddress
 	 */
 	private void loadAndRegister(EValidatorRegistrar registrar, String resourceAddress) {
 		FacePackage ePackage = FacePackage.eINSTANCE;
 //		URI oclURI = URI.createPlatformResourceURI(resourceAddress, true);
-        URI oclURI = getInputURI(resourceAddress);
+		URI oclURI = getInputURI(resourceAddress);
 		registrar.register(ePackage, new CompleteOCLEObjectValidator(ePackage, oclURI));
 	}
 
@@ -171,9 +228,10 @@ public class FaceValidator extends AbstractFaceValidator {
 //		//loadAndRegister(registrar, "/com.epistimis.face/src/com/epistimis/face/constraints/integration.ocl");
 //		loadAndRegister(registrar, "/com.epistimis.face/src/com/epistimis/face/constraints/purpose.ocl");
 	}
+
 	private void loadConditionalValidator(PurposeBase p, EPackage pkg, String resourceAddress) {
 //		URI oclURI = URI.createPlatformResourceURI(resourceAddress, true);
-        URI oclURI = getInputURI(resourceAddress);
+		URI oclURI = getInputURI(resourceAddress);
 		String fqn = qnp.getFullyQualifiedName(p).toString();
 		CompleteOCLEObjectValidator validator = new CompleteOCLEObjectValidator(pkg, oclURI);
 		validator.initialize(ThreadLocalExecutor.basicGetEnvironmentFactory());
@@ -187,7 +245,7 @@ public class FaceValidator extends AbstractFaceValidator {
 
 	private void loadValidatorForPurposes(List<PurposeBase> purposes, EPackage pkg, String resourceAddress) {
 //		URI oclURI = URI.createPlatformResourceURI(resourceAddress, true);
-        URI oclURI = getInputURI(resourceAddress);
+		URI oclURI = getInputURI(resourceAddress);
 		CompleteOCLEObjectValidator validator = new CompleteOCLEObjectValidator(pkg, oclURI);
 		validator.initialize(ThreadLocalExecutor.basicGetEnvironmentFactory());
 		System.out.println(MessageFormat.format("Created validator for pkg {0} and URI {1}", pkg.toString(),
@@ -228,7 +286,6 @@ public class FaceValidator extends AbstractFaceValidator {
 		}
 	}
 
-
 	/**
 	 * Retrieve all the validators that are relevant to this purpose. Note that
 	 * validators stored for a PurposeSet are applicable to every purpose contained
@@ -263,39 +320,43 @@ public class FaceValidator extends AbstractFaceValidator {
 		return results;
 	}
 
-
-
 	private void loadConditionalCheck(PurposeBase p, EPackage pkg, String invName, String checkString) {
 		String fqn = qnp.getFullyQualifiedName(p).toString();
-		Map<String,String> vs = conditionalChecks.get(fqn);
+		Map<String, String> vs = conditionalChecks.get(fqn);
 		if (vs == null) {
-			vs = new HashMap<String,String>();
+			vs = new HashMap<String, String>();
 			conditionalChecks.put(fqn, vs);
 		}
-		vs.put(invName,checkString);
+		vs.put(invName, checkString);
 	}
 
 	private void loadCheckForPurposes(List<PurposeBase> purposes, EPackage pkg, String invName, String checkString) {
 		for (PurposeBase p : purposes) {
 			String fqn = qnp.getFullyQualifiedName(p).toString();
-			Map<String,String> vs = conditionalChecks.get(fqn);
+			Map<String, String> vs = conditionalChecks.get(fqn);
 			if (vs == null) {
-				vs = new HashMap<String,String>();
+				vs = new HashMap<String, String>();
 				conditionalChecks.put(fqn, vs);
 			}
-			vs.put(invName,checkString);
+			vs.put(invName, checkString);
 		}
 	}
 
 	/**
-	 * Checks must return TRUE if the implied invariant holds, FALSE if it doesn't. In other words, we want the result to be TRUE. A result of 
-	 * FALSE means we're breaking some rule.
+	 * Checks must return TRUE if the implied invariant holds, FALSE if it doesn't.
+	 * In other words, we want the result to be TRUE. A result of FALSE means we're
+	 * breaking some rule.
 	 */
-//	final static String SAMPLE_INVARIANT_TEXT = "constituentObservables()->flatten()->collect(type.name.toLowerCase())->contains('health') = false"; 
+//	final static String SAMPLE_INVARIANT_TEXT = "constituentObservables()->flatten()->collect(type.name.toLowerCase())->contains('health') = false";
 	final static String SAMPLE_INVARIANT_NAME = "noHealthDataUsed";
-	final static String SAMPLE_INVARIANT_TEXT = "composition->collect(realizes.realizes.type.name.toLowerCase())->includes('health') = false"; 
-	
-	private synchronized void loadConditionalChecks(EObject context) {
+	final static String SAMPLE_INVARIANT_TEXT = "composition->collect(realizes.realizes.type.name.toLowerCase())->includes('health') = false";
+
+	final static String SAMPLE_FUNCTIONS_FILE = "src/com/epistimis/face/constraints/realizedObservables.ocl";
+	final static String SAMPLE_INVARIANT_FILE = "src/com/epistimis/face/constraints/specialCategoriesOfData.ocl";
+	final static List<String> SAMPLE_PURPOSES = Arrays.asList(
+			new String[] { "LegitimateInterests", "Accounting", "PromoQuotes", "AdTracking", "Support", "Improve" });
+
+	private synchronized void loadConditionalChecks(EObject context, OCL ocl) {
 		// Set up some conditional checks - but only if we haven't done it yet.
 		if (!conditionalsRegistered) {
 			/**
@@ -305,66 +366,292 @@ public class FaceValidator extends AbstractFaceValidator {
 			 * prevent something from being visible that would be in another context - and
 			 * need to be.
 			 */
-			List<String> names = Arrays.asList(new String[] { "LegitimateInterests", "Accounting", "PromoQuotes",
-					"AdTracking", "Support", "Improve" });
-			List<PurposeBase> purposes = getPurposesForNames(names, context);
-			loadCheckForPurposes(purposes, UddlPackage.eINSTANCE,SAMPLE_INVARIANT_NAME,SAMPLE_INVARIANT_TEXT);
+			List<PurposeBase> purposes = getPurposesForNames(SAMPLE_PURPOSES, context);
+			loadCheckForPurposes(purposes, UddlPackage.eINSTANCE, SAMPLE_INVARIANT_NAME, SAMPLE_INVARIANT_TEXT);
+
+			// load an OCL text file
+			// loadConstraintsFileForPurposes(purposes, ocl, SAMPLE_INVARIANT_FILE);
 
 			conditionalsRegistered = true;
 		}
 	}
 
+	public void debugPrintf(String format, Object... args) {
+		System.out.printf(format, args);
+	}
+
 	/**
-	 * Retrieve all the checks that are relevant to this purpose. Note that
-	 * checks stored for a PurposeSet are applicable to every purpose contained
-	 * in that set. Therefore, we must drill down into all the contained purposes of
-	 * the specified one and retrieve all those checks as well.
+	 * This method assumes all purposes specified apply to all classes found in the
+	 * file. If that is not the case use a different method.
 	 * 
-	 * NOTE: This uses a Map (not a multimap) to ensure that there are no duplicate checks in the
-	 * resulting list. Note that this assumes no name collisions
+	 * Takes a set of constraints per class and associates it with all the listed
+	 * purposes
+	 * 
+	 * @param purposes
+	 * @param ocl
+	 * @param filePath
+	 */
+	private void loadConstraintsFileForPurposes(List<PurposeBase> purposes, OCL ocl, String filePath) {
+		URI uri = getInputURI(filePath);
+		Map<String, Set<Constraint>> constraintMap = loadConstraintsFromFile(ocl, uri);
+		if (!constraintMap.isEmpty()) {
+			// Only store the map if it actually has content
+			for (String clzName : constraintMap.keySet()) {
+				Set<Constraint> constraints = constraintMap.get(clzName);
+				// Key for constraintsForClass is purpose name
+				Map<String, Set<Constraint>> constraintsForClass = purposedOCL.get(clzName);
+				if (constraintsForClass == null) {
+					constraintsForClass = new HashMap<String, Set<Constraint>>();
+					purposedOCL.put(clzName, constraintsForClass);
+				}
+				for (PurposeBase p : purposes) {
+					String fqn = qnp.getFullyQualifiedName(p).toString();
+					Set<Constraint> constraintsForPurpose = constraintsForClass.get(fqn);
+					if (constraintsForPurpose == null) {
+						constraintsForClass.put(fqn, constraints);
+					} else {
+						constraintsForPurpose.addAll(constraints);
+					}
+
+				}
+			}
+		}
+
+	}
+
+	/**
+	 * Load an OCL file from the specified URI and register any constraints found
+	 * therein. Note that this loads the entire file so contained operations should
+	 * be visible as well.
+	 * 
+	 * @param ocl The OCL instance associated the ResourceSet we are currently
+	 *            processing
+	 * @param uri The URI of the file to load
+	 * @return A map of constraints. The key is the class name the invariant is
+	 *         associated with.
+	 */
+	private synchronized Map<String, Set<Constraint>> loadConstraintsFromFile(OCL ocl, URI uri) {
+
+		// parse the contents as an OCL document
+		Resource asResource = ocl.parse(uri);
+		// accumulate the document constraints in constraintMap and print all
+		// constraints
+		Map<String, Set<Constraint>> constraintMap = new HashMap<String, Set<Constraint>>();
+		for (TreeIterator<EObject> tit = asResource.getAllContents(); tit.hasNext();) {
+			EObject next = tit.next();
+			// Operations are functions. Constraints are invariants
+			if (next instanceof Constraint) {
+				Constraint constraint = (Constraint) next;
+				Class container = (Class) next.eContainer();
+				String clzName = container.getName();
+				Set<Constraint> cSet = constraintMap.get(clzName);
+				if (cSet == null) {
+					cSet = new HashSet<Constraint>();
+					constraintMap.put(clzName, cSet);
+				}
+				cSet.add(constraint);
+//				ExpressionInOCL expressionInOCL;
+//				try {
+//					expressionInOCL = ocl.getSpecification(constraint);
+//					if (expressionInOCL != null) {
+//						String name = constraint.getName();
+//						if (name != null) {
+//							constraintMap.put(name, expressionInOCL);
+//							debugPrintf("%s: %s%n\n", name, expressionInOCL.getOwnedBody());
+//						}
+//					}
+//				} catch (ParserException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+			}
+		}
+		return constraintMap;
+	}
+
+	/**
+	 * PurposeSets encompass all their subpurposes (because each sub Purpose is just
+	 * a specialization of the enclosing PurposeSet. Since we don't know if
+	 */
+	/**
+	 * Retrieve all the checks that are relevant to this purpose. Note that checks
+	 * stored for a PurposeSet are applicable to every purpose contained in that
+	 * set. That means that, given a purpose, we must walk up the hierarchy to find
+	 * every constraint stored for each containing purpose.
+	 * 
+	 * NOTE: This uses a Map (not a multimap) to ensure that there are no duplicate
+	 * checks in the resulting list. Note that this assumes no name collisions
 	 * 
 	 * @param p
 	 * @return
 	 */
-	private Map<String,String> getRelevantChecks(PurposeBase p) {
-		Map<String,String> results = new HashMap<String,String>();
-		String fqn = qnp.getFullyQualifiedName(p).toString();
-		Map<String,String> checks = conditionalChecks.get(fqn);
-		if (checks != null) {
-			results.putAll(checks);
+	private Map<String, String> getRelevantChecks(PurposeBase p) {
+		Map<String, String> results = new HashMap<String, String>();
+
+		List<PurposeBase> purposeStack = getAffectingPurposes(p);
+		for (PurposeBase tp : purposeStack) {
+			String fqn = qnp.getFullyQualifiedName(tp).toString();
+			Map<String, String> checks = conditionalChecks.get(fqn);
+			if (checks != null) {
+				results.putAll(checks);
+			}
 		}
-		for (EObject tp : IteratorExtensions.<EObject>toIterable(p.eAllContents())) {
-			if (tp instanceof PurposeBase) {
-				fqn = qnp.getFullyQualifiedName(tp).toString();
-				checks = conditionalChecks.get(fqn);
-				if (checks != null) {
-					results.putAll(checks);
-				}
-			} else {
-				System.out.println(MessageFormat.format("Purpose {0} contains a non purpose: {1}",
-						qnp.getFullyQualifiedName(p), tp.toString()));
+
+		return results;
+	}
+
+	/**
+	 * Retrieve all the Constraints that are relevant to this class and purpose.
+	 * Note that constraints stored for a PurposeSet are applicable to every purpose
+	 * contained in that set. That means that, given a purpose, we must walk up the
+	 * hierarchy to find every constraint stored for each containing purpose.
+	 * 
+	 * NOTE: This uses a Map (not a multimap) to ensure that there are no duplicate
+	 * checks in the resulting list. Note that this assumes no name collisions
+	 * 
+	 * @param p
+	 * @return set of relevant constraints
+	 */
+	private Set<Constraint> getRelevantConstraints(String clzName, PurposeBase p) {
+		Set<Constraint> results = new HashSet<Constraint>();
+		Map<String, Set<Constraint>> allConstraintsForClass = purposedOCL.get(clzName);
+
+		List<PurposeBase> purposeStack = getAffectingPurposes(p);
+		for (PurposeBase tp : purposeStack) {
+			String fqn = qnp.getFullyQualifiedName(p).toString();
+			Set<Constraint> constraints = allConstraintsForClass.get(fqn);
+			if (constraints != null) {
+				results.addAll(constraints);
 			}
 		}
 		return results;
 	}
 
-
 	@Override
 	protected EPackage.Registry createMinimalRegistry() {
-		EPackage.Registry registry = super.createMinimalRegistry(); 
+		EPackage.Registry registry = super.createMinimalRegistry();
 		registry.put(FacePackage.eNS_URI, FacePackage.eINSTANCE);
 		return registry;
 	}
-	
+
+	private void processChecks(OCL ocl, UopUnitOfPortability uop, UopConnection conn, int ndx, PlatformEntity ent,
+			EList<PurposeBase> purposes) {
+		List<String> processedChecks = new ArrayList<String>();
+		boolean netCheckResult = true; // assume true - any failure makes false
+		for (PurposeBase purpose : purposes) {
+			// Process all the constraints for that Purpose and Entity type
+			Map<String, String> checks = getRelevantChecks(purpose);
+			for (Map.Entry<String, String> check : checks.entrySet()) {
+				// System.out.println(MessageFormat.format("Obtained check {0} ",
+				// check.toString()));
+				// only process checks not previously used on this ent
+				if (!processedChecks.contains(check.getKey())) {
+					try {
+						// Process an invariant - which can only return true/false
+						final @NonNull ExpressionInOCL invariant = ocl
+								.createInvariant(UddlPackage.Literals.PLATFORM_ENTITY, check.getValue());
+						invariant.setName(check.getKey());
+						Query constraintEval = ocl.createQuery(invariant);
+						boolean currentResult = constraintEval.checkEcore(ent);
+//						// This code evaluates it as a query - a query can return anything
+//						final ExpressionInOCL asQuery = ocl.createQuery(UddlPackage.Literals.PLATFORM_ENTITY, check);
+//						Query queryEval = ocl.createQuery(asQuery);
+//						boolean currentResult = ((Boolean) queryEval.evaluateUnboxed(ent)).booleanValue();
+						// End of OCL query evaluation
+						// System.out.println("QueryEval result:" + currentResult);
+						netCheckResult = netCheckResult && currentResult;
+						if (!currentResult) {
+							String fmttedMessage = MessageFormat.format(
+									"UoP {0} has purpose {1} but attempts to use Entity {2} on connection {3} violating an invariant: {4} \nThis check should be true: {5}",
+									qnp.getFullyQualifiedName(uop).toString(), purpose.getName(),
+									qnp.getFullyQualifiedName(ent).toString(), conn.getName(), invariant.getName(),
+									check.getValue());
+							error(fmttedMessage, FacePackage.eINSTANCE.getUopUnitOfPortability_Connection(), ndx,
+									CONSTRAINT_VIOLATION, qnp.getFullyQualifiedName(conn).toString());
+						}
+					} catch (final Exception e) {
+						System.out.println(
+								MessageFormat.format("Exception processing constraints: {0} ", e.getMessage()));
+						e.printStackTrace(System.out);
+					}
+					processedChecks.add(check.getKey());
+				} else {
+					// System.out.println("... That check already used against this ent");
+				}
+
+			}
+		}
+		// System.out.println(MessageFormat.format("Net result after processing checks
+		// for {0} is {1} ", qnp.getFullyQualifiedName(ent),netCheckResult));
+
+	}
+
+	private void processConstraints(OCL ocl, UopUnitOfPortability uop, UopConnection conn, int ndx, PlatformEntity ent,
+			EList<PurposeBase> purposes) {
+		List<Constraint> processedConstraints = new ArrayList<Constraint>();
+		boolean netCheckResult = true; // assume true - any failure makes false
+		for (PurposeBase purpose : purposes) {
+			// Process all the constraints for that Purpose and Entity type
+			Set<Constraint> constraints = getRelevantConstraints(UddlPackage.Literals.PLATFORM_ENTITY.getName(),
+					purpose);
+			for (Constraint constraint : constraints) {
+				// System.out.println(MessageFormat.format("Obtained constraint {0} ",
+				// constraint.getName()));
+				// only process constraints not previously used on this ent
+				if (!processedConstraints.contains(constraint)) {
+					try {
+						// Process an invariant - which can only return true/false
+						ExpressionInOCL invariant = ocl.getSpecification(constraint);
+//						if (expressionInOCL != null) {
+//							String name = constraint.getName();
+
+//						final @NonNull ExpressionInOCL invariant = ocl
+//								.createInvariant(UddlPackage.Literals.PLATFORM_ENTITY, constraint.getValue());
+//						invariant.setName(constraint.getKey());
+						Query constraintEval = ocl.createQuery(invariant);
+						boolean currentResult = constraintEval.checkEcore(ent);
+//						// This code evaluates it as a query - a query can return anything
+//						final ExpressionInOCL asQuery = ocl.createQuery(UddlPackage.Literals.PLATFORM_ENTITY, check);
+//						Query queryEval = ocl.createQuery(asQuery);
+//						boolean currentResult = ((Boolean) queryEval.evaluateUnboxed(ent)).booleanValue();
+						// End of OCL query evaluation
+						// System.out.println("QueryEval result:" + currentResult);
+						netCheckResult = netCheckResult && currentResult;
+						if (!currentResult) {
+							String fmttedMessage = MessageFormat.format(
+									"UoP {0} has purpose {1} but attempts to use Entity {2} on connection {3} violating an invariant: {4} \nThis check should be true: {5}",
+									qnp.getFullyQualifiedName(uop).toString(), purpose.getName(),
+									qnp.getFullyQualifiedName(ent).toString(), conn.getName(), invariant.getName(),
+									constraint.getOwnedSpecification().toString());
+							error(fmttedMessage, FacePackage.eINSTANCE.getUopUnitOfPortability_Connection(), ndx,
+									CONSTRAINT_VIOLATION, qnp.getFullyQualifiedName(conn).toString());
+						}
+					} catch (final Exception e) {
+						System.out.println(
+								MessageFormat.format("Exception processing constraints: {0} ", e.getMessage()));
+						e.printStackTrace(System.out);
+					}
+					processedConstraints.add(constraint);
+				} else {
+					// System.out.println("... That check already used against this ent");
+				}
+
+			}
+		}
+		// System.out.println(MessageFormat.format("Net result after processing checks
+		// for {0} is {1} ", qnp.getFullyQualifiedName(ent),netCheckResult));
+
+	}
 
 	@Check(CheckType.NORMAL)
 	public void checkUsagePurposeViolates(UopUnitOfPortability uop) {
-		loadConditionalChecks(uop);
 		ResourceSet rs = uop.eResource().getResourceSet();
-		//EPackage.Registry reg = rs.getPackageRegistry();
-		
-		// Create a new OCL associated with this ResourceSet and already loaded OCL models
+		// EPackage.Registry reg = rs.getPackageRegistry();
+
+		// Create a new OCL associated with this ResourceSet and already loaded OCL
+		// models
 		OCL ocl = OCL.newInstance(rs);
+		loadConditionalChecks(uop, ocl);
 
 //		URI oclURI = getInputURI("src/com/epistimis/face/constraints/realizedObservables.ocl");
 //		//Resource asResource = ClassUtil.nonNullState(ocl.parse(oclURI)); 
@@ -373,7 +660,7 @@ public class FaceValidator extends AbstractFaceValidator {
 
 		// Get the purpose hierarchies for this component
 		EList<PurposeBase> purposes = uop.getPurpose();
-		Diagnostician diagnostician = new Diagnostician();
+		// Diagnostician diagnostician = new Diagnostician();
 		// Need index to attach error to the correct connection - init to -1 because we
 		// increment at top of loop
 		int ndx = -1;
@@ -382,58 +669,14 @@ public class FaceValidator extends AbstractFaceValidator {
 			// For each connection, get the Entities referenced by that connection.
 			List<PlatformEntity> referencedEntities = qu.getReferencedEntities(conn);
 			for (PlatformEntity ent : referencedEntities) {
-				List<String> processedChecks = new ArrayList<String>();
-				boolean netCheckResult = true; // assume true - any failure makes false
-				for (PurposeBase purpose : purposes) {
-					// Process all the constraints for that Purpose and Entity type
-					Map<String,String> checks = getRelevantChecks(purpose);
-					for (Map.Entry<String,String> check: checks.entrySet()) {
-						//System.out.println(MessageFormat.format("Obtained check {0} ", check.toString()));
-						// only process checks not previously used on this ent
-						if (!processedChecks.contains(check.getKey())) {
-							try {
-								// Process an invariant - which can only return true/false
-								final @NonNull ExpressionInOCL invariant = ocl.createInvariant(UddlPackage.Literals.PLATFORM_ENTITY, check.getValue());
-								invariant.setName(check.getKey());
-								Query constraintEval = ocl.createQuery(invariant);
-								boolean currentResult = constraintEval.checkEcore(ent);
-//								// This code evaluates it as a query - a query can return anything
-//								final ExpressionInOCL asQuery = ocl.createQuery(UddlPackage.Literals.PLATFORM_ENTITY, check);
-//								Query queryEval = ocl.createQuery(asQuery);
-//								boolean currentResult = ((Boolean) queryEval.evaluateUnboxed(ent)).booleanValue();
-								// End of OCL query evaluation
-								//System.out.println("QueryEval result:" + currentResult);
-								netCheckResult = netCheckResult && currentResult;
-								if (!currentResult) {
-									String fmttedMessage = MessageFormat.format(
-											"UoP {0} has purpose {1} but attempts to use Entity {2} on connection {3} violating an invariant: {4} \nThis check should be true: {5}",
-											qnp.getFullyQualifiedName(uop).toString(), purpose.getName(),
-											qnp.getFullyQualifiedName(ent).toString(), conn.getName(),
-											invariant.getName(),
-											check.getValue());
-									error(fmttedMessage, FacePackage.eINSTANCE.getUopUnitOfPortability_Connection(), ndx,
-											CONSTRAINT_VIOLATION, qnp.getFullyQualifiedName(conn).toString());									
-								}
-							} catch (final Exception e) {
-								System.out.println(
-										MessageFormat.format("Exception processing constraints: {0} ", e.getMessage()));
-								e.printStackTrace(System.out);
-							}
-							processedChecks.add(check.getKey());
-						}
-						else {
-							//System.out.println("... That check already used against this ent");							
-						}
-		
-					}						
-				}
-				//System.out.println(MessageFormat.format("Net result after processing checks for {0} is {1} ", qnp.getFullyQualifiedName(ent),netCheckResult));
-
+				processChecks(ocl, uop, conn, ndx, ent, purposes);
+				// processConstraints(ocl, uop,conn,ndx,ent, purposes);
 			}
 		}
-		// Cannot dispose an OCL instance that is associated with preregistered OCL - because this throws away ALL the OCL
+		// Cannot dispose an OCL instance that is associated with preregistered OCL -
+		// because this throws away ALL the OCL
 		// And we don't get the preregistered stuff back with the conditional validators
-		//ocl.dispose();
+		// ocl.dispose();
 	}
 }
 
