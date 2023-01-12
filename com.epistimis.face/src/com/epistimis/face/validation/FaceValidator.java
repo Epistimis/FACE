@@ -347,7 +347,7 @@ public class FaceValidator extends AbstractFaceValidator {
 	 * In other words, we want the result to be TRUE. A result of FALSE means we're
 	 * breaking some rule.
 	 */
-//	final static String SAMPLE_INVARIANT_TEXT = "constituentObservables()->flatten()->collect(type.name.toLowerCase())->contains('health') = false";
+	final static String SAMPLE_INVARIANT_TEXT2 = "constituentObservables()->flatten()->collect(type.name.toLowerCase())->contains('health') = false";
 	final static String SAMPLE_INVARIANT_NAME = "noHealthDataUsed";
 	final static String SAMPLE_INVARIANT_TEXT = "composition->collect(realizes.realizes.type.name.toLowerCase())->includes('health') = false";
 
@@ -370,7 +370,7 @@ public class FaceValidator extends AbstractFaceValidator {
 			loadCheckForPurposes(purposes, UddlPackage.eINSTANCE, SAMPLE_INVARIANT_NAME, SAMPLE_INVARIANT_TEXT);
 
 			// load an OCL text file
-			// loadConstraintsFileForPurposes(purposes, ocl, SAMPLE_INVARIANT_FILE);
+			//loadConstraintsFileForPurposes(purposes, ocl, SAMPLE_FUNCTIONS_FILE);
 
 			conditionalsRegistered = true;
 		}
@@ -439,6 +439,7 @@ public class FaceValidator extends AbstractFaceValidator {
 		Map<String, Set<Constraint>> constraintMap = new HashMap<String, Set<Constraint>>();
 		for (TreeIterator<EObject> tit = asResource.getAllContents(); tit.hasNext();) {
 			EObject next = tit.next();
+			
 			// Operations are functions. Constraints are invariants
 			if (next instanceof Constraint) {
 				Constraint constraint = (Constraint) next;
@@ -474,10 +475,7 @@ public class FaceValidator extends AbstractFaceValidator {
 	 * a specialization of the enclosing PurposeSet. Since we don't know if
 	 */
 	/**
-	 * Retrieve all the checks that are relevant to this purpose. Note that checks
-	 * stored for a PurposeSet are applicable to every purpose contained in that
-	 * set. That means that, given a purpose, we must walk up the hierarchy to find
-	 * every constraint stored for each containing purpose.
+	 * Retrieve all the checks that are relevant to this purpose. 
 	 * 
 	 * NOTE: This uses a Map (not a multimap) to ensure that there are no duplicate
 	 * checks in the resulting list. Note that this assumes no name collisions
@@ -502,9 +500,6 @@ public class FaceValidator extends AbstractFaceValidator {
 
 	/**
 	 * Retrieve all the Constraints that are relevant to this class and purpose.
-	 * Note that constraints stored for a PurposeSet are applicable to every purpose
-	 * contained in that set. That means that, given a purpose, we must walk up the
-	 * hierarchy to find every constraint stored for each containing purpose.
 	 * 
 	 * NOTE: This uses a Map (not a multimap) to ensure that there are no duplicate
 	 * checks in the resulting list. Note that this assumes no name collisions
@@ -518,7 +513,7 @@ public class FaceValidator extends AbstractFaceValidator {
 
 		List<PurposeBase> purposeStack = getAffectingPurposes(p);
 		for (PurposeBase tp : purposeStack) {
-			String fqn = qnp.getFullyQualifiedName(p).toString();
+			String fqn = qnp.getFullyQualifiedName(tp).toString();
 			Set<Constraint> constraints = allConstraintsForClass.get(fqn);
 			if (constraints != null) {
 				results.addAll(constraints);
@@ -586,6 +581,17 @@ public class FaceValidator extends AbstractFaceValidator {
 
 	}
 
+	/**
+	 * Examples:
+	 * https://eclipse.googlesource.com/ocl/org.eclipse.ocl/+/refs/heads/master/tests/org.eclipse.ocl.examples.xtext.tests/src/org/eclipse/ocl/examples/test/xtext/PivotDocumentationExamples.java
+	 * https://eclipse.googlesource.com/ocl/org.eclipse.ocl/+/refs/heads/master/tests/org.eclipse.ocl.examples.xtext.tests/models/documentation/parsingDocumentsExample.ocl
+	 * @param ocl
+	 * @param uop
+	 * @param conn
+	 * @param ndx
+	 * @param ent
+	 * @param purposes
+	 */
 	private void processConstraints(OCL ocl, UopUnitOfPortability uop, UopConnection conn, int ndx, PlatformEntity ent,
 			EList<PurposeBase> purposes) {
 		List<Constraint> processedConstraints = new ArrayList<Constraint>();
@@ -602,14 +608,14 @@ public class FaceValidator extends AbstractFaceValidator {
 					try {
 						// Process an invariant - which can only return true/false
 						ExpressionInOCL invariant = ocl.getSpecification(constraint);
-//						if (expressionInOCL != null) {
-//							String name = constraint.getName();
+						String name = constraint.getName();						
 
 //						final @NonNull ExpressionInOCL invariant = ocl
 //								.createInvariant(UddlPackage.Literals.PLATFORM_ENTITY, constraint.getValue());
 //						invariant.setName(constraint.getKey());
-						Query constraintEval = ocl.createQuery(invariant);
-						boolean currentResult = constraintEval.checkEcore(ent);
+//						Query constraintEval = ocl.createQuery(invariant);
+//						boolean currentResult = constraintEval.checkEcore(ent);
+						boolean currentResult = ocl.check(ent,invariant);
 //						// This code evaluates it as a query - a query can return anything
 //						final ExpressionInOCL asQuery = ocl.createQuery(UddlPackage.Literals.PLATFORM_ENTITY, check);
 //						Query queryEval = ocl.createQuery(asQuery);
@@ -670,7 +676,7 @@ public class FaceValidator extends AbstractFaceValidator {
 			List<PlatformEntity> referencedEntities = qu.getReferencedEntities(conn);
 			for (PlatformEntity ent : referencedEntities) {
 				processChecks(ocl, uop, conn, ndx, ent, purposes);
-				// processConstraints(ocl, uop,conn,ndx,ent, purposes);
+				//processConstraints(ocl, uop,conn,ndx,ent, purposes);
 			}
 		}
 		// Cannot dispose an OCL instance that is associated with preregistered OCL -
