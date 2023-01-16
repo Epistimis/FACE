@@ -73,37 +73,9 @@ UopElement:
 	UopUnitOfPortability |
 	UopAbstractUoP |
 	UopMessageType
-	// EXTENSION: The following are not in the FACE spec
-	| PurposeBase
+
 ;
 
-// Instead of a different type, use an enum to define purposes? This means that the grammar can't enforce 
-// Which enumeration is used. That hasn't be done with OCL. For now just use a new set of grammar rules
-/**
- * EXTENSION Defines a purpose for a component.
- */
-PurposeEnumerated:
-	'purpose' 	name=ID (description=STRING)? 
-		'['
-		label+=(PurposeLabel | PurposeSet) ','? (label+=(PurposeLabel| PurposeSet) ','?)*
-		']'
-		';'
-		;
-// EXTENSION
-PurposeBase:
-	PurposeSet |
-	PurposeLabel |
-	PurposeEnumerated
-;
-// EXTENSION
-PurposeSet:
-		'(' name=ID (description=STRING)? 
-		'['
-		label+=(PurposeLabel | PurposeSet) ','? (label+=(PurposeLabel| PurposeSet) ','?)*
-		'])'
-		;
-// EXTENSION
-PurposeLabel:	name=ID |	'(' name=ID description=STRING ')' ;
 
 
 
@@ -135,8 +107,27 @@ UopAbstractConnection:
 ;
 
 UopUnitOfPortability:	
-	({UopPortableComponent}'pc' | {UopPlatformSpecificComponent} 'psc') name=ID description=STRING ('->' realizes=[UopAbstractUoP|QN])? '{'
-		'purpose:' '[' purpose+=[PurposeBase|QN]+ ']'  // EXTENSION: purpose is not in the FACE spec
+	UopPortableComponent |
+	UopPlatformSpecificComponent
+	;
+
+UopPortableComponent:	
+	'pc'  name=ID description=STRING ('->' realizes=[UopAbstractUoP|QN])? '{'
+		'lang:' transportAPILanguage=UopProgrammingLanguage
+		('part:' partitionType=UopPartitionType)? 	// EXTENSION: making partitionType optional
+		('prof:' faceProfile=UopFaceProfile)?  		// EXTENSION: making faceProfile optional
+		('DAL:' designAssuranceLevel=UopDesignAssuranceLevel)?
+		('DAS:' designAssuranceStandard=UopDesignAssuranceStandard)?
+		('RAM:' memoryRequirements=UopRAMMemoryRequirements)? // EXTENSION: making memoryRequirements optional
+		('thread:' '[' thread+=UopThread+ ']')?		// EXTENSION: making thread optional
+		('support:' '[' supportingComponent+=[UopSupportingComponent|QN]+ ']')? 
+		'conn:' '[' connection+=UopConnection+ ']'
+		('lcm:' '[' lcmPort+=UopLifeCycleManagementPort lcmPort+=UopLifeCycleManagementPort? ']' )?
+	'};'
+;
+
+UopPlatformSpecificComponent:	
+	 'psc' name=ID description=STRING ('->' realizes=[UopAbstractUoP|QN])? '{'
 		'lang:' transportAPILanguage=UopProgrammingLanguage
 		('part:' partitionType=UopPartitionType)? 	// EXTENSION: making partitionType optional
 		('prof:' faceProfile=UopFaceProfile)?  		// EXTENSION: making faceProfile optional
