@@ -14,7 +14,7 @@ import com.epistimis.face.face.UopSingleInstanceMessageConnection
 import com.epistimis.face.face.UopSynchronizationStyle
 import com.epistimis.face.face.UopTemplate
 import com.epistimis.face.face.UopUnitOfPortability
-import com.epistimis.uddl.generator.CppDataStructureGenerator
+import com.epistimis.uddl.generator.GoDataStructureGenerator
 import com.epistimis.uddl.uddl.PlatformDataModel
 import com.epistimis.uddl.uddl.PlatformEntity
 import java.util.ArrayList
@@ -23,10 +23,11 @@ import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGenerator2
 import org.eclipse.xtext.generator.IGeneratorContext
+import com.epistimis.face.face.UopUoPModel
 
-class CPPFunctionGenerator extends CppDataStructureGenerator implements IFaceLangGenerator {
+class GoFunctionGenerator extends GoDataStructureGenerator implements IFaceLangGenerator {
 
-	static String SRC_EXT = ".cpp";
+	static String SRC_EXT = ".go";
 
 	List<UopUnitOfPortability> processedComponents;
 
@@ -116,7 +117,7 @@ class CPPFunctionGenerator extends CppDataStructureGenerator implements IFaceLan
 	 * Do Portable specific code gen here
 	 */
 	def dispatch compile (UopPortableComponent uop,List<PlatformEntity> entities)'''
-	«uop.compileUopCommon(entities)»	
+	«uop.compileUopCommon(entities)»
 	'''
 	
 	/**
@@ -144,13 +145,14 @@ class CPPFunctionGenerator extends CppDataStructureGenerator implements IFaceLan
 	 */
 	def compileUopCommon(UopUnitOfPortability uop,List<PlatformEntity> entities){
 	'''
+	package «(uop.eContainer as UopUoPModel).name»
 	/** Include all needed headers */
 	«var entityIncludes = new ArrayList<PlatformEntity>»
 	«var List<PlatformDataModel> pdmIncludes = new ArrayList<PlatformDataModel>»
 	«FOR ent: entities»
 		«ent.generateInclude(pdmIncludes, entityIncludes)»
 	«ENDFOR»
-	public void «uop.name»(«FOR conn: uop.connection  SEPARATOR ','» «qu.getReferencedEntities(conn).get(0).typeString» «conn.name»«ENDFOR»)
+	func «uop.name»(«FOR conn: uop.connection  SEPARATOR ','» «qu.getReferencedEntities(conn).get(0).typeString» «conn.name»«ENDFOR»)
 	{
 		/** The first step in this function must be a check for runtime privacy issues (e.g. where individual choices matter like Consent).
 		 *  This might be a null function

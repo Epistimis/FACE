@@ -32,6 +32,8 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import org.eclipse.xtext.resource.IResourceServiceProvider
 import com.epistimis.uddl.scoping.IndexUtilities
 import com.epistimis.face.face.UopConnection
+import org.eclipse.emf.ecore.util.EcoreUtil
+import java.text.MessageFormat
 
 /**
  * Generates code from your model files on save.
@@ -59,6 +61,8 @@ class FaceGenerator extends AbstractGenerator {
 //		 */
 //		uddlGen.doGenerate(resource, fsa, context);
 
+		// Make sure all cross references are resolved
+		//EcoreUtil.resolveAll(resource.resourceSet);
 		/**
 		 * Set up the map of programming language specific generators
 		 */
@@ -74,7 +78,11 @@ class FaceGenerator extends AbstractGenerator {
 			// Now call the relevant generator
 			val generator = languageSpecificGenerators.get(comp.transportAPILanguage);
 			if (generator === null) {
-				System.out.println("No generator yet available for language: " + comp.transportAPILanguage.toString);
+				val fmttedMessage = MessageFormat.format(
+									"Component {0} is supposed to be generated in {1} but no generator yet available for that language",
+									qnp.getFullyQualifiedName(comp).toString(), comp.transportAPILanguage.toString);
+
+				System.out.println(fmttedMessage);
 			} else {
 				for (PlatformEntity entity : entities) {
 					generator.processEntities(entities, fsa, context);
