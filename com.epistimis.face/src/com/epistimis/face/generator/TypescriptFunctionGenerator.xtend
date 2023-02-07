@@ -2,13 +2,13 @@ package com.epistimis.face.generator
 
 import com.epistimis.face.face.FaceElement
 import com.epistimis.face.face.UopUnitOfPortability
-import com.epistimis.uddl.generator.CppDataStructureGenerator
+import com.epistimis.uddl.generator.TypescriptDataStructureGenerator
 import com.epistimis.uddl.uddl.PlatformDataModel
 import com.epistimis.uddl.uddl.PlatformEntity
 import java.util.ArrayList
 import java.util.List
 
-class CPPFunctionGenerator extends CommonFunctionGenerator implements IFaceLangGenerator {
+class TypescriptFunctionGenerator extends CommonFunctionGenerator implements IFaceLangGenerator {
 
 
 	/**
@@ -18,7 +18,7 @@ class CPPFunctionGenerator extends CommonFunctionGenerator implements IFaceLangG
 	 */
 	
 	new(QueryUtilities qu) {
-		super(qu,new CppDataStructureGenerator());
+		super(qu,new TypescriptDataStructureGenerator());
 	}
 	
 	override getSrcExtension() {

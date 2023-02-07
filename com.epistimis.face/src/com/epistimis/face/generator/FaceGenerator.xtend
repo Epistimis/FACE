@@ -68,6 +68,11 @@ class FaceGenerator extends AbstractGenerator {
 		 */
 		val Map<UopProgrammingLanguage, IFaceLangGenerator> languageSpecificGenerators = new HashMap<UopProgrammingLanguage, IFaceLangGenerator>();
 		languageSpecificGenerators.put(UopProgrammingLanguage.CPP, new CPPFunctionGenerator(qu));
+		languageSpecificGenerators.put(UopProgrammingLanguage.GO, new GoFunctionGenerator(qu));
+		languageSpecificGenerators.put(UopProgrammingLanguage.PYTHON, new PythonFunctionGenerator(qu));
+		languageSpecificGenerators.put(UopProgrammingLanguage.SCALA, new ScalaFunctionGenerator(qu));
+		languageSpecificGenerators.put(UopProgrammingLanguage.TS, new TypescriptFunctionGenerator(qu));
+		
 
 		/**
 		 * Generate the functions

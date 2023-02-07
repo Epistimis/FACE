@@ -2,13 +2,14 @@ package com.epistimis.face.generator
 
 import com.epistimis.face.face.FaceElement
 import com.epistimis.face.face.UopUnitOfPortability
-import com.epistimis.uddl.generator.CppDataStructureGenerator
+import com.epistimis.face.face.UopUoPModel
+import com.epistimis.uddl.generator.PythonDataStructureGenerator
 import com.epistimis.uddl.uddl.PlatformDataModel
 import com.epistimis.uddl.uddl.PlatformEntity
 import java.util.ArrayList
 import java.util.List
 
-class CPPFunctionGenerator extends CommonFunctionGenerator implements IFaceLangGenerator {
+class PythonFunctionGenerator extends CommonFunctionGenerator implements IFaceLangGenerator {
 
 
 	/**
@@ -18,11 +19,11 @@ class CPPFunctionGenerator extends CommonFunctionGenerator implements IFaceLangG
 	 */
 	
 	new(QueryUtilities qu) {
-		super(qu,new CppDataStructureGenerator());
+		super(qu,new PythonDataStructureGenerator());
 	}
 	
 	override getSrcExtension() {
-		return ".cpp";
+		return ".py";
 	}
 			
 	/**
@@ -49,13 +50,14 @@ class CPPFunctionGenerator extends CommonFunctionGenerator implements IFaceLangG
 	 */
 	override compileUopCommon(UopUnitOfPortability uop,List<PlatformEntity> entities){
 	'''
+	package «(uop.eContainer as UopUoPModel).name»
 	/** Include all needed headers */
 	«var entityIncludes = new ArrayList<PlatformEntity>»
 	«var List<PlatformDataModel> pdmIncludes = new ArrayList<PlatformDataModel>»
 	«FOR ent: entities»
 		«ent.generateInclude(pdmIncludes, entityIncludes)»
 	«ENDFOR»
-	public void «uop.name»(«FOR conn: uop.connection  SEPARATOR ','» «qu.getReferencedEntities(conn).get(0).typeString» «conn.name»«ENDFOR»)
+	def «uop.name»(«FOR conn: uop.connection  SEPARATOR ','» «qu.getReferencedEntities(conn).get(0).typeString» «conn.name»«ENDFOR»)
 	{
 		/** The first step in this function must be a check for runtime privacy issues (e.g. where individual choices matter like Consent).
 		 *  This might be a null function

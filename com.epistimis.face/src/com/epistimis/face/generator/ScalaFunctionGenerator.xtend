@@ -2,13 +2,13 @@ package com.epistimis.face.generator
 
 import com.epistimis.face.face.FaceElement
 import com.epistimis.face.face.UopUnitOfPortability
-import com.epistimis.uddl.generator.CppDataStructureGenerator
+import com.epistimis.uddl.generator.ScalaDataStructureGenerator
 import com.epistimis.uddl.uddl.PlatformDataModel
 import com.epistimis.uddl.uddl.PlatformEntity
 import java.util.ArrayList
 import java.util.List
 
-class CPPFunctionGenerator extends CommonFunctionGenerator implements IFaceLangGenerator {
+class ScalaFunctionGenerator extends CommonFunctionGenerator implements IFaceLangGenerator {
 
 
 	/**
@@ -18,11 +18,11 @@ class CPPFunctionGenerator extends CommonFunctionGenerator implements IFaceLangG
 	 */
 	
 	new(QueryUtilities qu) {
-		super(qu,new CppDataStructureGenerator());
+		super(qu,new ScalaDataStructureGenerator());
 	}
 	
 	override getSrcExtension() {
-		return ".cpp";
+		return ".scala";
 	}
 			
 	/**
@@ -55,8 +55,7 @@ class CPPFunctionGenerator extends CommonFunctionGenerator implements IFaceLangG
 	«FOR ent: entities»
 		«ent.generateInclude(pdmIncludes, entityIncludes)»
 	«ENDFOR»
-	public void «uop.name»(«FOR conn: uop.connection  SEPARATOR ','» «qu.getReferencedEntities(conn).get(0).typeString» «conn.name»«ENDFOR»)
-	{
+	def «uop.name»(«FOR conn: uop.connection  SEPARATOR ','» «qu.getReferencedEntities(conn).get(0).typeString» : «conn.name»«ENDFOR»): Nothing =
 		/** The first step in this function must be a check for runtime privacy issues (e.g. where individual choices matter like Consent).
 		 *  This might be a null function
 		 */
@@ -65,7 +64,6 @@ class CPPFunctionGenerator extends CommonFunctionGenerator implements IFaceLangG
 		/**
 		* The remainder of this function body should be manually filled in
 		*/
-	}
 	'''
 	}
 
