@@ -50,7 +50,7 @@ enum UopPartitionType:
 enum UopProgrammingLanguage:
 	C='C' | CPP='cpp' | JAVA='Java' | ADA='Ada' 
 	// EXTENSION: Additional languages not supported by FACE
-	| GO='Go' | JS='Javascript' | PYTHON='Python' | RUST = 'Rust' | SQL='SQL'
+	| GO='Go' | JS='Javascript' | PYTHON='Python' | RUST = 'Rust' | SCALA='Scala' | SQL='SQL' | TS='Typescript' 
 ;
 
 enum UopSynchronizationStyle:
