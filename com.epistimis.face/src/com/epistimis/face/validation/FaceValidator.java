@@ -3,61 +3,16 @@
  */
 package com.epistimis.face.validation;
 
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.impl.EPackageRegistryImpl;
-import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.common.util.BasicDiagnostic;
-import org.eclipse.emf.common.util.DiagnosticChain;
-import org.eclipse.emf.common.util.Diagnostic;
-import org.eclipse.emf.ecore.util.Diagnostician;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.ocl.pivot.Class;
-import org.eclipse.ocl.pivot.Constraint;
-import org.eclipse.ocl.pivot.ExpressionInOCL;
-import org.eclipse.ocl.pivot.resource.ProjectManager;
-import org.eclipse.ocl.pivot.utilities.ClassUtil;
-import org.eclipse.ocl.pivot.utilities.OCL;
-import org.eclipse.ocl.pivot.utilities.OCLHelper;
-import org.eclipse.ocl.pivot.utilities.ParserException;
-import org.eclipse.ocl.pivot.utilities.PivotUtil;
-import org.eclipse.ocl.pivot.utilities.Query;
-
-import org.eclipse.ocl.pivot.utilities.ThreadLocalExecutor;
-import org.eclipse.ocl.xtext.completeocl.validation.CompleteOCLEObjectValidator;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
-import org.eclipse.xtext.resource.IEObjectDescription;
-import org.eclipse.xtext.validation.Check;
-import org.eclipse.xtext.validation.CheckType;
 import org.eclipse.xtext.validation.EValidatorRegistrar;
-import org.eclipse.xtext.xbase.lib.IterableExtensions;
-import org.eclipse.xtext.xbase.lib.IteratorExtensions;
 
 import com.epistimis.face.face.FacePackage;
-import com.epistimis.face.face.UopConnection;
-import com.epistimis.face.face.UopUnitOfPortability;
-import com.epistimis.face.generator.FaceGenerator;
 import com.epistimis.face.generator.QueryUtilities;
 import com.epistimis.uddl.generator.QueryProcessor;
 import com.epistimis.uddl.scoping.IndexUtilities;
-import com.epistimis.uddl.uddl.ConceptualCharacteristic;
-import com.epistimis.uddl.uddl.ConceptualEntity;
-import com.epistimis.uddl.uddl.PlatformEntity;
-import com.epistimis.uddl.uddl.UddlPackage;
 import com.google.inject.Inject;
 
 /**
@@ -101,8 +56,8 @@ public class FaceValidator extends AbstractFaceValidator {
 	public void register(EValidatorRegistrar registrar) {
 		super.register(registrar);
 
-		loadAndRegister(registrar,"src/com/epistimis/face/constraints/face.ocl",FacePackage.eINSTANCE, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
-		loadAndRegister(registrar, "src/com/epistimis/face/constraints/uop.ocl",FacePackage.eINSTANCE, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
+		//loadAndRegister(registrar,"src/com/epistimis/face/constraints/face.ocl",FacePackage.eINSTANCE, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
+		//loadAndRegister(registrar, "src/com/epistimis/face/constraints/uop.ocl",FacePackage.eINSTANCE, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
 //		// TODO: Before registering this, need to fix issues that are the result of grammar changes - or fix grammar
 //		// to avoid them
 //		//loadAndRegister(registrar, "/com.epistimis.face/src/com/epistimis/face/constraints/integration.ocl");
@@ -112,57 +67,62 @@ public class FaceValidator extends AbstractFaceValidator {
 
 
 
-	/**
-	 * Load an OCL file from the specified URI and register any constraints found
-	 * therein. Note that this loads the entire file so contained operations should
-	 * be visible as well.
-	 * 
-	 * @param ocl The OCL instance associated the ResourceSet we are currently
-	 *            processing
-	 * @param uri The URI of the file to load
-	 * @return A map of constraints. The key is the class name the invariant is
-	 *         associated with.
-	 */
-	private synchronized Map<String, Set<Constraint>> loadConstraintsFromFile(OCL ocl, URI uri) {
-
-		// parse the contents as an OCL document
-		Resource asResource = ocl.parse(uri);
-		// accumulate the document constraints in constraintMap and print all
-		// constraints
-		Map<String, Set<Constraint>> constraintMap = new HashMap<String, Set<Constraint>>();
-		for (TreeIterator<EObject> tit = asResource.getAllContents(); tit.hasNext();) {
-			EObject next = tit.next();
-			
-			// Operations are functions. Constraints are invariants
-			if (next instanceof Constraint) {
-				Constraint constraint = (Constraint) next;
-				Class container = (Class) next.eContainer();
-				String clzName = container.getName();
-				Set<Constraint> cSet = constraintMap.get(clzName);
-				if (cSet == null) {
-					cSet = new HashSet<Constraint>();
-					constraintMap.put(clzName, cSet);
-				}
-				cSet.add(constraint);
-//				ExpressionInOCL expressionInOCL;
-//				try {
-//					expressionInOCL = ocl.getSpecification(constraint);
-//					if (expressionInOCL != null) {
-//						String name = constraint.getName();
-//						if (name != null) {
-//							constraintMap.put(name, expressionInOCL);
-//							debugPrintf("%s: %s%n\n", name, expressionInOCL.getOwnedBody());
-//						}
-//					}
-//				} catch (ParserException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
+//	/**
+//	 * Load an OCL file from the specified URI and register any constraints found
+//	 * therein. Note that this loads the entire file so contained operations should
+//	 * be visible as well.
+//	 * 
+//	 * @param ocl The OCL instance associated the ResourceSet we are currently
+//	 *            processing
+//	 * @param uri The URI of the file to load
+//	 * @return A map of constraints. The key is the class name the invariant is
+//	 *         associated with.
+//	 */
+//	protected synchronized Map<String, Set<Constraint>> loadConstraintsFromFile(OCL ocl, URI uri) {
+//
+//		// parse the contents as an OCL document
+//		Resource asResource = ocl.parse(uri);
+//		// accumulate the document constraints in constraintMap and print all
+//		// constraints
+//		Map<String, Set<Constraint>> constraintMap = new HashMap<String, Set<Constraint>>();
+//		for (TreeIterator<EObject> tit = asResource.getAllContents(); tit.hasNext();) {
+//			EObject next = tit.next();
+//			
+//			// Operations are functions. Constraints are invariants
+//			if (next instanceof Constraint) {
+//				Constraint constraint = (Constraint) next;
+//				Class container = (Class) next.eContainer();
+//				String clzName = container.getName();
+//				Set<Constraint> cSet = constraintMap.get(clzName);
+//				if (cSet == null) {
+//					cSet = new HashSet<Constraint>();
+//					constraintMap.put(clzName, cSet);
 //				}
-			}
-		}
-		return constraintMap;
-	}
+//				cSet.add(constraint);
+////				ExpressionInOCL expressionInOCL;
+////				try {
+////					expressionInOCL = ocl.getSpecification(constraint);
+////					if (expressionInOCL != null) {
+////						String name = constraint.getName();
+////						if (name != null) {
+////							constraintMap.put(name, expressionInOCL);
+////							debugPrintf("%s: %s%n\n", name, expressionInOCL.getOwnedBody());
+////						}
+////					}
+////				} catch (ParserException e) {
+////					// TODO Auto-generated catch block
+////					e.printStackTrace();
+////				}
+//			}
+//		}
+//		return constraintMap;
+//	}
 
+	@Override
+	protected void augmentRegistry(EPackage.Registry registry) {
+		super.augmentRegistry(registry);
+		registry.put(FacePackage.eNS_URI, FacePackage.eINSTANCE);
+	}
 
 	@Override
 	protected EPackage.Registry createMinimalRegistry() {
