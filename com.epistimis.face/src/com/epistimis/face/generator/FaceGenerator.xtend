@@ -3,37 +3,19 @@
  */
 package com.epistimis.face.generator
 
-import com.epistimis.face.face.UopClientServerConnection
-import com.epistimis.face.face.UopCompositeTemplate
 import com.epistimis.face.face.UopProgrammingLanguage
-import com.epistimis.face.face.UopQueuingConnection
-import com.epistimis.face.face.UopSingleInstanceMessageConnection
-import com.epistimis.face.face.UopTemplate
-import com.epistimis.face.face.UopTemplateComposition
 import com.epistimis.face.face.UopUnitOfPortability
-import com.epistimis.uddl.generator.QueryProcessor
-import com.epistimis.uddl.query.query.QuerySpecification
-import com.epistimis.uddl.uddl.PlatformCompositeQuery
 import com.epistimis.uddl.uddl.PlatformEntity
-import com.epistimis.uddl.uddl.PlatformQuery
-import com.epistimis.uddl.uddl.PlatformQueryComposition
 import com.google.inject.Inject
-import java.util.ArrayList
+import java.text.MessageFormat
 import java.util.HashMap
 import java.util.List
 import java.util.Map
-import java.util.SortedMap
-import java.util.TreeMap
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
 import org.eclipse.xtext.naming.IQualifiedNameProvider
-import org.eclipse.xtext.resource.IResourceServiceProvider
-import com.epistimis.uddl.scoping.IndexUtilities
-import com.epistimis.face.face.UopConnection
-import org.eclipse.emf.ecore.util.EcoreUtil
-import java.text.MessageFormat
 
 /**
  * Generates code from your model files on save.
@@ -46,9 +28,9 @@ class FaceGenerator extends AbstractGenerator {
 //	IResourceServiceProvider.Registry reg;
 
 	@Inject extension IQualifiedNameProvider qnp;
-	@Inject extension IndexUtilities ndxUtil;
+	//@Inject extension IndexUtilities ndxUtil;
 
-	@Inject extension QueryProcessor qp; 
+	//@Inject extension QueryProcessor qp; 
 	@Inject extension QueryUtilities qu;
 
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
@@ -71,7 +53,11 @@ class FaceGenerator extends AbstractGenerator {
 		languageSpecificGenerators.put(UopProgrammingLanguage.GO, new GoFunctionGenerator(qu));
 		languageSpecificGenerators.put(UopProgrammingLanguage.PYTHON, new PythonFunctionGenerator(qu));
 		languageSpecificGenerators.put(UopProgrammingLanguage.SCALA, new ScalaFunctionGenerator(qu));
+		languageSpecificGenerators.put(UopProgrammingLanguage.SQL, new RDBMSFunctionGenerator(qu));
 		languageSpecificGenerators.put(UopProgrammingLanguage.TS, new TypescriptFunctionGenerator(qu));
+
+		// Use Typescript for Javascript
+		languageSpecificGenerators.put(UopProgrammingLanguage.JS, new TypescriptFunctionGenerator(qu));
 		
 
 		/**

@@ -14,7 +14,8 @@ import com.epistimis.face.face.UopSingleInstanceMessageConnection
 import com.epistimis.face.face.UopSynchronizationStyle
 import com.epistimis.face.face.UopTemplate
 import com.epistimis.face.face.UopUnitOfPortability
-import com.epistimis.uddl.uddl.PlatformDataModel
+import com.epistimis.uddl.generator.CommonDataStructureGenerator
+import com.epistimis.uddl.uddl.PlatformDataType
 import com.epistimis.uddl.uddl.PlatformEntity
 import java.util.ArrayList
 import java.util.List
@@ -22,8 +23,10 @@ import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGenerator2
 import org.eclipse.xtext.generator.IGeneratorContext
-import com.epistimis.uddl.generator.CommonDataStructureGenerator
-import com.epistimis.uddl.uddl.PlatformDataType
+import com.epistimis.uddl.uddl.PlatformDataModel
+import com.epistimis.uddl.uddl.PlatformComposition
+import com.epistimis.uddl.uddl.PlatformParticipant
+import com.epistimis.uddl.uddl.PlatformComposableElement
 
 abstract class CommonFunctionGenerator extends CommonDataStructureGenerator implements IFaceLangGenerator {
 
@@ -111,9 +114,10 @@ abstract class CommonFunctionGenerator extends CommonDataStructureGenerator impl
 		// Generate the stubs for the functions that need to be used
 		if (!processedComponents.contains(comp)) {
 			processedComponents.add(comp);
-	       fsa.generateFile(
-	        	getRootDirectory() + comp.name + getSrcExtension(),
-	         comp.compile(entities))
+			val CharSequence content = comp.compile(entities);
+			if (content.toString.trim.length > 0) {
+		       fsa.generateFile(getRootDirectory() + comp.name + getSrcExtension(),content);
+			}
 		}
 	}
 	
@@ -121,7 +125,7 @@ abstract class CommonFunctionGenerator extends CommonDataStructureGenerator impl
 	 * Do Portable specific code gen here
 	 */
 	def dispatch compile (UopPortableComponent uop,List<PlatformEntity> entities)'''
-	«uop.compileUopCommon(entities)»	
+	«uop.compileUopCommon(entities)»
 	'''
 	
 	/**
@@ -192,7 +196,7 @@ abstract class CommonFunctionGenerator extends CommonDataStructureGenerator impl
 		}		
 	}
 	
-	def dispatch compile(IntegrationUoPInstance inst) {
+	def compile(IntegrationUoPInstance inst) {
 		'''
 		'''
 	}
@@ -238,4 +242,39 @@ abstract class CommonFunctionGenerator extends CommonDataStructureGenerator impl
 		return dsg.getPDTTypeString(pdt);
 	}
 	
+	override String defNewType(PlatformDataType pdt) {
+		return dsg.defNewType(pdt);
+	}
+	override pdmHeader(PlatformDataModel pdm) {
+		return dsg.pdmHeader(pdm);
+	}
+	
+	override String generateImportStatement(PlatformDataModel pdm) {
+			return dsg.generateImportStatement(pdm);		
+	}
+		
+	override String generateImportStatement(PlatformEntity entType) {
+			return dsg.generateImportStatement(entType);		
+	}
+	override String getFileHeader(PlatformEntity entType) {
+			return dsg.getFileHeader(entType);		
+	}
+	override String compositionElement(PlatformComposition composition, int ndx) {
+			return dsg.compositionElement(composition,ndx);		
+	}
+	override String participantElement(PlatformParticipant participant, int ndx) {
+			return dsg.participantElement(participant,ndx);		
+	}
+		
+	override String clazzDecl(PlatformEntity entity) {
+			return dsg.clazzDecl(entity);		
+	}	
+	override String clazzEndDecl(PlatformEntity entity){
+			return dsg.clazzEndDecl(entity);		
+	}
+	override String genTypeName(PlatformComposableElement pce) {
+		return dsg.genTypeName(pce);
+		
+	}
+
 }
