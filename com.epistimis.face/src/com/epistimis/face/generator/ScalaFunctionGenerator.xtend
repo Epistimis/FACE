@@ -53,7 +53,7 @@ class ScalaFunctionGenerator extends CommonFunctionGenerator implements IFaceLan
 	«var entityIncludes = new ArrayList<PlatformEntity>»
 	«var List<PlatformDataModel> pdmIncludes = new ArrayList<PlatformDataModel>»
 	«FOR ent: entities»
-		«ent.generateInclude(pdmIncludes, entityIncludes)»
+		«ent.generateInclude(uop,pdmIncludes, entityIncludes)»
 	«ENDFOR»
 	def «uop.name»(«FOR conn: uop.connection  SEPARATOR ','» «qu.getReferencedEntities(conn).get(0).typeString» : «conn.name»«ENDFOR»): Nothing =
 		/** The first step in this function must be a check for runtime privacy issues (e.g. where individual choices matter like Consent).

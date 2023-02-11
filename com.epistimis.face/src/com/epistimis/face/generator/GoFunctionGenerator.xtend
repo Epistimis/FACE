@@ -55,7 +55,7 @@ class GoFunctionGenerator extends CommonFunctionGenerator implements IFaceLangGe
 	«var entityIncludes = new ArrayList<PlatformEntity>»
 	«var List<PlatformDataModel> pdmIncludes = new ArrayList<PlatformDataModel>»
 	«FOR ent: entities»
-		«ent.generateInclude(pdmIncludes, entityIncludes)»
+		«ent.generateInclude(uop,pdmIncludes, entityIncludes)»
 	«ENDFOR»
 	func «uop.name»(«FOR conn: uop.connection  SEPARATOR ','» «qu.getReferencedEntities(conn).get(0).typeString» «conn.name»«ENDFOR»)
 	{

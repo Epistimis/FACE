@@ -7,6 +7,8 @@ import com.epistimis.uddl.uddl.PlatformDataModel
 import com.epistimis.uddl.uddl.PlatformEntity
 import java.util.ArrayList
 import java.util.List
+import com.google.common.base.CaseFormat
+import com.epistimis.face.face.UopConnection
 
 class TypescriptFunctionGenerator extends CommonFunctionGenerator implements IFaceLangGenerator {
 
@@ -22,7 +24,7 @@ class TypescriptFunctionGenerator extends CommonFunctionGenerator implements IFa
 	}
 	
 	override getSrcExtension() {
-		return ".cpp";
+		return ".ts";
 	}
 			
 	/**
@@ -53,14 +55,21 @@ class TypescriptFunctionGenerator extends CommonFunctionGenerator implements IFa
 	«var entityIncludes = new ArrayList<PlatformEntity>»
 	«var List<PlatformDataModel> pdmIncludes = new ArrayList<PlatformDataModel>»
 	«FOR ent: entities»
-		«ent.generateInclude(pdmIncludes, entityIncludes)»
+		«ent.generateInclude(uop,pdmIncludes, entityIncludes)»
 	«ENDFOR»
-	public void «uop.name»(«FOR conn: uop.connection  SEPARATOR ','» «qu.getReferencedEntities(conn).get(0).typeString» «conn.name»«ENDFOR»)
+	export default function «uop.name»(«FOR conn: uop.connection  SEPARATOR ','» «conn.genParameter» «ENDFOR»)
 	{
 		/** The first step in this function must be a check for runtime privacy issues (e.g. where individual choices matter like Consent).
 		 *  This might be a null function
 		 */
-		bool hasConsent = checkConsents(«FOR conn: uop.connection  SEPARATOR ','» «conn.name»«ENDFOR»);	
+		var hasConsent: boolean = true;
+		«FOR conn: uop.connection» 
+		hasConsent = hasConsent && check_consents(«conn.genParameterName»);
+		«ENDFOR»
+		
+		if (!hasConsent) {
+			return
+		}
 		
 		/**
 		* The remainder of this function body should be manually filled in
@@ -69,6 +78,18 @@ class TypescriptFunctionGenerator extends CommonFunctionGenerator implements IFa
 	'''
 	}
 
+	def genFunctionName(UopUnitOfPortability uop) {
+		return uop.name;
+		//return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE,uop.name);	
+	}
+	def genParameterName(UopConnection conn) {
+		return conn.name;
+		//return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE,conn.name);
+	}
+	
+	def genParameter(UopConnection conn) {
+		return genParameterName(conn) + ": "  + qu.getReferencedEntities(conn).get(0).typeString;
+	}
 	
 
 	

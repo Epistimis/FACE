@@ -27,6 +27,7 @@ import com.epistimis.uddl.uddl.PlatformDataModel
 import com.epistimis.uddl.uddl.PlatformComposition
 import com.epistimis.uddl.uddl.PlatformParticipant
 import com.epistimis.uddl.uddl.PlatformComposableElement
+import org.eclipse.emf.ecore.EObject
 
 abstract class CommonFunctionGenerator extends CommonDataStructureGenerator implements IFaceLangGenerator {
 
@@ -206,8 +207,12 @@ abstract class CommonFunctionGenerator extends CommonDataStructureGenerator impl
 		return dsg.rootDirectory
 	}
 	
-	override getFileExtension() {
-		return dsg.fileExtension
+	override getWriteFileExtension() {
+		return dsg.writeFileExtension
+	}
+	
+	override getReadFileExtension() {
+		return dsg.readFileExtension
 	}
 	
 	override getImportPrefix() {
@@ -249,12 +254,12 @@ abstract class CommonFunctionGenerator extends CommonDataStructureGenerator impl
 		return dsg.pdmHeader(pdm);
 	}
 	
-	override String generateImportStatement(PlatformDataModel pdm) {
-			return dsg.generateImportStatement(pdm);		
+	override String generateImportStatement(PlatformDataModel pdm, EObject ctx) {
+			return dsg.generateImportStatement(pdm,ctx);		
 	}
 		
-	override String generateImportStatement(PlatformEntity entType) {
-			return dsg.generateImportStatement(entType);		
+	override String generateImportStatement(PlatformEntity entType, EObject ctx) {
+			return dsg.generateImportStatement(entType,ctx);		
 	}
 	override String getFileHeader(PlatformEntity entType) {
 			return dsg.getFileHeader(entType);		

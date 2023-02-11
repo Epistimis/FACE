@@ -59,7 +59,7 @@ class PythonFunctionGenerator extends CommonFunctionGenerator implements IFaceLa
 	«var entityIncludes = new ArrayList<PlatformEntity>»
 	«var List<PlatformDataModel> pdmIncludes = new ArrayList<PlatformDataModel>»
 	«FOR ent: entities»
-		«ent.generateInclude(pdmIncludes, entityIncludes)»
+		«ent.generateInclude(uop,pdmIncludes, entityIncludes)»
 	«ENDFOR»
 	def «uop.genFunctionName»(«FOR conn: uop.connection  SEPARATOR ','» «conn.genParameter» «ENDFOR»):
 		# # # # # #
@@ -88,7 +88,7 @@ class PythonFunctionGenerator extends CommonFunctionGenerator implements IFaceLa
 	}
 	
 	def genParameter(UopConnection conn) {
-		return genParameterName(conn) + ": "  + qu.getReferencedEntities(conn).get(0).typeString.toFirstUpper;
+		return genParameterName(conn) + ": "  + qu.getReferencedEntities(conn).get(0).typeString;
 	}
 
 	
