@@ -7,6 +7,7 @@ import com.epistimis.uddl.uddl.PlatformDataModel
 import com.epistimis.uddl.uddl.PlatformEntity
 import java.util.ArrayList
 import java.util.List
+import com.epistimis.face.face.UopConnection
 
 class ScalaFunctionGenerator extends CommonFunctionGenerator implements IFaceLangGenerator {
 
@@ -55,18 +56,42 @@ class ScalaFunctionGenerator extends CommonFunctionGenerator implements IFaceLan
 	«FOR ent: entities»
 		«ent.generateInclude(uop,pdmIncludes, entityIncludes)»
 	«ENDFOR»
-	def «uop.name»(«FOR conn: uop.connection  SEPARATOR ','» «qu.getReferencedEntities(conn).get(0).typeString» : «conn.name»«ENDFOR»): Nothing =
-		/** The first step in this function must be a check for runtime privacy issues (e.g. where individual choices matter like Consent).
-		 *  This might be a null function
-		 */
-		bool hasConsent = checkConsents(«FOR conn: uop.connection  SEPARATOR ','» «conn.name»«ENDFOR»);	
+	object «uop.name»  {
 		
-		/**
-		* The remainder of this function body should be manually filled in
-		*/
+		def apply(«FOR conn: uop.connection  SEPARATOR ','» «conn.genParameter» «ENDFOR»): Boolean = {
+			/** The first step in this function must be a check for runtime privacy issues (e.g. where individual choices matter like Consent).
+			 *  This might be a null function
+			 */
+			var hasConsent: Boolean = true;
+			«FOR conn: uop.connection» 
+			hasConsent = hasConsent && check_consents(«conn.genParameterName»);
+			«ENDFOR»
+			
+			if (!hasConsent) {
+				return false;
+			}
+			
+			/**
+			* The remainder of this function body should be manually filled in
+			*/
+		}
+	}	
 	'''
 	}
 
+	
+	def genFunctionName(UopUnitOfPortability uop) {
+		return uop.name;
+		//return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE,uop.name);	
+	}
+	def genParameterName(UopConnection conn) {
+		return conn.name;
+		//return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE,conn.name);
+	}
+	
+	def genParameter(UopConnection conn) {
+		return genParameterName(conn) + ": "  + qu.getReferencedEntities(conn).get(0).typeString;
+	}
 	
 
 	
