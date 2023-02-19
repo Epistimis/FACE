@@ -4,13 +4,17 @@ generate face "http://www.epistimis.com/face/Face"
 
 import "http://www.epistimis.com/uddl/Uddl" as uddl
 
-	
+/** An ArchitectureModel is a container for DataModels, UoPModels, IntegrationModels, and TraceabilityModels. */	
 ArchitectureModel:
 	'am' name=ID description=STRING '{'
 	(dm+=DataModel | um+=UopUoPModel | im+=IntegrationIntegrationModel)+
 	'}'
 ;
 
+/** An Element is the root type for defining all named elements in the ArchitectureModel. The “name” attribute captures the name of the Element in the model. The “description” attribute captures a description for the element. 
+ *  NOTE: Because of the way XText works, attributes bubble up from the bottom. So 'name' and 'description' are specified in leaf rules but show up in 
+ *  the generated API for FaceElement
+ * */
 FaceElement:
 	ArchitectureModel |
 	UopUoPModel |
@@ -22,6 +26,7 @@ enum UoPClientServerRole:
 	CLIENT='client' | SERVER='server'
 ;
 
+/** The FaceProfile enumeration captures the OS API subsets for a UoP as defined by the OSS. */
 enum UopFaceProfile:
 	GENERAL_PURPOSE = 'GeneralPurpose' |
 	SECURITY = 'Security' |
@@ -38,21 +43,25 @@ enum UopDesignAssuranceStandard:
 	DO_178C_ED_12C='DO_178C_ED_12C'
 ;
 
+/** The MessageExchangeType enumeration captures the options for the message exchange type of a UoP port as defined by the TS Interface. */
 enum UopMessageExchangeType:
 	INBOUND_MESSAGE='InboundMessage' |
 	OUTBOUND_MESSAGE='OutboundMessage'
 ;
 
+/** The PartitionType enumeration captures the OS API types for a UoP as defined by the OSS. */
 enum UopPartitionType:
 	POSIX='POSIX' | ARINC653='ARINC653'
 ;
 
+/** The ProgrammingLanguage enumeration captures the options for programming language API bindings as defined by Section 4.14. */
 enum UopProgrammingLanguage:
 	C='C' | CPP='cpp' | JAVA='Java' | ADA='Ada' 
 	// EXTENSION: Additional languages not supported by FACE
 	| GO='Go' | JS='Javascript' | PYTHON='Python' | RUST = 'Rust' | SCALA='Scala' | SQL='SQL' | TS='Typescript' 
 ;
 
+/** The SynchronizationStyle enumeration captures the options for the synchronization style of a UoP port as defined by the TS Interface. */
 enum UopSynchronizationStyle:
 	BLOCKING='Blocking' | NON_BLOCKING='NonBlocking'
 ;
@@ -61,13 +70,14 @@ enum UopThreadType:
 	FOREGROUND='Foreground'| BACKGROUND='Background'
 ;
 
-
+/** A UoPModel is a container for UoC Elements. */
 UopUoPModel:
 	'um' name=ID description=STRING '{'
 		(um+=UopUoPModel | element +=UopElement)+
 	'}'
 ;
 
+/** A uop Element is the root type for defining the component elements of the ArchitectureModel. */
 UopElement: 
 	UopSupportingComponent |
 	UopUnitOfPortability |
@@ -76,29 +86,30 @@ UopElement:
 
 ;
 
-
-
-
+/** A SupportingComponent is a LanguageRunTime or ApplicationFramework. The “version” attribute is the version of the SupportingComponent. */
 UopSupportingComponent:
 	UopComponentFramework |
 	UopLanguageRuntime
 ;
 
+/** A LanguageRunTime is a language run-time as defined in Section 4.2.3. */
 UopLanguageRuntime:
 	'runtime' name=ID ':' version=ID description=STRING ';'
 ;
 
+/** A ComponentFramework is an application framework as defined in Section 4.2.4. */
 UopComponentFramework:
 	'framework' name=ID ':' version=ID description=STRING ';'
 ;
 
+/** An AbstractUoP is used to capture the specification of a UoP. */
 UopAbstractUoP:
 	'aUoP' name=ID description=STRING '{'
 		(connection+=UopAbstractConnection)*
 	'};'	
 ;
 
-
+/** An AbstractConnection captures the input and output characteristics of an AbstractUoP by specifying data at a Logical or Conceptual level. */
 UopAbstractConnection:
 	'aconn' name=ID description=STRING '{'
 		( 'c' conceptualView=[uddl::ConceptualView|QN])? 
@@ -106,11 +117,13 @@ UopAbstractConnection:
 	'};'	
 ;
 
+/** A UnitOfPortability is a FACE PlatformSpecificComponent or PortableComponent. */
 UopUnitOfPortability:	
 	UopPortableComponent |
 	UopPlatformSpecificComponent
 	;
 
+/** A PortableComponent is a software component as defined by the PCS. */
 UopPortableComponent:	
 	'pc'  name=ID description=STRING ('->' realizes=[UopAbstractUoP|QN])? '{'
 		'lang:' transportAPILanguage=UopProgrammingLanguage
@@ -126,6 +139,7 @@ UopPortableComponent:
 	'};'
 ;
 
+/** A PlatformSpecificComponent is a software component as defined by the PSSS. */
 UopPlatformSpecificComponent:	
 	 'psc' name=ID description=STRING ('->' realizes=[UopAbstractUoP|QN])? '{'
 		'lang:' transportAPILanguage=UopProgrammingLanguage
@@ -141,7 +155,7 @@ UopPlatformSpecificComponent:
 	'};'
 ;
 
-
+/** A Thread defines the properties for the scheduling of a thread. */
 UopThread: '(' 
 	'per:' period=FLOAT 
 	'timeCap:' timeCapacity=FLOAT 
@@ -151,7 +165,7 @@ UopThread: '('
 	')'
 	;
 
-
+/** A RAMMemoryRequirements defines memory resources required by a UoP. */
 UopRAMMemoryRequirements:
 	{UopRAMMemoryRequirements}
 	'('
@@ -163,10 +177,13 @@ UopRAMMemoryRequirements:
 	')'
 ;
 
+/** A Connection is a communication endpoint on a FACE UoP. A Connection is either a Publisher, Subscriber, Client, or Server. The “messageType” specifies the platform View that is transmitted through the endpoint. If “period” is not specified, the endpoint is aperiodic. If “period” is specified, the value is the period of the endpoint in seconds. */
 UopConnection:
 	UopPubSubConnection |
 	UopClientServerConnection
 ;
+
+/** A ClientServerConnection is a Request/Reply Connection as defined in Section 4.7. */
 UopClientServerConnection:
 	'csconn' name=ID description=STRING ('->' realizes=[UopAbstractConnection|QN])? '{'
 	 	'msg:' '[' requestType=[UopMessageType|QN] '/' responseType=[UopMessageType|QN] ']'
@@ -176,12 +193,13 @@ UopClientServerConnection:
 	'}'
 ;
 
-
+/** A PubSubConnection is a QueuingConnection or a SingleInstanceMessageConnection. The “messageExchangeType” attribute defines the direction of the message relative to the UoP. */
 UopPubSubConnection:
 	UopQueuingConnection |
 	UopSingleInstanceMessageConnection
 ;
 
+/** A QueuingConnection is a PubSubConnection that supports buffering/queuing as defined in Section 4.8.  */
 UopQueuingConnection:
 	'qconn' name=ID description=STRING ('->' realizes=[UopAbstractConnection|QN])? '{'
 	 	'msg:'  messageExchangeType=UopMessageExchangeType 
@@ -192,6 +210,7 @@ UopQueuingConnection:
 		'}'
 ;
 
+/** A SingleInstanceMessageConnection is a PubSubConnection that supports single instance messaging as defined in Section 4.8.  */
 UopSingleInstanceMessageConnection:
 	'simconn' name=ID description=STRING ('->' realizes=[UopAbstractConnection|QN])? '{'
 	 	'msg:'  messageExchangeType=UopMessageExchangeType 
@@ -201,15 +220,18 @@ UopSingleInstanceMessageConnection:
 		'}'
 ;
 
+/** A LifeCycleManagementPort is used to define the life-cycle interface for the component. The “messageExchangeType” attribute defines the direction of the life-cycle message relative to the UoP.  */
 UopLifeCycleManagementPort:
 	'(' messageExchangeType=UopMessageExchangeType lcmMessageType=[UopMessageType|QN] ')'
 ;
 
+/** A MessageType is a Template or a CompositeTemplate. */
 UopMessageType:
 	UopTemplate |
 	UopCompositeTemplate
 ;
 
+/** A CompositeTemplate is a collection of two or more Templates. The “isUnion” attribute specifies whether the composed Templates are to be represented as cases in an IDL union or as members of an IDL struct. */
 UopCompositeTemplate:
 	'ctempl' name=ID description=STRING ('->' realizes=[uddl::LogicalCompositeQuery|QN])? '{'
 		isUnion?='isUnion'
@@ -217,10 +239,12 @@ UopCompositeTemplate:
 	'};'
 ;
 
+/** A TemplateComposition is the mechanism that allows a CompositeTemplate to be constructed from Templates and other CompositeTemplates. The “rolename” attribute defines the name of the composed platform View within the scope of the composing CompositeTemplate. The “type” of a TemplateComposition is the platform View being used to construct the CompositeTemplate. */
 UopTemplateComposition:
 	type=[UopMessageType|QN] rolename=STRING ('->' realizes=[uddl::LogicalQueryComposition|QN])?
 ;
 
+/** A Template is a specification that defines a structure for Characteristics projected by its “boundQuery” or its “effectiveQuery”. The “specification” attribute captures the specification of a Template as defined by the Template grammar in Section J.4.  */
 UopTemplate:
 	'templ' name=ID description=STRING  '{'
 		'spec:' specification=STRING
@@ -231,25 +255,23 @@ UopTemplate:
 
 // -------------- Integration -----------
 
-//IntegrationTSNodePortBase:
-//	IntegrationUoPEndPoint |
-//	IntegrationTSNodePort
-//;
-
 
 // ----
+/** An IntegrationModel is a container for integration Elements.  */
 IntegrationIntegrationModel:
 	'im' name=ID description=STRING '{'
 		(im+=IntegrationIntegrationModel | element+=IntegrationElement)*
 	'}'
 ;
 
+/** An integration Element is the root type for defining the integration elements of the ArchitectureModel. */
 IntegrationElement:
 	IntegrationUoPInstance |
 	IntegrationTransportChannel |
 	IntegrationIntegrationContext
 ;
 
+/** An IntegrationContext is a container used to group a set of TransportNodes and TSNodeConnections related to each other by a common, integrator defined context (e.g., collection and distribution of navigation data). */
 IntegrationIntegrationContext:
 	'ic' name=ID description=STRING '{'
 		('xport:''[' node+=IntegrationTransportNode+ ']')?
@@ -257,6 +279,9 @@ IntegrationIntegrationContext:
 	'}'
 ;
 
+/** A TSNodeConnection represents a connection between two TransportNodes. 
+ * NOTE: This rule as defined subsumes the functionality of the derived classes from the spec.
+ */
 IntegrationTSNodeConnection:
 	// Could make U2U the default
 	'(' ('U2U')? source=[IntegrationUoPOutputEndPoint|QN] '->' destination=[IntegrationUoPInputEndPoint|QN] ')' |
@@ -265,6 +290,13 @@ IntegrationTSNodeConnection:
 	'(' 'T2T' source=[IntegrationTSNodeOutputPort|QN] '->' destination=[IntegrationTSNodeInputPort|QN] ')' 
 ;
 
+/** A TSNodePortBase is a port that can be used to connect a TransportNode and a UoPEndPoint together using a TSNodeConnection. */
+//IntegrationTSNodePortBase:
+//	IntegrationUoPEndPoint |
+//	IntegrationTSNodePort
+//;
+
+/** A UoPInstance represents an instance of a specific UoP within the system bounded by an integration model. An integration model can contain multiple instances of the same UoP. */
 IntegrationUoPInstance:
 	'uinst' name=ID description=STRING '->' realizes=[UopUnitOfPortability|QN]  '{'
 		('uri:' configurationURI=STRING)?
@@ -274,19 +306,23 @@ IntegrationUoPInstance:
 ;
 
 // EXTENSION: Technically, the IntegrationTSNodeConnection rule sidesteps any need for this rule.
+/** A UoPEndPoint is a specialization of a TSNodePortBase that allows connections in a UoPInstance to be part of a TSNodeConnection. This supports connecting UOP input and output endpoints to each other and to transport node input and output ports. */
 //IntegrationUoPEndPoint:
 //	IntegrationUoPInputEndPoint |
 //	IntegrationUoPOutputEndPoint
 //;
 
+/** A UoPInputEndPoint is a specialization of a UoPEndPoint providing an endpoint which is used to input data to a UoP. */
 IntegrationUoPInputEndPoint:
 	connection=[UopConnection|QN]
 ;
 
+/** A UoPOutputEndPoint is a specialization of a UoPEndPoint providing an endpoint which is used to output data from a UoP. */
 IntegrationUoPOutputEndPoint:
 	 connection=[UopConnection|QN] 
 ;
 
+/** A TransportNode is an abstraction of a node that performs a function along a path of communication from source UoPs to destination UoPs.  */
 IntegrationTransportNode:
 	IntegrationViewTransporter |
 	IntegrationViewAggregation |
@@ -297,20 +333,23 @@ IntegrationTransportNode:
 ;
 
 // EXTENSION: Technically, the IntegrationTSNodeConnection rule sidesteps any need for this rule.
-// To ensure proper inheritance
+/** A TSNodePort is a port that provides a connection point to a TransportNode. A TSNodePort is typed by the “view” it references. */
 //IntegrationTSNodePort:
 //	IntegrationTSNodeOutputPort | 
 //	IntegrationTSNodeInputPort	
 //;
 
+/** A TSNodeInputPort is a specialization of a TSNodePort providing an endpoint which is used to input data to a TransportNode. */
 IntegrationTSNodeInputPort:
 	 messageType=[UopMessageType|QN]
 ;
 
+/** A TSNodeOutputPort is a specialization of a TSNodePort providing an endpoint which is used to output data from a TransportNode. */
 IntegrationTSNodeOutputPort: 
 	 messageType=[UopMessageType|QN]
 ;
 
+/** A ViewAggregation represents of an instance of aggregation of data from multiple incoming views into a single outgoing view type, including transformation of input data to that required by the output view type. */
 IntegrationViewAggregation:
 	'agg' name=ID description=STRING '{'
 		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
@@ -318,6 +357,7 @@ IntegrationViewAggregation:
 	'};'
 ;
 
+/** A ViewFilter represents of an instance of a filter of data allowing a view to either pass through a filter, or to be filtered out (i.e., not passed through). A ViewFilter performs no transformation of data. */
 IntegrationViewFilter:
 	'filter' name=ID description=STRING '{'
 		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
@@ -325,6 +365,7 @@ IntegrationViewFilter:
 	'};'
 ;
 
+/** A ViewSource is a TransportNode that only provides a View. */
 IntegrationViewSink:
 	'sink' name=ID description=STRING '{'
 		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
@@ -332,6 +373,7 @@ IntegrationViewSink:
 	'};'
 ;
 
+/** A ViewSink is a TransportNode that only receives a View. */
 IntegrationViewSource:
 	'src' name=ID description=STRING '{'
 		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
@@ -339,6 +381,7 @@ IntegrationViewSource:
 	'};'
 ;
 
+/** A ViewTransformation represents an instance of transformation of data from one view type to another. */
 IntegrationViewTransformation:
 	'xform' name=ID description=STRING '{'
 		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
@@ -346,6 +389,7 @@ IntegrationViewTransformation:
 	'};'
 ;
 
+/** A ViewTransporter represents the use of a TransportChannel with the intent of moving a view over it. */
 IntegrationViewTransporter:
 	'xport' name=ID description=STRING '{'
 		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
@@ -354,6 +398,7 @@ IntegrationViewTransporter:
 	'};'
 ;
 
+/** A TransportChannel is a placeholder for an integrator supplied configuration between transport endpoints. */
 IntegrationTransportChannel:
 	name=ID description=STRING ';'
 ;
