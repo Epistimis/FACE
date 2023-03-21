@@ -134,10 +134,10 @@ public class FaceQNP extends UddlQNP {
 		// TODO: Is it possible to have the same data flowing over multiple endpoints?
 		// If so, we then need to using indexing into the output list as part of the name
 		EStructuralFeature container = obj.eContainingFeature();
-		EObjectContainmentEList<IntegrationTSNodeOutputPort> inports = (EObjectContainmentEList<IntegrationTSNodeOutputPort>) inst.getOutPort();
-		int ndx = inports.basicIndexOf(obj);
+		//IntegrationTSNodeOutputPort outport =  inst.getOutPort();
 
-		return  getFullyQualifiedName(inst).append(container.getName()+Integer.toString(ndx));
+		// There is only 1 output port, so the index will always be zero
+		return  getFullyQualifiedName(inst).append(container.getName()+"0");
 
 //		QualifiedName refQN = getReferenceAsQN(obj,"messageType");
 //
