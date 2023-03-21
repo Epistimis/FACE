@@ -57,7 +57,7 @@ class GoFunctionGenerator extends CommonFunctionGenerator implements IFaceLangGe
 	«FOR ent: entities»
 		«ent.generateInclude(uop,pdmIncludes, entityIncludes)»
 	«ENDFOR»
-	func «uop.name»(«FOR conn: uop.connection  SEPARATOR ','» «qu.getReferencedEntities(conn).get(0).typeString» «conn.name»«ENDFOR»)
+	func «uop.name»(«FOR conn: uop.connection  SEPARATOR ','» «qu.getReferencedPlatformEntities(conn).get(0).typeString» «conn.name»«ENDFOR»)
 	{
 		/** The first step in this function must be a check for runtime privacy issues (e.g. where individual choices matter like Consent).
 		 *  This might be a null function

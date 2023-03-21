@@ -99,7 +99,7 @@ abstract class CommonFunctionGenerator extends CommonDataStructureGenerator impl
 			return;
 		}
 		
-		val List<PlatformEntity> entities = qu.getReferencedEntities(inst.realizes);
+		val List<PlatformEntity> entities = qu.getReferencedPlatformEntities(inst.realizes);
 		
 		processAComponent(inst.realizes,entities, fsa, context);
 			

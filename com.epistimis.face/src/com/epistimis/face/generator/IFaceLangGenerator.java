@@ -6,7 +6,6 @@ package com.epistimis.face.generator;
 import java.util.List;
 
 import org.eclipse.xtext.generator.IFileSystemAccess2;
-import org.eclipse.xtext.generator.IGenerator2;
 import org.eclipse.xtext.generator.IGeneratorContext;
 
 import com.epistimis.face.face.IntegrationUoPInstance;

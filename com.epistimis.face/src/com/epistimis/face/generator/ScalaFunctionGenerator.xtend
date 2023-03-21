@@ -90,7 +90,13 @@ class ScalaFunctionGenerator extends CommonFunctionGenerator implements IFaceLan
 	}
 	
 	def genParameter(UopConnection conn) {
-		return genParameterName(conn) + ": "  + qu.getReferencedEntities(conn).get(0).typeString;
+		val List<PlatformEntity> pes = qu.getReferencedPlatformEntities(conn);
+		if (pes.length == 0) {
+			System.out.println("Connection " + conn.fullyQualifiedName + " references missing type");
+			return "<Missing parameter>"
+		}
+
+		return genParameterName(conn) + ": "  + pes.get(0).typeString;
 	}
 	
 

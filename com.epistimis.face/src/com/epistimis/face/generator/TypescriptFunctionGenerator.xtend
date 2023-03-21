@@ -7,7 +7,7 @@ import com.epistimis.uddl.uddl.PlatformDataModel
 import com.epistimis.uddl.uddl.PlatformEntity
 import java.util.ArrayList
 import java.util.List
-import com.google.common.base.CaseFormat
+//import com.google.common.base.CaseFormat
 import com.epistimis.face.face.UopConnection
 
 class TypescriptFunctionGenerator extends CommonFunctionGenerator implements IFaceLangGenerator {
@@ -88,7 +88,13 @@ class TypescriptFunctionGenerator extends CommonFunctionGenerator implements IFa
 	}
 	
 	def genParameter(UopConnection conn) {
-		return genParameterName(conn) + ": "  + qu.getReferencedEntities(conn).get(0).typeString;
+		val List<PlatformEntity> pes = qu.getReferencedPlatformEntities(conn);
+		if (pes.length == 0) {
+			System.out.println("Connection " + conn.fullyQualifiedName + " references missing type");
+			return "<Missing parameter>"
+		}
+
+		return genParameterName(conn) + ": "  + pes.get(0).typeString;
 	}
 	
 

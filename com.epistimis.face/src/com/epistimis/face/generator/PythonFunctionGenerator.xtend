@@ -88,7 +88,7 @@ class PythonFunctionGenerator extends CommonFunctionGenerator implements IFaceLa
 	}
 	
 	def genParameter(UopConnection conn) {
-		return genParameterName(conn) + ": "  + qu.getReferencedEntities(conn).get(0).typeString;
+		return genParameterName(conn) + ": "  + qu.getReferencedPlatformEntities(conn).get(0).typeString;
 	}
 
 	

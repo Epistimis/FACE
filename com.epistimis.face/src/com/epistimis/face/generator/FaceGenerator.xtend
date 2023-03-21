@@ -65,7 +65,7 @@ class FaceGenerator extends AbstractGenerator {
 		 */
 		for (comp : resource.allContents.toIterable.filter(UopUnitOfPortability)) {
 
-			val List<PlatformEntity> entities = getReferencedEntities(comp);
+			val List<PlatformEntity> entities = getReferencedPlatformEntities(comp);
 			// Now call the relevant generator
 			val generator = languageSpecificGenerators.get(comp.transportAPILanguage);
 			if (generator === null) {
