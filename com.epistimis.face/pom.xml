@@ -44,7 +44,7 @@
 					<dependency>
 					    <groupId>io.typefox.xtext2langium</groupId>
 					    <artifactId>io.typefox.xtext2langium</artifactId>
-					    <version>0.3.0</version>
+					    <version>0.4.0</version>
 					</dependency>
 				</dependencies>
 			</plugin>
@@ -130,5 +130,16 @@
 			</plugins>
 		</pluginManagement>
 	</build>
-
+	<dependencies>
+		<dependency>
+			<groupId>com.epistimis.uddl</groupId>
+			<artifactId>com.epistimis.uddl</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.epistimis.uddl.query</groupId>
+			<artifactId>com.epistimis.uddl.query</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
+	</dependencies>
 </project>

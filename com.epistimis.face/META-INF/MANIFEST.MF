@@ -8,9 +8,9 @@ Bundle-SymbolicName: com.epistimis.face; singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.xtext,
  org.eclipse.xtext.xbase,
- org.eclipse.equinox.common;bundle-version="3.5.0",
- io.typefox.xtext2langium;bundle-version="0.3.0",
+ org.eclipse.equinox.common;bundle-version="3.16.0",
  com.epistimis.uddl;bundle-version="1.0.0",
+ com.epistimis.uddl.query;bundle-version="1.0.0",
  org.eclipse.emf.ecore,
  org.eclipse.xtext.xbase.lib;bundle-version="2.14.0",
  org.eclipse.xtext.util,
@@ -21,9 +21,8 @@ Require-Bundle: org.eclipse.xtext,
  org.eclipse.ocl;bundle-version="3.17.0",
  org.eclipse.ocl.xtext.oclstdlib;bundle-version="1.17.0",
  org.eclipse.emf.validation;bundle-version="1.8.1",
- org.eclipse.ocl.xtext.completeocl;bundle-version="1.17.0",
- com.epistimis.uddl.query;bundle-version="1.0.0"
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+ org.eclipse.ocl.xtext.completeocl;bundle-version="1.17.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Export-Package: com.epistimis.face.parser.antlr,
  com.epistimis.face.validation,
  com.epistimis.face.scoping,

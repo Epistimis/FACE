@@ -42,9 +42,9 @@ Workflow {
 			referencedResource="platform:/resource/com.epistimis.uddl/model/generated/Uddl.genmodel"
 			referencedResource="platform:/resource/com.epistimis.uddl.query/model/generated/Query.genmodel"
 
-		    fragment = io.typefox.xtext2langium.Xtext2LangiumFragment {
-		        outputPath = './langium'
-		    }
+//		    fragment = io.typefox.xtext2langium.Xtext2LangiumFragment {
+//		        outputPath = './langium'
+//		    }
 			// rename refactoring
 			fragment = refactoring.RefactorElementNameFragment2 {}
 			fragment = org.eclipse.xtext.xtext.generator.ui.codemining.CodeMiningFragment {}
