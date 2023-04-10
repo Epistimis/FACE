@@ -56,6 +56,7 @@ enum UopPartitionType:
 
 /** The ProgrammingLanguage enumeration captures the options for programming language API bindings as defined by Section 4.14. */
 enum UopProgrammingLanguage:
+	UNSPECIFIED = 'Unspecified' | // EXTENSION: Make it possible to not specify a language - this is first so it gets the '0' value, so if no value is specified, this one will be assumed
 	C='C' | CPP='cpp' | JAVA='Java' | ADA='Ada' 
 	// EXTENSION: Additional languages not supported by FACE
 	| GO='Go' | JS='Javascript' | PYTHON='Python' | RUST = 'Rust' | SCALA='Scala' | SQL='SQL' | TS='Typescript' 
