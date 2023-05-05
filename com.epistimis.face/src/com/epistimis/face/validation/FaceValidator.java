@@ -11,7 +11,7 @@ import org.eclipse.xtext.validation.EValidatorRegistrar;
 
 import com.epistimis.face.face.FacePackage;
 import com.epistimis.face.generator.QueryUtilities;
-import com.epistimis.uddl.generator.QueryProcessor;
+import com.epistimis.uddl.QueryProcessor;
 import com.epistimis.uddl.scoping.IndexUtilities;
 import com.google.inject.Inject;
 
@@ -25,8 +25,8 @@ public class FaceValidator extends AbstractFaceValidator {
 
 	@Inject
 	IQualifiedNameProvider qnp;
-	@Inject
-	QueryProcessor qp;
+//	@Inject
+//	QueryProcessor qp;
 	@Inject
 	QueryUtilities qu;
 	@Inject

@@ -8,7 +8,7 @@ import com.epistimis.face.face.UopSingleInstanceMessageConnection
 import com.epistimis.face.face.UopTemplate
 import com.epistimis.face.face.UopTemplateComposition
 import com.epistimis.face.face.UopUnitOfPortability
-import com.epistimis.uddl.generator.QueryProcessor
+import com.epistimis.uddl.PlatformQueryProcessor
 import com.epistimis.uddl.query.query.QuerySpecification
 import com.epistimis.uddl.uddl.PlatformCompositeQuery
 import com.epistimis.uddl.uddl.PlatformEntity
@@ -32,7 +32,7 @@ class QueryUtilities {
 
 	@Inject extension IQualifiedNameProvider qnp;
 
-	@Inject extension QueryProcessor qp; 
+	@Inject extension PlatformQueryProcessor qp; 
 
 	def dispatch List<PlatformEntity> getReferencedPlatformEntities(UopUnitOfPortability comp) {
 		var List<PlatformEntity> entities = new ArrayList<PlatformEntity>();
@@ -142,6 +142,9 @@ class QueryUtilities {
 	 * Get all the queries referenced by this Template/Connection. Recurses down through Composites to find everything, keeping only
 	 * a single reference, ordered by the FQN of the query. Note that this returns only ConceptualQuery, not ConceptualCompositeQuery - 
 	 * effectively flattening the list.
+	 * 
+	 * TODO: this does not account for differences between Platform/Logical/Conceptual in terms of fields selected. So
+	 * the ConceptualQuery returned could contain more fields than the PlatformQuery actually uses.
 	 */
 	def dispatch SortedMap<String, ConceptualQuery> conceptualQueriesMap(UopTemplate templ) {
 		var result = new TreeMap<String, ConceptualQuery>();
