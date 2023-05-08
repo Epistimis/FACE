@@ -10,6 +10,7 @@ import java.util.ArrayList
 import java.util.List
 import com.epistimis.face.face.UopConnection
 import com.google.common.base.CaseFormat
+import java.util.Collection
 
 class PythonFunctionGenerator extends CommonFunctionGenerator implements IFaceLangGenerator {
 
@@ -50,7 +51,7 @@ class PythonFunctionGenerator extends CommonFunctionGenerator implements IFaceLa
 	 * 
 	 * TODO: parameter list doesn't properly address the possibility of multiple entities matching a connection
 	 */
-	override compileUopCommon(UopUnitOfPortability uop,List<PlatformEntity> entities){
+	override compileUopCommon(UopUnitOfPortability uop,Collection<PlatformEntity> entities){
 	'''
 	# From model «(uop.eContainer as UopUoPModel).name»
 	#
@@ -88,7 +89,7 @@ class PythonFunctionGenerator extends CommonFunctionGenerator implements IFaceLa
 	}
 	
 	def genParameter(UopConnection conn) {
-		return genParameterName(conn) + ": "  + qu.getReferencedPlatformEntities(conn).get(0).typeString;
+		return genParameterName(conn) + ": "  + qu.getReferencedPlatformEntities(conn).entrySet.get(0).value.typeString;
 	}
 
 	

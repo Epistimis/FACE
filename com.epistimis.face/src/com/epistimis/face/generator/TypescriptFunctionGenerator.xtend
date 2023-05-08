@@ -9,6 +9,8 @@ import java.util.ArrayList
 import java.util.List
 //import com.google.common.base.CaseFormat
 import com.epistimis.face.face.UopConnection
+import java.util.Collection
+import java.util.Map
 
 class TypescriptFunctionGenerator extends CommonFunctionGenerator implements IFaceLangGenerator {
 
@@ -49,7 +51,7 @@ class TypescriptFunctionGenerator extends CommonFunctionGenerator implements IFa
 	 * 
 	 * TODO: parameter list doesn't properly address the possibility of multiple entities matching a connection
 	 */
-	override compileUopCommon(UopUnitOfPortability uop,List<PlatformEntity> entities){
+	override compileUopCommon(UopUnitOfPortability uop,Collection<PlatformEntity> entities){
 	'''
 	/** Include all needed headers */
 	«var entityIncludes = new ArrayList<PlatformEntity>»
@@ -88,13 +90,13 @@ class TypescriptFunctionGenerator extends CommonFunctionGenerator implements IFa
 	}
 	
 	def genParameter(UopConnection conn) {
-		val List<PlatformEntity> pes = qu.getReferencedPlatformEntities(conn);
-		if (pes.length == 0) {
+		val Map<String,PlatformEntity> pes = qu.getReferencedPlatformEntities(conn);
+		if (pes.empty) {
 			System.out.println("Connection " + conn.fullyQualifiedName + " references missing type");
 			return "<Missing parameter>"
 		}
 
-		return genParameterName(conn) + ": "  + pes.get(0).typeString;
+		return genParameterName(conn) + ": "  + pes.entrySet.get(0).value.typeString;
 	}
 	
 

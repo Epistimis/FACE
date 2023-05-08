@@ -9,7 +9,6 @@ import com.epistimis.uddl.uddl.PlatformEntity
 import com.google.inject.Inject
 import java.text.MessageFormat
 import java.util.HashMap
-import java.util.List
 import java.util.Map
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.AbstractGenerator
@@ -65,7 +64,7 @@ class FaceGenerator extends AbstractGenerator {
 		 */
 		for (comp : resource.allContents.toIterable.filter(UopUnitOfPortability)) {
 
-			val List<PlatformEntity> entities = getReferencedPlatformEntities(comp);
+			val Map<String,PlatformEntity> entities = getReferencedPlatformEntities(comp);
 			if (comp.transportAPILanguage != UopProgrammingLanguage.UNSPECIFIED) {
 				// Now call the relevant generator
 				val generator = languageSpecificGenerators.get(comp.transportAPILanguage);
@@ -76,10 +75,10 @@ class FaceGenerator extends AbstractGenerator {
 		
 					System.out.println(fmttedMessage);
 				} else {
-					for (PlatformEntity entity : entities) {
-						generator.processEntities(entities, fsa, context);
-					}
-					generator.processAComponent(comp, entities, fsa, context);
+					//for (PlatformEntity entity : entities.values) {
+						generator.processEntities(entities.values, fsa, context);
+					//}
+					generator.processAComponent(comp, entities.values, fsa, context);
 				}
 				
 			}

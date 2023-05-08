@@ -9,21 +9,20 @@ import com.epistimis.face.face.UopTemplate
 import com.epistimis.face.face.UopTemplateComposition
 import com.epistimis.face.face.UopUnitOfPortability
 import com.epistimis.uddl.PlatformQueryProcessor
-import com.epistimis.uddl.query.query.QuerySpecification
+import com.epistimis.uddl.query.query.QueryStatement
+import com.epistimis.uddl.uddl.ConceptualCompositeQuery
+import com.epistimis.uddl.uddl.ConceptualQuery
+import com.epistimis.uddl.uddl.ConceptualQueryComposition
 import com.epistimis.uddl.uddl.PlatformCompositeQuery
 import com.epistimis.uddl.uddl.PlatformEntity
 import com.epistimis.uddl.uddl.PlatformQuery
 import com.epistimis.uddl.uddl.PlatformQueryComposition
 import com.google.inject.Inject
-import java.util.ArrayList
-import java.util.List
+import java.util.HashMap
 import java.util.Map
 import java.util.SortedMap
 import java.util.TreeMap
 import org.eclipse.xtext.naming.IQualifiedNameProvider
-import com.epistimis.uddl.uddl.ConceptualQuery
-import com.epistimis.uddl.uddl.ConceptualQueryComposition
-import com.epistimis.uddl.uddl.ConceptualCompositeQuery
 
 /**
  * These are utilities that are used to handle the transition between Face -> Query -> Uddl
@@ -34,10 +33,10 @@ class QueryUtilities {
 
 	@Inject extension PlatformQueryProcessor qp; 
 
-	def dispatch List<PlatformEntity> getReferencedPlatformEntities(UopUnitOfPortability comp) {
-		var List<PlatformEntity> entities = new ArrayList<PlatformEntity>();
+	def dispatch Map<String,PlatformEntity> getReferencedPlatformEntities(UopUnitOfPortability comp) {
+		var Map<String,PlatformEntity> entities = new HashMap<String,PlatformEntity>();
 		for (conn : comp.connection) {
-			entities.addAll(conn.getReferencedPlatformEntities);
+			entities.putAll(conn.getReferencedPlatformEntities);
 		}
 //		// Figure out which Entities are referenced by this component
 //		var referencedQueries = new TreeMap<String, PlatformQuery>();
@@ -56,8 +55,8 @@ class QueryUtilities {
 		return entities;
 	}
 
-	def dispatch List<PlatformEntity> getReferencedPlatformEntities(UopConnection conn) {
-		var List<PlatformEntity> entities = new ArrayList<PlatformEntity>();
+	def dispatch Map<String,PlatformEntity> getReferencedPlatformEntities(UopConnection conn) {
+		var Map<String,PlatformEntity> entities = new HashMap<String,PlatformEntity>();
 		// Figure out which Entities are referenced by this component
 		var referencedQueries = conn.platformQueriesMap;
 
@@ -66,8 +65,8 @@ class QueryUtilities {
 		 */
 		for (Map.Entry<String,PlatformQuery> entry : referencedQueries.entrySet) {
 			val PlatformQuery query = entry.value
-			val QuerySpecification spec = qp.processQuery(query);
-			entities.addAll(qp.matchQuerytoUDDL(query, spec));
+			val QueryStatement spec = qp.processQuery(query);
+			entities.putAll(qp.matchQuerytoUDDL(query, spec));
 		}
 
 		return entities;

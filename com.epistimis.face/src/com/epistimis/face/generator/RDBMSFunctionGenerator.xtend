@@ -7,6 +7,7 @@ import com.epistimis.uddl.uddl.PlatformDataModel
 import com.epistimis.uddl.uddl.PlatformEntity
 import java.util.ArrayList
 import java.util.List
+import java.util.Collection
 
 class RDBMSFunctionGenerator extends CommonFunctionGenerator implements IFaceLangGenerator {
 
@@ -47,7 +48,7 @@ class RDBMSFunctionGenerator extends CommonFunctionGenerator implements IFaceLan
 	 * 
 	 * TODO: parameter list doesn't properly address the possibility of multiple entities matching a connection
 	 */
-	override compileUopCommon(UopUnitOfPortability uop,List<PlatformEntity> entities){
+	override compileUopCommon(UopUnitOfPortability uop,Collection<PlatformEntity> entities){
 	'''
 //	/** Include all needed headers */
 //	«var entityIncludes = new ArrayList<PlatformEntity>»
@@ -55,7 +56,7 @@ class RDBMSFunctionGenerator extends CommonFunctionGenerator implements IFaceLan
 //	«FOR ent: entities»
 //		«ent.generateInclude(uop,pdmIncludes, entityIncludes)»
 //	«ENDFOR»
-//	public void «uop.name»(«FOR conn: uop.connection  SEPARATOR ','» «qu.getReferencedPlatformEntities(conn).get(0).typeString» «conn.name»«ENDFOR»)
+//	public void «uop.name»(«FOR conn: uop.connection  SEPARATOR ','» «qu.getReferencedPlatformEntities(conn).entrySet.get(0).value.typeString» «conn.name»«ENDFOR»)
 //	{
 //		/** The first step in this function must be a check for runtime privacy issues (e.g. where individual choices matter like Consent).
 //		 *  This might be a null function

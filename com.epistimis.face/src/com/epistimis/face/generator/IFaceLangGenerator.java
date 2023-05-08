@@ -3,7 +3,7 @@
  */
 package com.epistimis.face.generator;
 
-import java.util.List;
+import java.util.Collection;
 
 import org.eclipse.xtext.generator.IFileSystemAccess2;
 import org.eclipse.xtext.generator.IGeneratorContext;
@@ -20,7 +20,7 @@ import com.epistimis.uddl.uddl.PlatformEntity;
 public interface IFaceLangGenerator extends IUddlLangGenerator {
 
 	void processAnInstance(IntegrationUoPInstance inst,  IFileSystemAccess2 fsa, IGeneratorContext context);
-	void processAComponent(UopUnitOfPortability comp, List<PlatformEntity> entities, IFileSystemAccess2 fsa, IGeneratorContext context);
+	void processAComponent(UopUnitOfPortability comp, Collection<PlatformEntity> entities, IFileSystemAccess2 fsa, IGeneratorContext context);
 
 
 }

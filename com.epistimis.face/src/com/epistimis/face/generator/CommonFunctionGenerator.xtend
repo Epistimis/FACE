@@ -28,6 +28,8 @@ import com.epistimis.uddl.uddl.PlatformComposition
 import com.epistimis.uddl.uddl.PlatformParticipant
 import com.epistimis.uddl.uddl.PlatformComposableElement
 import org.eclipse.emf.ecore.EObject
+import java.util.Collection
+import java.util.Map
 
 abstract class CommonFunctionGenerator extends CommonDataStructureGenerator implements IFaceLangGenerator {
 
@@ -99,9 +101,9 @@ abstract class CommonFunctionGenerator extends CommonDataStructureGenerator impl
 			return;
 		}
 		
-		val List<PlatformEntity> entities = qu.getReferencedPlatformEntities(inst.realizes);
+		val Map<String,PlatformEntity> entities = qu.getReferencedPlatformEntities(inst.realizes);
 		
-		processAComponent(inst.realizes,entities, fsa, context);
+		processAComponent(inst.realizes,entities.values, fsa, context);
 			
 //       // Do we want to generate code for the wiring / integration of function instances?
 //       fsa.generateFile(
@@ -109,7 +111,7 @@ abstract class CommonFunctionGenerator extends CommonDataStructureGenerator impl
 //         inst.compile)
 		
 	}
-	override processAComponent(UopUnitOfPortability comp,List<PlatformEntity> entities, IFileSystemAccess2 fsa, IGeneratorContext context) {
+	override processAComponent(UopUnitOfPortability comp,Collection<PlatformEntity> entities, IFileSystemAccess2 fsa, IGeneratorContext context) {
 
 
 		// Generate the stubs for the functions that need to be used
@@ -125,14 +127,14 @@ abstract class CommonFunctionGenerator extends CommonDataStructureGenerator impl
 	/**
 	 * Do Portable specific code gen here
 	 */
-	def dispatch compile (UopPortableComponent uop,List<PlatformEntity> entities)'''
+	def dispatch compile (UopPortableComponent uop,Collection<PlatformEntity> entities)'''
 	«uop.compileUopCommon(entities)»
 	'''
 	
 	/**
 	 * Do PlatformSpecific codegen here
 	 */
-	def dispatch compile (UopPlatformSpecificComponent uop,List<PlatformEntity> entities){
+	def dispatch compile (UopPlatformSpecificComponent uop,Collection<PlatformEntity> entities){
 	'''
 	«uop.compileUopCommon(entities)»
 	'''
@@ -152,7 +154,7 @@ abstract class CommonFunctionGenerator extends CommonDataStructureGenerator impl
 	 * 
 	 * TODO: parameter list doesn't properly address the possibility of multiple entities matching a connection
 	 */
-	def String compileUopCommon(UopUnitOfPortability uop,List<PlatformEntity> entities);
+	def String compileUopCommon(UopUnitOfPortability uop,Collection<PlatformEntity> entities);
 
 	def dispatch parmList(UopTemplate templ) {
 		if (templ.specification.empty) {
