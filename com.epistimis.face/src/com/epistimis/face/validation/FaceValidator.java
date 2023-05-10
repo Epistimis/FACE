@@ -56,11 +56,11 @@ public class FaceValidator extends AbstractFaceValidator {
 	public void register(EValidatorRegistrar registrar) {
 		super.register(registrar);
 
-		//loadAndRegister(registrar,"src/com/epistimis/face/constraints/face.ocl",FacePackage.eINSTANCE, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
-		//loadAndRegister(registrar, "src/com/epistimis/face/constraints/uop.ocl",FacePackage.eINSTANCE, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
+		//loadOCLAndRegister(registrar,"src/com/epistimis/face/constraints/face.ocl",FacePackage.eINSTANCE, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
+		//loadOCLAndRegister(registrar, "src/com/epistimis/face/constraints/uop.ocl",FacePackage.eINSTANCE, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
 //		// TODO: Before registering this, need to fix issues that are the result of grammar changes - or fix grammar
 //		// to avoid them
-//		//loadAndRegister(registrar, "/com.epistimis.face/src/com/epistimis/face/constraints/integration.ocl");
+//		//loadOCLAndRegister(registrar, "/com.epistimis.face/src/com/epistimis/face/constraints/integration.ocl");
 	}
 
 
