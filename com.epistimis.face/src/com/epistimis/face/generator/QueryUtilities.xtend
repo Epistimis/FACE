@@ -65,7 +65,7 @@ class QueryUtilities {
 		 */
 		for (Map.Entry<String,PlatformQuery> entry : referencedQueries.entrySet) {
 			val PlatformQuery query = entry.value
-			val QueryStatement spec = qp.processQuery(query);
+			val QueryStatement spec = qp.parseQuery(query);
 			entities.putAll(qp.matchQuerytoUDDL(query, spec));
 		}
 
