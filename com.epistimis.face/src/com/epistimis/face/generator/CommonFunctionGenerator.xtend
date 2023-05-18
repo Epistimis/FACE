@@ -30,6 +30,7 @@ import com.epistimis.uddl.uddl.PlatformComposableElement
 import org.eclipse.emf.ecore.EObject
 import java.util.Collection
 import java.util.Map
+import com.epistimis.face.face.UopConnection
 
 abstract class CommonFunctionGenerator extends CommonDataStructureGenerator implements IFaceLangGenerator {
 
@@ -111,15 +112,37 @@ abstract class CommonFunctionGenerator extends CommonDataStructureGenerator impl
 //         inst.compile)
 		
 	}
+	/** Check connection for platform level detail - need this to do code gen */
+	def dispatch boolean missingPlatformDetail(UopClientServerConnection conn) {
+		return ((conn.requestType === null) || (conn.responseType === null)); 
+	}
+
+	def dispatch boolean missingPlatformDetail(UopQueuingConnection conn) {
+		return (conn.messageType === null);
+	}
+	
+	def dispatch boolean missingPlatformDetail(UopSingleInstanceMessageConnection conn) {
+		return (conn.messageType === null);
+	}	
 	override processAComponent(UopUnitOfPortability comp,Collection<PlatformEntity> entities, IFileSystemAccess2 fsa, IGeneratorContext context) {
 
 
 		// Generate the stubs for the functions that need to be used
 		if (!processedComponents.contains(comp)) {
 			processedComponents.add(comp);
-			val CharSequence content = comp.compile(entities);
-			if (content.toString.trim.length > 0) {
-		       fsa.generateFile(getRootDirectory() + comp.name + getSrcExtension(),content);
+			// Can only generate code if there is Platform level info - otherwise, just print a log message
+			var boolean missingInfo = false;
+			for (UopConnection conn: comp.connection) {
+				if (conn.missingPlatformDetail) {
+					System.out.println("Platform detail missing for a connection " + conn.fullyQualifiedName + ". Cannot generate code for component " + comp.fullyQualifiedName);
+					missingInfo = true;
+				}
+			}
+			if (!missingInfo) {
+				val CharSequence content = comp.compile(entities);
+				if (content.toString.trim.length > 0) {
+			       fsa.generateFile(getRootDirectory() + comp.name + getSrcExtension(),content);
+				}				
 			}
 		}
 	}

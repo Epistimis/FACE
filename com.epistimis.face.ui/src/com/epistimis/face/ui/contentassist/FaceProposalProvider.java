@@ -112,7 +112,7 @@ public class FaceProposalProvider extends AbstractFaceProposalProvider {
 		 * destination has already been specified, only propose those choices that use
 		 * the same data structure
 		 */
-		if (model instanceof IntegrationIntegrationContext)  {
+		if (!(model instanceof IntegrationTSNodeConnection))  {
 			return;
 		}
 
@@ -167,7 +167,7 @@ public class FaceProposalProvider extends AbstractFaceProposalProvider {
 		 * has already been specified, only propose those choices that use the same data
 		 * structure
 		 */
-		if (model instanceof IntegrationIntegrationContext)  {
+		if (!(model instanceof IntegrationTSNodeConnection))  {
 			return;
 		}
 		
@@ -217,7 +217,10 @@ public class FaceProposalProvider extends AbstractFaceProposalProvider {
 	public void completeIntegrationUoPInputEndPoint_Connection(EObject model, Assignment assignment,
 			ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
 //		lookupCrossReference(((CrossReference)assignment.getTerminal()), context, acceptor);
-		/**
+
+		if (!(model instanceof IntegrationUoPInstance))
+			return;
+/**
 		 * Should only propose connections defined in the containing
 		 * IntegrationUoPInstance's realized UopUnitOfPortability - And only those that
 		 * have not already been included
@@ -271,6 +274,8 @@ public class FaceProposalProvider extends AbstractFaceProposalProvider {
 			ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
 //		lookupCrossReference(((CrossReference)assignment.getTerminal()), context, acceptor);
 
+		if (!(model instanceof IntegrationUoPInstance))
+			return;
 		/**
 		 * Should only propose connections defined in the containing
 		 * IntegrationUoPInstance's realized UopUnitOfPortability And only those that
