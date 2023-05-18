@@ -134,7 +134,7 @@ abstract class CommonFunctionGenerator extends CommonDataStructureGenerator impl
 			var boolean missingInfo = false;
 			for (UopConnection conn: comp.connection) {
 				if (conn.missingPlatformDetail) {
-					System.out.println("Platform detail missing for a connection " + conn.fullyQualifiedName + ". Cannot generate code for component " + comp.fullyQualifiedName);
+					System.out.println("Platform detail missing for connection " + conn.fullyQualifiedName + ". Cannot generate code for component " + comp.fullyQualifiedName);
 					missingInfo = true;
 				}
 			}
