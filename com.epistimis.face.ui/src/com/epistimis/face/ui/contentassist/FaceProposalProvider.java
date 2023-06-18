@@ -218,20 +218,21 @@ public class FaceProposalProvider extends AbstractFaceProposalProvider {
 			ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
 //		lookupCrossReference(((CrossReference)assignment.getTerminal()), context, acceptor);
 
-		if (!(model instanceof IntegrationUoPInstance))
+		if ((model == null) || !(model instanceof IntegrationUoPInstance)) {
 			return;
-/**
+		}
+		
+		/**
 		 * Should only propose connections defined in the containing
 		 * IntegrationUoPInstance's realized UopUnitOfPortability - And only those that
 		 * have not already been included
 		 */
 		IntegrationUoPInstance inst = (IntegrationUoPInstance) model;
-		if (inst == null)
-			return;
 
 		UopUnitOfPortability realizes = inst.getRealizes();
-		if (realizes == null)
+		if (realizes == null) {
 			return;
+		}
 
 		List<IntegrationUoPInputEndPoint> currentEndPts = inst.getInput();
 		List<UopConnection> currentConnections = new ArrayList<>();
