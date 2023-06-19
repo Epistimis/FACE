@@ -11,6 +11,7 @@ import java.util.List
 import com.epistimis.face.face.UopConnection
 import com.google.common.base.CaseFormat
 import java.util.Collection
+import java.util.Map
 
 class PythonFunctionGenerator extends CommonFunctionGenerator implements IFaceLangGenerator {
 
@@ -89,6 +90,11 @@ class PythonFunctionGenerator extends CommonFunctionGenerator implements IFaceLa
 	}
 	
 	def genParameter(UopConnection conn) {
+		val Map<String,PlatformEntity> pes = qu.getReferencedPlatformEntities(conn);
+		if (pes.empty) {
+			System.out.println("Connection " + conn.fullyQualifiedName + " references missing type");
+			return "<Missing parameter>"
+		}
 		return genParameterName(conn) + ": "  + qu.getReferencedPlatformEntities(conn).entrySet.get(0).value.typeString;
 	}
 
