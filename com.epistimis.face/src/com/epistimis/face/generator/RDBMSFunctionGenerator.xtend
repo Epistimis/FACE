@@ -8,6 +8,8 @@ import com.epistimis.uddl.uddl.PlatformEntity
 import java.util.ArrayList
 import java.util.List
 import java.util.Collection
+import com.epistimis.face.face.UopConnection
+import java.util.Map
 
 class RDBMSFunctionGenerator extends CommonFunctionGenerator implements IFaceLangGenerator {
 
@@ -23,7 +25,7 @@ class RDBMSFunctionGenerator extends CommonFunctionGenerator implements IFaceLan
 	}
 	
 	override getSrcExtension() {
-		return ".cpp";
+		return ".sql";
 	}
 			
 	/**
@@ -47,30 +49,56 @@ class RDBMSFunctionGenerator extends CommonFunctionGenerator implements IFaceLan
 	 * included in this file.
 	 * 
 	 * TODO: parameter list doesn't properly address the possibility of multiple entities matching a connection
-	 */
+	 */	
 	override compileUopCommon(UopUnitOfPortability uop,Collection<PlatformEntity> entities){
 	'''
-//	/** Include all needed headers */
-//	«var entityIncludes = new ArrayList<PlatformEntity>»
-//	«var List<PlatformDataModel> pdmIncludes = new ArrayList<PlatformDataModel>»
-//	«FOR ent: entities»
-//		«ent.generateInclude(uop,pdmIncludes, entityIncludes)»
-//	«ENDFOR»
-//	public void «uop.name»(«FOR conn: uop.connection  SEPARATOR ','» «qu.getReferencedPlatformEntities(conn).entrySet.get(0).value.typeString» «conn.name»«ENDFOR»)
-//	{
-//		/** The first step in this function must be a check for runtime privacy issues (e.g. where individual choices matter like Consent).
-//		 *  This might be a null function
-//		 */
-//		bool hasConsent = checkConsents(«FOR conn: uop.connection  SEPARATOR ','» «conn.name»«ENDFOR»);	
-//		
-//		/**
-//		* The remainder of this function body should be manually filled in
-//		*/
-//	}
+	/** THIS IS CPP NOT SQL or SDL. Need to change this completely !!!! */
+	/** Include all needed headers */
+	«var entityIncludes = new ArrayList<PlatformEntity>»
+	«var List<PlatformDataModel> pdmIncludes = new ArrayList<PlatformDataModel>»
+	«FOR ent: entities»
+		«ent.generateInclude(uop,pdmIncludes, entityIncludes)»
+	«ENDFOR»
+	void «uop.name»(«FOR conn: uop.connection  SEPARATOR ','» «conn.genParameter» «ENDFOR»)
+	{
+		/** The first step in this function must be a check for runtime privacy issues (e.g. where individual choices matter like Consent).
+		 *  This might be a null function
+		 */
+		bool hasConsent = true;
+		«FOR conn: uop.connection» 
+		hasConsent &= check_consents(«conn.genParameterName»);
+		«ENDFOR»
+		
+		if (!hasConsent) {
+			return
+		}
+		
+		/**
+		* The remainder of this function body should be manually filled in
+		*/
+	}
 	'''
 	}
 
 	
+
+	def genFunctionName(UopUnitOfPortability uop) {
+		return uop.name;
+//		return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE,uop.name);	
+	}
+	def genParameterName(UopConnection conn) {
+		return conn.name;
+//		return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE,conn.name);
+	}
+	
+	def genParameter(UopConnection conn) {
+		val Map<String,PlatformEntity> pes = qu.getReferencedPlatformEntities(conn);
+		if (pes.empty) {
+			System.out.println("Connection " + conn.fullyQualifiedName + " references missing type");
+			return "<Missing parameter>"
+		}
+		return  pes.entrySet.get(0).value.typeString + " " + genParameterName(conn);
+	}
 
 	
 }
