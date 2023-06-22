@@ -45,7 +45,7 @@ Workflow {
 //		    fragment = io.typefox.xtext2langium.Xtext2LangiumFragment {
 //		        outputPath = './langium'
 //		    }
-			// rename refactoring
+			// rename refactoring - Comment out if using XBase - because its handled by XBase
 			fragment = refactoring.RefactorElementNameFragment2 {}
 			fragment = org.eclipse.xtext.xtext.generator.ui.codemining.CodeMiningFragment {}
 
