@@ -275,6 +275,9 @@ public class FaceProposalProvider extends AbstractFaceProposalProvider {
 			ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
 //		lookupCrossReference(((CrossReference)assignment.getTerminal()), context, acceptor);
 
+		if (model == null) {
+			return;
+		}
 		if (!(model instanceof IntegrationUoPInstance))
 			return;
 		/**
@@ -283,8 +286,7 @@ public class FaceProposalProvider extends AbstractFaceProposalProvider {
 		 * have not already been included
 		 */
 		IntegrationUoPInstance inst = (IntegrationUoPInstance) model;
-		if (inst == null)
-			return;
+
 
 		UopUnitOfPortability realizes = inst.getRealizes();
 		if (realizes == null)
