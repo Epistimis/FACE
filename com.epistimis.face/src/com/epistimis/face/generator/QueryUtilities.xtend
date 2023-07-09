@@ -23,6 +23,8 @@ import java.util.Map
 import java.util.SortedMap
 import java.util.TreeMap
 import org.eclipse.xtext.naming.IQualifiedNameProvider
+import com.epistimis.uddl.uddl.ConceptualEntity
+import com.epistimis.uddl.ConceptualQueryProcessor
 
 /**
  * These are utilities that are used to handle the transition between Face -> Query -> Uddl
@@ -31,7 +33,49 @@ class QueryUtilities {
 
 	@Inject extension IQualifiedNameProvider qnp;
 
-	@Inject extension PlatformQueryProcessor qp; 
+	@Inject extension PlatformQueryProcessor pqp; 
+
+	@Inject extension ConceptualQueryProcessor cqp; 
+
+	def dispatch Map<String,ConceptualEntity> getReferencedConceptualEntities(UopUnitOfPortability comp) {
+		var Map<String,ConceptualEntity> entities = new HashMap<String,ConceptualEntity>();
+		for (conn : comp.connection) {
+			entities.putAll(conn.getReferencedConceptualEntities);
+		}
+//		// Figure out which Entities are referenced by this component
+//		var referencedQueries = new TreeMap<String, CononceptualQuery>();
+//		for (conn : comp.connection) {
+//			referencedQueries.putAll(conn.platformQueriesMap);
+//		}
+//		/**
+//		 * Now get all the QuerySpecifications from these queries and, from those, get all the referenced Entities
+//		 */
+//		for (Map.Entry<String,CononceptualQuery> entry : referencedQueries.entrySet) {
+//			val CononceptualQuery query = entry.value
+//			val QuerySpecification spec = cqp.processQuery(query);
+//			entities.addAll(cqp.matchQuerytoUDDL(query, spec));
+//		}
+
+		return entities;
+	}
+
+	def dispatch Map<String,ConceptualEntity> getReferencedConceptualEntities(UopConnection conn) {
+		var Map<String,ConceptualEntity> entities = new HashMap<String,ConceptualEntity>();
+		// Figure out which Entities are referenced by this component
+		var referencedQueries = conn.conceptualQueriesMap;
+
+		/**
+		 * Now get all the QuerySpecifications from these queries and, from those, get all the referenced Entities
+		 */
+		for (Map.Entry<String,ConceptualQuery> entry : referencedQueries.entrySet) {
+			val ConceptualQuery query = entry.value
+			val QueryStatement spec = cqp.parseQuery(query);
+			entities.putAll(cqp.matchQuerytoUDDL(query, spec));
+		}
+
+		return entities;
+	}
+
 
 	def dispatch Map<String,PlatformEntity> getReferencedPlatformEntities(UopUnitOfPortability comp) {
 		var Map<String,PlatformEntity> entities = new HashMap<String,PlatformEntity>();
@@ -48,8 +92,8 @@ class QueryUtilities {
 //		 */
 //		for (Map.Entry<String,PlatformQuery> entry : referencedQueries.entrySet) {
 //			val PlatformQuery query = entry.value
-//			val QuerySpecification spec = qp.processQuery(query);
-//			entities.addAll(qp.matchQuerytoUDDL(query, spec));
+//			val QuerySpecification spec = pqp.processQuery(query);
+//			entities.addAll(pqp.matchQuerytoUDDL(query, spec));
 //		}
 
 		return entities;
@@ -65,8 +109,8 @@ class QueryUtilities {
 		 */
 		for (Map.Entry<String,PlatformQuery> entry : referencedQueries.entrySet) {
 			val PlatformQuery query = entry.value
-			val QueryStatement spec = qp.parseQuery(query);
-			entities.putAll(qp.matchQuerytoUDDL(query, spec));
+			val QueryStatement spec = pqp.parseQuery(query);
+			entities.putAll(pqp.matchQuerytoUDDL(query, spec));
 		}
 
 		return entities;
