@@ -24,6 +24,15 @@ public class FaceRuntimeModule extends AbstractFaceRuntimeModule {
 	 */
 	public static final @NonNull String PLUGIN_ID = "com.epistimis.face";
 
+
+	public Class<? extends ConnectionProcessor> bindConnectionProcessor() {
+		return ConnectionProcessor.class;
+	}
+
+	public Class<? extends IntegrationContextProcessor> bindIntegrationContextProcessor() {
+		return IntegrationContextProcessor.class;
+	}
+
 	@Override
 	public Class<? extends IQualifiedNameProvider> bindIQualifiedNameProvider() {
 		// TODO Auto-generated method stub
@@ -33,7 +42,6 @@ public class FaceRuntimeModule extends AbstractFaceRuntimeModule {
 	public Class<? extends QueryUtilities> bindQueryUtilities() {
 		return QueryUtilities.class;
 	}
-
 
 	/** Enable this if there are performance issues with name resolution. And then look at the strategy to see what should
 	 * be excluded from the index

@@ -25,20 +25,27 @@ import java.util.TreeMap
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import com.epistimis.uddl.uddl.ConceptualEntity
 import com.epistimis.uddl.ConceptualQueryProcessor
+import com.epistimis.face.ConnectionProcessor
+import com.epistimis.face.exceptions.MissingRealizationException
 
 /**
  * These are utilities that are used to handle the transition between Face -> Query -> Uddl
  */
 class QueryUtilities {
 
+	/**
+	 * NOTE: The qno is not protected because derived classes will have their own
+	 */
 	@Inject extension IQualifiedNameProvider qnp;
 
-	@Inject extension PlatformQueryProcessor pqp; 
+	@Inject protected extension PlatformQueryProcessor pqp;
 
-	@Inject extension ConceptualQueryProcessor cqp; 
+	@Inject protected extension ConceptualQueryProcessor cqp;
 
-	def dispatch Map<String,ConceptualEntity> getReferencedConceptualEntities(UopUnitOfPortability comp) {
-		var Map<String,ConceptualEntity> entities = new HashMap<String,ConceptualEntity>();
+	@Inject protected extension ConnectionProcessor cp;
+
+	def Map<String, ConceptualEntity> getReferencedConceptualEntities(UopUnitOfPortability comp) {
+		var Map<String, ConceptualEntity> entities = new HashMap<String, ConceptualEntity>();
 		for (conn : comp.connection) {
 			entities.putAll(conn.getReferencedConceptualEntities);
 		}
@@ -55,30 +62,15 @@ class QueryUtilities {
 //			val QuerySpecification spec = cqp.processQuery(query);
 //			entities.addAll(cqp.matchQuerytoUDDL(query, spec));
 //		}
-
 		return entities;
 	}
 
-	def dispatch Map<String,ConceptualEntity> getReferencedConceptualEntities(UopConnection conn) {
-		var Map<String,ConceptualEntity> entities = new HashMap<String,ConceptualEntity>();
-		// Figure out which Entities are referenced by this component
-		var referencedQueries = conn.conceptualQueriesMap;
-
-		/**
-		 * Now get all the QuerySpecifications from these queries and, from those, get all the referenced Entities
-		 */
-		for (Map.Entry<String,ConceptualQuery> entry : referencedQueries.entrySet) {
-			val ConceptualQuery query = entry.value
-			val QueryStatement spec = cqp.parseQuery(query);
-			entities.putAll(cqp.matchQuerytoUDDL(query, spec));
-		}
-
-		return entities;
+	def Map<String, ConceptualEntity> getReferencedConceptualEntities(UopConnection conn) {
+		return cp.getReferencedConceptualEntities(conn);
 	}
 
-
-	def dispatch Map<String,PlatformEntity> getReferencedPlatformEntities(UopUnitOfPortability comp) {
-		var Map<String,PlatformEntity> entities = new HashMap<String,PlatformEntity>();
+	def dispatch Map<String, PlatformEntity> getReferencedPlatformEntities(UopUnitOfPortability comp) {
+		var Map<String, PlatformEntity> entities = new HashMap<String, PlatformEntity>();
 		for (conn : comp.connection) {
 			entities.putAll(conn.getReferencedPlatformEntities);
 		}
@@ -95,12 +87,11 @@ class QueryUtilities {
 //			val QuerySpecification spec = pqp.processQuery(query);
 //			entities.addAll(pqp.matchQuerytoUDDL(query, spec));
 //		}
-
 		return entities;
 	}
 
-	def dispatch Map<String,PlatformEntity> getReferencedPlatformEntities(UopConnection conn) {
-		var Map<String,PlatformEntity> entities = new HashMap<String,PlatformEntity>();
+	def dispatch Map<String, PlatformEntity> getReferencedPlatformEntities(UopConnection conn) {
+		var Map<String, PlatformEntity> entities = new HashMap<String, PlatformEntity>();
 		// Figure out which Entities are referenced by this component
 		var referencedQueries = conn.platformQueriesMap;
 
@@ -140,7 +131,7 @@ class QueryUtilities {
 		if (result !== null) {
 			return result;
 		} else {
-			new TreeMap<String,PlatformQuery>();
+			new TreeMap<String, PlatformQuery>();
 		}
 	}
 
@@ -149,21 +140,21 @@ class QueryUtilities {
 		if (result !== null) {
 			return result;
 		} else {
-			return new TreeMap<String,PlatformQuery>();
+			return new TreeMap<String, PlatformQuery>();
 		}
 	}
 
 	def dispatch SortedMap<String, PlatformQuery> platformQueriesMap(UopClientServerConnection conn) {
-		var result = new TreeMap<String,PlatformQuery>();
+		var result = new TreeMap<String, PlatformQuery>();
 		val reqs = conn.requestType?.platformQueriesMap;
 		if (reqs !== null) {
 			result.putAll(reqs);
 		}
 		val resp = conn.responseType?.platformQueriesMap;
 		if (resp !== null) {
-			result.putAll(resp);		
+			result.putAll(resp);
 		}
-		
+
 		return result;
 	}
 
@@ -191,7 +182,15 @@ class QueryUtilities {
 	 */
 	def dispatch SortedMap<String, ConceptualQuery> conceptualQueriesMap(UopTemplate templ) {
 		var result = new TreeMap<String, ConceptualQuery>();
-		result.put(qnp.getFullyQualifiedName(templ.boundQuery?.realizes?.realizes).toString, templ.boundQuery?.realizes?.realizes);
+		val ConceptualQuery cq = templ.boundQuery?.realizes?.realizes;
+		if (cq !== null) {
+			result.put(qnp.getFullyQualifiedName(cq).toString, cq);
+		} else {
+			val String msg = String.format(
+				"Attempt to find ConceptualQuery associated with Template %s failed. Logical or Conceptual realization missing.",
+				templ.fullyQualifiedName.toString)
+			throw new MissingRealizationException(msg);
+		}
 		return result;
 	}
 
