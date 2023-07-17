@@ -34,44 +34,44 @@ public class FaceQNP extends UddlQNP {
 	
 	// UoP
 	public  QualifiedName qualifiedName(UopTemplateComposition obj) {
-		UopCompositeTemplate ce = (UopCompositeTemplate) obj.eContainer();
-		return  getFullyQualifiedName(ce).append(obj.getRolename());
+//		UopCompositeTemplate ce = (UopCompositeTemplate) obj.eContainer();
+		return  getFullyQualifiedName(obj.eContainer()).append(obj.getRolename());
 //		return QualifiedName.create(ce.getName(),obj.getRolename());
 	}
 
 	public  QualifiedName qualifiedName(UopLanguageRuntime obj) {
-		UopUoPModel ctr = (UopUoPModel) obj.eContainer();
+//		UopUoPModel ctr = (UopUoPModel) obj.eContainer();
 
-		return  getFullyQualifiedName(ctr).append(obj.getName()+ ":" + obj.getVersion());
+		return  getFullyQualifiedName(obj.eContainer()).append(obj.getName()+ ":" + obj.getVersion());
 //		return QualifiedName.create(ctr.getName(),obj.getName()+ ":" + obj.getVersion());		
 	}
 	
 	public  QualifiedName qualifiedName(UopComponentFramework obj) {
-		UopUoPModel ctr = (UopUoPModel) obj.eContainer();
+//		UopUoPModel ctr = (UopUoPModel) obj.eContainer();
 
-		return  getFullyQualifiedName(ctr).append(obj.getName()+ ":" + obj.getVersion());
+		return  getFullyQualifiedName(obj.eContainer()).append(obj.getName()+ ":" + obj.getVersion());
 //		return QualifiedName.create(ctr.getName(),obj.getName()+ ":" + obj.getVersion());		
 
 	}
 
 	/**
-	 * These methods implement naming the standard way.
+	 * These methods implement naming the standard way. They exist because they are 
+	 * overridden in PrivacyQNP.  This ensures things are done the correct way
+	 * depending on the runtime type.
+	 * 
 	 * @param obj
 	 * @return
 	 */
 	public QualifiedName qualifiedName(UopClientServerConnection obj) {
-		UopUoPModel ctr = (UopUoPModel) obj.eContainer();
-		return getFullyQualifiedName(ctr).append(obj.getName());
+		return getFullyQualifiedName(obj.eContainer()).append(obj.getName());
 	}
 
 	public QualifiedName qualifiedName(UopQueuingConnection obj) {
-		UopUoPModel ctr = (UopUoPModel) obj.eContainer();
-		return getFullyQualifiedName(ctr).append(obj.getName());
+		return getFullyQualifiedName(obj.eContainer()).append(obj.getName());
 	}
 
 	public QualifiedName qualifiedName(UopSingleInstanceMessageConnection obj) {
-		UopUoPModel ctr = (UopUoPModel) obj.eContainer();
-		return getFullyQualifiedName(ctr).append(obj.getName());
+		return getFullyQualifiedName(obj.eContainer()).append(obj.getName());
 	}
 
 	// Integration
@@ -161,7 +161,7 @@ public class FaceQNP extends UddlQNP {
 	 * format because it will include '.' separators that would make it look like multiple segments.
 	 * That means we need to convert the entire thing into a string that uses a different separator.
 	 * Ideally, the replacement separator should not be something that would otherwise be used in 
-	 * a single node (e.g. '_') because that cold result in name collisions.
+	 * a single node (e.g. '_') because that could result in name collisions.
 	 */
 	public static String getReferenceAsString(EObject obj, String featureName) {
 		EStructuralFeature refFeature = obj.eClass().getEStructuralFeature(featureName);
