@@ -16,14 +16,12 @@ import com.epistimis.face.face.IntegrationTransportNode;
 import com.epistimis.face.face.IntegrationUoPInputEndPoint;
 import com.epistimis.face.face.IntegrationUoPInstance;
 import com.epistimis.face.face.IntegrationUoPOutputEndPoint;
-import com.epistimis.face.face.UopComponentFramework;
-import com.epistimis.face.face.UopCompositeTemplate;
-import com.epistimis.face.face.UopLanguageRuntime;
-import com.epistimis.face.face.UopTemplateComposition;
-import com.epistimis.face.face.UopUoPModel;
 import com.epistimis.face.face.UopClientServerConnection;
+import com.epistimis.face.face.UopComponentFramework;
+import com.epistimis.face.face.UopLanguageRuntime;
 import com.epistimis.face.face.UopQueuingConnection;
 import com.epistimis.face.face.UopSingleInstanceMessageConnection;
+import com.epistimis.face.face.UopTemplateComposition;
 import com.epistimis.uddl.UddlQNP;
 import com.google.inject.Inject;
 

@@ -11,7 +11,6 @@ import org.eclipse.xtext.validation.EValidatorRegistrar;
 
 import com.epistimis.face.face.FacePackage;
 import com.epistimis.face.generator.QueryUtilities;
-import com.epistimis.uddl.QueryProcessor;
 import com.epistimis.uddl.scoping.IndexUtilities;
 import com.google.inject.Inject;
 

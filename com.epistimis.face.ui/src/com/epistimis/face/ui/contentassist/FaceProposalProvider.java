@@ -15,7 +15,6 @@ import org.eclipse.xtext.ui.editor.contentassist.ContentAssistContext;
 import org.eclipse.xtext.ui.editor.contentassist.ICompletionProposalAcceptor;
 
 import com.epistimis.face.FaceQNP;
-import com.epistimis.face.face.IntegrationIntegrationContext;
 import com.epistimis.face.face.IntegrationTSNodeConnection;
 import com.epistimis.face.face.IntegrationTSNodeInputPort;
 import com.epistimis.face.face.IntegrationTSNodeOutputPort;

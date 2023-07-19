@@ -195,12 +195,12 @@ abstract class CommonFunctionGenerator extends CommonDataStructureGenerator impl
 		'''
 	}
 	def dispatch parmList(UopClientServerConnection conn){
-		var UopMessageType parameterType;
+		//var UopMessageType parameterType;
 		if (conn.role == UoPClientServerRole.CLIENT) {
 			// This is the client in a C/S relationship, so this connection outputs the request and inputs the response
 		} else {
 			// this is the server in a C/S relationship, so this connection inputs the request and outputs the response
-			parameterType = conn.requestType
+			//parameterType = conn.requestType
 		}
 	}
 	/**
