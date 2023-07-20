@@ -15,6 +15,7 @@ import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
 import org.eclipse.xtext.naming.IQualifiedNameProvider
+import com.epistimis.uddl.exceptions.QueryMatchException
 
 /**
  * Generates code from your model files on save.
@@ -25,11 +26,9 @@ class FaceGenerator extends AbstractGenerator {
 
 //	@Inject
 //	IResourceServiceProvider.Registry reg;
-
 	@Inject extension IQualifiedNameProvider qnp;
-	//@Inject extension IndexUtilities ndxUtil;
-
-	//@Inject extension QueryProcessor qp; 
+	// @Inject extension IndexUtilities ndxUtil;
+	// @Inject extension QueryProcessor qp; 
 	@Inject extension QueryUtilities qu;
 
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
@@ -41,11 +40,11 @@ class FaceGenerator extends AbstractGenerator {
 //		 * a UopUnitOfPortability - since we will also know which language to use (components are language specific)
 //		 */
 //		uddlGen.doGenerate(resource, fsa, context);
-
 		// Make sure all cross references are resolved
-		//EcoreUtil.resolveAll(resource.resourceSet);
+		// EcoreUtil.resolveAll(resource.resourceSet);
 		/**
 		 * Set up the map of programming language specific generators
+		 * TODO: This should be configurable externally
 		 */
 		val Map<UopProgrammingLanguage, IFaceLangGenerator> languageSpecificGenerators = new HashMap<UopProgrammingLanguage, IFaceLangGenerator>();
 		languageSpecificGenerators.put(UopProgrammingLanguage.CPP, new CPPFunctionGenerator(qu));
@@ -57,35 +56,42 @@ class FaceGenerator extends AbstractGenerator {
 
 		// Use Typescript for Javascript
 		languageSpecificGenerators.put(UopProgrammingLanguage.JS, new TypescriptFunctionGenerator(qu));
-		
 
 		/**
 		 * Generate the functions
 		 */
 		for (comp : resource.allContents.toIterable.filter(UopUnitOfPortability)) {
 
-			val Map<String,PlatformEntity> entities = getReferencedPlatformEntities(comp);
-			if (comp.transportAPILanguage != UopProgrammingLanguage.UNSPECIFIED) {
-				// Now call the relevant generator
-				val generator = languageSpecificGenerators.get(comp.transportAPILanguage);
-				if (generator === null) {
-					val fmttedMessage = MessageFormat.format(
-										"Component {0} is supposed to be generated in {1} but no generator yet available for that language",
-										qnp.getFullyQualifiedName(comp).toString(), comp.transportAPILanguage.toString);
-		
-					System.out.println(fmttedMessage);
-				} else {
-					//for (PlatformEntity entity : entities.values) {
+			try {
+
+				val Map<String, PlatformEntity> entities = getReferencedPlatformEntities(comp);
+				if (comp.transportAPILanguage != UopProgrammingLanguage.UNSPECIFIED) {
+					// Now call the relevant generator
+					val generator = languageSpecificGenerators.get(comp.transportAPILanguage);
+					if (generator === null) {
+						val fmttedMessage = MessageFormat.format(
+							"Component {0} is supposed to be generated in {1} but no generator yet available for that language",
+							qnp.getFullyQualifiedName(comp).toString(), comp.transportAPILanguage.toString);
+
+						System.out.println(fmttedMessage);
+					} else {
+						// for (PlatformEntity entity : entities.values) {
 						generator.processEntities(entities.values, fsa, context);
-					//}
-					generator.processAComponent(comp, entities.values, fsa, context);
+						// }
+						generator.processAComponent(comp, entities.values, fsa, context);
+					}
+
+				}
+			} catch (QueryMatchException excp) {
+				var fmttedMessage = "Unable to generate code: " + excp.toString;
+				for (Throwable t: excp.suppressed) {
+					fmttedMessage += "\n" + t.toString;
 				}
 				
+				System.out.println(fmttedMessage);
 			}
-
 		}
 
 	}
-
 
 }
