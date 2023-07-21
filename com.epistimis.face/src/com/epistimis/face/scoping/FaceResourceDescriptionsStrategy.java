@@ -3,17 +3,17 @@ package com.epistimis.face.scoping;
 import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionStrategy;
 import org.eclipse.xtext.scoping.impl.ImportUriResolver;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+//import java.util.ArrayList;
+//import java.util.HashMap;
+//import java.util.List;
+//import java.util.Map;
 
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.xtext.naming.QualifiedName;
-import org.eclipse.xtext.resource.EObjectDescription;
+//import org.eclipse.xtext.naming.QualifiedName;
+//import org.eclipse.xtext.resource.EObjectDescription;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.util.IAcceptor;
-import org.eclipse.xtext.xbase.lib.IterableExtensions;
+//import org.eclipse.xtext.xbase.lib.IterableExtensions;
 
 import com.epistimis.face.face.IntegrationTSNodeConnection;
 //import com.google.inject.Singleton;

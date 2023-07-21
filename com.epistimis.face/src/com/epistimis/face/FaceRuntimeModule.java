@@ -6,10 +6,10 @@ package com.epistimis.face;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.resource.IDefaultResourceDescriptionStrategy;
-import org.eclipse.xtext.scoping.IGlobalScopeProvider;
+//import org.eclipse.xtext.scoping.IGlobalScopeProvider;
 
 import com.epistimis.face.generator.QueryUtilities;
-import com.epistimis.face.scoping.FaceGlobalScopeProvider;
+//import com.epistimis.face.scoping.FaceGlobalScopeProvider;
 import com.epistimis.face.scoping.FaceResourceDescriptionsStrategy;
 
 /**

@@ -5,7 +5,7 @@ import com.epistimis.face.face.IntegrationUoPInstance
 import com.epistimis.face.face.UoPClientServerRole
 import com.epistimis.face.face.UopClientServerConnection
 import com.epistimis.face.face.UopCompositeTemplate
-import com.epistimis.face.face.UopMessageType
+import com.epistimis.face.face.UopConnection
 import com.epistimis.face.face.UopPlatformSpecificComponent
 import com.epistimis.face.face.UopPortableComponent
 import com.epistimis.face.face.UopProgrammingLanguage
@@ -15,22 +15,21 @@ import com.epistimis.face.face.UopSynchronizationStyle
 import com.epistimis.face.face.UopTemplate
 import com.epistimis.face.face.UopUnitOfPortability
 import com.epistimis.uddl.generator.CommonDataStructureGenerator
+import com.epistimis.uddl.uddl.PlatformComposableElement
+import com.epistimis.uddl.uddl.PlatformComposition
+import com.epistimis.uddl.uddl.PlatformDataModel
 import com.epistimis.uddl.uddl.PlatformDataType
 import com.epistimis.uddl.uddl.PlatformEntity
+import com.epistimis.uddl.uddl.PlatformParticipant
 import java.util.ArrayList
+import java.util.Collection
 import java.util.List
+import java.util.Map
+import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGenerator2
 import org.eclipse.xtext.generator.IGeneratorContext
-import com.epistimis.uddl.uddl.PlatformDataModel
-import com.epistimis.uddl.uddl.PlatformComposition
-import com.epistimis.uddl.uddl.PlatformParticipant
-import com.epistimis.uddl.uddl.PlatformComposableElement
-import org.eclipse.emf.ecore.EObject
-import java.util.Collection
-import java.util.Map
-import com.epistimis.face.face.UopConnection
 
 abstract class CommonFunctionGenerator extends CommonDataStructureGenerator implements IFaceLangGenerator {
 
