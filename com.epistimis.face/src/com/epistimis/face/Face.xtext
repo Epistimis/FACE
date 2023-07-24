@@ -299,10 +299,15 @@ IntegrationTSNodeConnection:
 ;
 
 /** A TSNodePortBase is a port that can be used to connect a TransportNode and a UoPEndPoint together using a TSNodeConnection. */
-//IntegrationTSNodePortBase:
+IntegrationTSNodePortBase:
 //	IntegrationUoPEndPoint |
 //	IntegrationTSNodePort
-//;
+// Directly insert these rules because the intermediate rules lead to a grammar ambiguity
+	IntegrationUoPInputEndPoint |
+	IntegrationUoPOutputEndPoint |
+	IntegrationTSNodeInputPort |
+	IntegrationTSNodeOutputPort
+;
 
 /** A UoPInstance represents an instance of a specific UoP within the system bounded by an integration model. An integration model can contain multiple instances of the same UoP. */
 IntegrationUoPInstance:
@@ -349,12 +354,12 @@ IntegrationTransportNode:
 
 /** A TSNodeInputPort is a specialization of a TSNodePort providing an endpoint which is used to input data to a TransportNode. */
 IntegrationTSNodeInputPort:
-	 messageType=[UopMessageType|QN]
+	 view=[UopMessageType|QN]
 ;
 
 /** A TSNodeOutputPort is a specialization of a TSNodePort providing an endpoint which is used to output data from a TransportNode. */
 IntegrationTSNodeOutputPort: 
-	 messageType=[UopMessageType|QN]
+	 view=[UopMessageType|QN]
 ;
 
 /** A ViewAggregation represents of an instance of aggregation of data from multiple incoming views into a single outgoing view type, including transformation of input data to that required by the output view type. */

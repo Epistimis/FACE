@@ -125,7 +125,7 @@ public class FaceProposalProvider extends AbstractFaceProposalProvider {
 		}
 		if (tsNodeConn.getDestination() instanceof IntegrationTSNodeInputPort) {
 			IntegrationTSNodeInputPort destEndPt = (IntegrationTSNodeInputPort) tsNodeConn.getDestination();
-			destMsgTypes.add(destEndPt.getMessageType());
+			destMsgTypes.add(destEndPt.getView());
 		}
 
 		EObject rootElement = EcoreUtil2.getRootContainer(model);
@@ -145,7 +145,7 @@ public class FaceProposalProvider extends AbstractFaceProposalProvider {
 			}
 		}
 		for (IntegrationTSNodeOutputPort candidate : tsCandidates) {
-			if (destMsgTypes.isEmpty() || destMsgTypes.contains(candidate.getMessageType())) {
+			if (destMsgTypes.isEmpty() || destMsgTypes.contains(candidate.getView())) {
 				String insertionText = qnp.getFullyQualifiedName(candidate).toString();
 				acceptor.accept(createCompletionProposal(insertionText, proposalPrefix + insertionText + proposalSuffix,
 						null, context));
@@ -180,7 +180,7 @@ public class FaceProposalProvider extends AbstractFaceProposalProvider {
 		}
 		if (tsNodeConn.getDestination() instanceof IntegrationTSNodeOutputPort) {
 			IntegrationTSNodeOutputPort srcEndPt = (IntegrationTSNodeOutputPort) tsNodeConn.getSource();
-			srcMsgTypes.add(srcEndPt.getMessageType());
+			srcMsgTypes.add(srcEndPt.getView());
 		}
 
 		// Find only those things that can fit here - these are either
@@ -202,7 +202,7 @@ public class FaceProposalProvider extends AbstractFaceProposalProvider {
 			}
 		}
 		for (IntegrationTSNodeInputPort candidate : tsCandidates) {
-			if (srcMsgTypes.isEmpty() || srcMsgTypes.contains(candidate.getMessageType())) {
+			if (srcMsgTypes.isEmpty() || srcMsgTypes.contains(candidate.getView())) {
 				String insertionText = qnp.getFullyQualifiedName(candidate).toString();
 				acceptor.accept(createCompletionProposal(insertionText, proposalPrefix + insertionText + proposalSuffix,
 						null, context));
