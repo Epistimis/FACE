@@ -2,6 +2,7 @@ import uddl : 'platform:/resource/com.epistimis.uddl/model/generated/Uddl.ecore'
 import  '../../../../../model/generated/Face.ecore'
 
 -- include 'platform.ocl'
+include 'face.ocl'
 
 package face
 
@@ -106,5 +107,92 @@ package face
       else
         self.connection->collect(realizes)->forAll(ac | ac = null)
       endif
-      
+
+   context UopMessageType 
+   	/*
+   	 * A Platform Element's name is not an IDL reserved word.
+     */
+	inv nameIsNotReservedWord:
+		not FaceElement::isReservedWord(self.name)
+		
+   context UopCompositeTemplate 
+	/*
+     * A TemplateComposition's rolename is unique within a CompositeTemplate.
+     */
+     
+	inv compositionsHaveUniqueRolenames: 
+		self.composition->collect(rolename) ->isUnique(rn | rn)
+
+  	/*
+     * A CompositeTemplate does not compose itself.
+     */
+	inv noCyclesInConstruction:
+		let composedTemplates = self.composition
+									->collect(type) ->selectByKind(UopCompositeTemplate) ->closure(composition
+									->collect(type) ->selectByKind(UopCompositeTemplate)) in
+		not composedTemplates->includes(self)
+
+  	/*
+     * A CompositeTemplate does not compose the same Template more than once.
+     */
+	inv viewComposedOnce: 
+		self.composition->collect(type)->isUnique(view | view)  
+
+ 	/*
+     * TemplateCompositions in a platform CompositeTemplate realize
+     * QueryCompositions in the logical CompositeQuery that the platform
+     * CompositeTemplate realizes.
+     */
+	inv compositionsConsistentWithRealization: 
+		if self.realizes = null
+		then
+			self.composition->forAll(c | c.realizes = null) 
+		else
+			self.composition->forAll(c | self.realizes.composition->exists(c2 | c.realizes = c2)
+			)
+		endif
+
+  	/*
+     * A CompositeTemplate that realizes has the same "isUnion" property
+     * as the CompositeQuery it realizes.
+     */
+	inv realizationUnionConsistent:
+		self.realizes->forAll(realized | self.isUnion = realized.isUnion)
+
+  	/*
+     * A CompositeTemplate does not contain two TemplateCompositions
+     * that realize the same QueryComposition.
+     */
+	inv realizedCompositionsHaveDifferentTypes: 
+		self.realizes <> null implies 
+		self.composition->forAll(c1, c2 | c1 <> c2 implies
+											c1.realizes <> c2.realizes)
+
+   context UopTemplateComposition 
+
+   /*
+    * The rolename of a TemplateComposition is a valid identifier.
+    */
+	inv rolenameIsValidIdentifier: FaceElement::isValidIdentifier(self.rolename)
+
+   /*
+    * The rolename of a TemplateComposition is not an IDL reserved word.
+    */
+	inv rolenameIsNotReservedWord:
+		not FaceElement::isReservedWord(self.rolename)
+   /*
+    * If TemplateComposition "A" realizes QueryComposition "B", then
+    * if A's type is a CompositeTemplate, then A's type realizes B's type, and
+    * if A's type is a Template and defines an effectiveQuery,
+    * then A's type's effectiveQuery realizes B's type.
+    */
+	inv typeConsistentWithRealization:
+		self.realizes <> null implies
+			if self.type.oclIsTypeOf(UopCompositeTemplate) then
+				self.type.oclAsType(UopCompositeTemplate).realizes = self.realizes.type
+			else
+				self.type.oclAsType(UopTemplate).effectiveQuery <> null
+					implies 
+				self.type.oclAsType(UopTemplate).effectiveQuery.realizes
+					= self.realizes.type endif    
 endpackage
