@@ -23,6 +23,9 @@ context IntegrationIntegrationContext
 	def: allReferencedPSCs(): Set(UopPlatformSpecificComponent) =
 		self.allReferencedComponents()->selectByKind(UopPlatformSpecificComponent)->collect(oclAsType(UopPlatformSpecificComponent))->asSet()
 
+	/**
+	 * This approach checks for the interfaces actually used. The uop realized by the instances may define more interfaces
+	 */
 	def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
 		self.connection->collect(referencedModelTypes())->asSet()
 
@@ -38,18 +41,37 @@ context IntegrationIntegrationContext
 		let sinsts = sources->collect(oclAsType(ecore::EObject)).eContainer() in 		
 		dinsts->asSet()->union(dinsts->asSet())->collect(oclAsType(IntegrationUoPInstance))->asSet()
 
+context IntegrationUoPInputEndPoint
+	def: referencedModelTypes():Set(uddl::ConceptualComposableElement) =
+		self.connection.referencedModelTypes()
+		
+context IntegrationUoPOutputEndPoint
+	def: referencedModelTypes():Set(uddl::ConceptualComposableElement) =
+		self.connection.referencedModelTypes()
 
 context IntegrationUoPInstance 
-	def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
+	/**
+	 * This approach checks for the interfaces actually used. The uop realized by the instances may define more interfaces
+	 */
+	def: actualReferencedModelTypes(): Set(uddl::ConceptualComposableElement) =
 		let inputs = self.input->collect(referencedModelTypes())->asSet() in
 		let outputs = self.output->collect(referencedModelTypes())->asSet() in
 		inputs->union(outputs)->asSet()
 		
-	def: referencesModelType(t: uddl::ConceptualObservable): Boolean =
-		self.referencedModelTypes()->includes(t)
+	def: actuallyReferencesModelType(t: uddl::ConceptualObservable): Boolean =
+		self.actualReferencedModelTypes()->includes(t)
+
+	/**
+	 * This approach checks for the interfaces that could possibly be used. The instance interfaces may not use all of them
+	 */
+	def: possibleReferencedModelTypes(): Set(uddl::ConceptualComposableElement) =
+		self.realizes.referencedModelTypes()
+
+	def: possiblyReferencesModelType(t: uddl::ConceptualObservable): Boolean =
+		self.possibleReferencedModelTypes()->includes(t)
 	
 	/**
-	 * This just returns the chain of UoPs - not the one this realizes
+	 * This just returns nearby UoPs - not the one this realizes
 	 */	
 	def: allReferencedUops(): Set(UopUnitOfPortability) =
 		let inputs = self.input->collect(connection) in
@@ -58,8 +80,17 @@ context IntegrationUoPInstance
 		
 
 context IntegrationIntegrationModel
-	def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
-		self.element->selectByKind(IntegrationUoPInstance)->collect(referencedModelTypes())->asSet()
+	/**
+	 * This looks at the interfaces actually used throughout the model. The referenced UoPs may define additional interfaces not used here.
+	 */
+	def: actualReferencedModelTypes(): Set(uddl::ConceptualComposableElement) =
+		self.element->selectByKind(IntegrationUoPInstance)->collect(actualReferencedModelTypes())->asSet()
+
+	/**
+	 * This looks at all the interfaces defined on all the UoPs referenced in the model. Some of those interfaces may not be used
+	 */
+	def: possibleReferencedModelTypes(): Set(uddl::ConceptualComposableElement) =
+		self.element->selectByKind(IntegrationUoPInstance)->collect(possibleReferencedModelTypes())->asSet()
 	
 	def: allUopInstances(): Set(IntegrationUoPInstance) =
 		self.element->selectByKind(IntegrationUoPInstance)->asSet()
@@ -73,8 +104,10 @@ context IntegrationIntegrationModel
 	def: allReferencedPSCs(): Set(UopPlatformSpecificComponent) =
 		self.allReferencedUops()->selectByKind(UopPlatformSpecificComponent)->collect(oclAsType(UopPlatformSpecificComponent))->asSet()
 
-	def: referencesModelType(t: uddl::ConceptualObservable): Boolean =
-		self.referencedModelTypes()->includes(t)
+	def: actuallyReferencesModelType(t: uddl::ConceptualObservable): Boolean =
+		self.actualReferencedModelTypes()->includes(t)
 
+	def: possiblyReferencesModelType(t: uddl::ConceptualObservable): Boolean =
+		self.possibleReferencedModelTypes()->includes(t)
 
 endpackage

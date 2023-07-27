@@ -21,9 +21,21 @@ context UopConnection
 			self.oclAsType(UopClientServerConnection).matchingObservablesOnConnection(checklist)
 		endif
 		
+	/**
+	 * Are any of the listed observables on this connection?
+	 */
+	def: observablesOnConnection(checklist: Set(uddl::ConceptualObservable) ): Boolean = 
+		not matchingObservablesOnConnection(checklist)->isEmpty()
+		
 	def: referencedUop(): UopUnitOfPortability = 
 		self.oclAsType(ecore::EObject).eContainer().oclAsType(UopUnitOfPortability)
 				
+	def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
+		if (self.oclIsKindOf(UopPubSubConnection)) then
+			self.oclAsType(UopPubSubConnection).referencedModelTypes()
+		else 
+			self.oclAsType(UopClientServerConnection).referencedModelTypes()
+		endif
 
 
 context UopPubSubConnection
