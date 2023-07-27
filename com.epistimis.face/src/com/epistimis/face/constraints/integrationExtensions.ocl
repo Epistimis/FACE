@@ -1,0 +1,80 @@
+import ecore : 'http://www.eclipse.org/emf/2002/Ecore#/'
+import 'platform:/resource/com.epistimis.uddl/model/generated/Uddl.ecore'
+import '/resource/com.epistimis.face/model/generated/Face.ecore'
+
+include 'platform:/resource/com.epistimis.face/src/com/epistimis/face/constraints/uopExtensions.ocl'
+
+package face
+				
+
+context IntegrationIntegrationContext
+	def: allReferencedComponents(): Set(UopUnitOfPortability) =
+		let dests = self.connection->select(c| 
+				c.destination.oclIsKindOf(IntegrationUoPInputEndPoint))->collect(destination)->collect(oclAsType(IntegrationUoPInputEndPoint))  in
+		let sources = self.connection->select(c| 
+				c.source.oclIsKindOf(IntegrationUoPOutputEndPoint))->collect(source)->collect(oclAsType(IntegrationUoPOutputEndPoint)) in
+		let dcomps = dests->collect(connection).oclAsType(ecore::EObject).eContainer() in
+		let scomps = sources->collect(connection).oclAsType(ecore::EObject).eContainer() in 		
+		dcomps->asSet()->union(scomps->asSet())->collect(oclAsType(UopUnitOfPortability))->asSet()
+
+	def: allReferencedPCs(): Set(UopPortableComponent) =
+		self.allReferencedComponents()->selectByKind(UopPortableComponent)->collect(oclAsType(UopPortableComponent))->asSet()
+
+	def: allReferencedPSCs(): Set(UopPlatformSpecificComponent) =
+		self.allReferencedComponents()->selectByKind(UopPlatformSpecificComponent)->collect(oclAsType(UopPlatformSpecificComponent))->asSet()
+
+	def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
+		self.connection->collect(referencedModelTypes())->asSet()
+
+	def: referencesModelType(t: uddl::ConceptualObservable): Boolean =
+		self.referencedModelTypes()->includes(t)
+
+	def: allReferencedUopInstances(): Set(IntegrationUoPInstance) =
+		let dests = self.connection->select(c| 
+				c.destination.oclIsKindOf(IntegrationUoPInputEndPoint))->collect(destination)->collect(oclAsType(IntegrationUoPInputEndPoint))  in
+		let sources = self.connection->select(c| 
+				c.source.oclIsKindOf(IntegrationUoPOutputEndPoint))->collect(source)->collect(oclAsType(IntegrationUoPOutputEndPoint)) in
+		let dinsts = dests->collect(oclAsType(ecore::EObject)).eContainer() in
+		let sinsts = sources->collect(oclAsType(ecore::EObject)).eContainer() in 		
+		dinsts->asSet()->union(dinsts->asSet())->collect(oclAsType(IntegrationUoPInstance))->asSet()
+
+
+context IntegrationUoPInstance 
+	def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
+		let inputs = self.input->collect(referencedModelTypes())->asSet() in
+		let outputs = self.output->collect(referencedModelTypes())->asSet() in
+		inputs->union(outputs)->asSet()
+		
+	def: referencesModelType(t: uddl::ConceptualObservable): Boolean =
+		self.referencedModelTypes()->includes(t)
+	
+	/**
+	 * This just returns the chain of UoPs - not the one this realizes
+	 */	
+	def: allReferencedUops(): Set(UopUnitOfPortability) =
+		let inputs = self.input->collect(connection) in
+		let outputs = self.output->collect(connection) in
+		inputs->collect(referencedUop())->union(outputs->collect(referencedUop()))->asSet()
+		
+
+context IntegrationIntegrationModel
+	def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
+		self.element->selectByKind(IntegrationUoPInstance)->collect(referencedModelTypes())->asSet()
+	
+	def: allUopInstances(): Set(IntegrationUoPInstance) =
+		self.element->selectByKind(IntegrationUoPInstance)->asSet()
+
+	def: allReferencedUops(): Set(UopUnitOfPortability) =
+		self.allUopInstances()->collect(input.connection)->collect(allReferencedUops())->asSet()
+		
+	def: allReferencedPCs(): Set(UopPortableComponent) =
+		self.allReferencedUops()->selectByKind(UopPortableComponent)->collect(oclAsType(UopPortableComponent))->asSet()
+
+	def: allReferencedPSCs(): Set(UopPlatformSpecificComponent) =
+		self.allReferencedUops()->selectByKind(UopPlatformSpecificComponent)->collect(oclAsType(UopPlatformSpecificComponent))->asSet()
+
+	def: referencesModelType(t: uddl::ConceptualObservable): Boolean =
+		self.referencedModelTypes()->includes(t)
+
+
+endpackage

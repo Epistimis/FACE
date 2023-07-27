@@ -1,0 +1,88 @@
+import ecore : 'http://www.eclipse.org/emf/2002/Ecore#/'
+import 'platform:/resource/com.epistimis.uddl/model/generated/Uddl.ecore'
+import 'platform:/resource/com.epistimis.face/model/generated/Face.ecore'
+
+/**
+ * Includes apparently work like imports to bring in other files. And this approach makes it free of 
+ * the directory specifics between repos
+ */
+include 'platform:/resource/com.epistimis.uddl/src/com/epistimis/uddl/constraints/conceptualExtensions.ocl'
+include 'platform:/resource/com.epistimis.uddl/src/com/epistimis/uddl/constraints/platformExtensions.ocl'
+
+package face
+
+
+context UopConnection
+
+	def: matchingObservablesOnConnection(checklist: Set(uddl::ConceptualObservable) ): Set(uddl::ConceptualObservable) = 
+		if (self.oclIsKindOf(UopPubSubConnection)) then
+			self.oclAsType(UopPubSubConnection).matchingObservablesOnConnection(checklist)
+		else 
+			self.oclAsType(UopClientServerConnection).matchingObservablesOnConnection(checklist)
+		endif
+		
+	def: referencedUop(): UopUnitOfPortability = 
+		self.oclAsType(ecore::EObject).eContainer().oclAsType(UopUnitOfPortability)
+				
+
+
+context UopPubSubConnection
+	/**
+	 * Find only the observables referenced on this connection
+	 */
+	def: matchingObservablesOnConnection(checklist: Set(uddl::ConceptualObservable) ): Set(uddl::ConceptualObservable) = 
+		self.messageType.referencedModelTypes()->selectByType(uddl::ConceptualObservable)->select(t|checklist->includes(t))->asSet()
+
+	def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
+		self.messageType.referencedModelTypes()->asSet()
+
+
+	
+context UopClientServerConnection
+	def: matchingObservablesOnConnection(checklist: Set(uddl::ConceptualObservable) ): Set(uddl::ConceptualObservable) = 
+		let reqRefs = self.requestType.referencedModelTypes()->selectByType(uddl::ConceptualObservable)->select(t|checklist->includes(t)) in
+		let resRefs = self.responseType.referencedModelTypes()->selectByType(uddl::ConceptualObservable)->select(t|checklist->includes(t)) in
+		reqRefs->union(resRefs)->asSet()
+		
+	def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
+		let reqRefs = self.requestType.referencedModelTypes() in
+		let resRefs = self.responseType.referencedModelTypes() in
+		reqRefs->union(resRefs)->asSet()
+
+
+
+	
+context UopMessageType
+
+	def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
+		if (self.oclIsKindOf(UopTemplate))	then
+			self.oclAsType(UopTemplate).referencedModelTypes()
+		else
+			self.oclAsType(UopCompositeTemplate)->collect(referencedModelTypes())->flatten()->asSet()
+		endif
+
+context UopUnitOfPortability
+
+	def: realizingInstances(): Set(IntegrationUoPInstance) = 
+		IntegrationUoPInstance.allInstances()->select(i | i.realizes = self)->asSet()
+
+context UopTemplate
+
+	def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
+		self.boundQuery.referencedModelTypes()
+
+
+		
+context UopCompositeTemplate
+
+	def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
+		self.composition->collect(type.referencedModelTypes())->flatten()->asSet()
+		
+
+context UopUnitOfPortability
+
+	def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
+		self.connection->collect(referencedModelTypes())->asSet()
+
+
+endpackage
