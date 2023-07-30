@@ -6,108 +6,130 @@ include 'platform:/resource/com.epistimis.face/src/com/epistimis/face/constraint
 
 package face
 				
+	context IntegrationElement
+	   /**
+		 * Declare a helper operation to map an ok/warning verdict to ok/error.
+		 */
+		def: asError(verdict : Boolean) : Boolean = if verdict then true else null endif
 
-context IntegrationIntegrationContext
-	def: allReferencedComponents(): Set(UopUnitOfPortability) =
-		let dests = self.connection->select(c| 
-				c.destination.oclIsKindOf(IntegrationUoPInputEndPoint))->collect(destination)->collect(oclAsType(IntegrationUoPInputEndPoint))  in
-		let sources = self.connection->select(c| 
-				c.source.oclIsKindOf(IntegrationUoPOutputEndPoint))->collect(source)->collect(oclAsType(IntegrationUoPOutputEndPoint)) in
-		let dcomps = dests->collect(connection).oclAsType(ecore::EObject).eContainer() in
-		let scomps = sources->collect(connection).oclAsType(ecore::EObject).eContainer() in 		
-		dcomps->asSet()->union(scomps->asSet())->collect(oclAsType(UopUnitOfPortability))->asSet()
+	   /**
+		 * Declare a helper operation to map an ok/warning verdict to ok/warning. This doesn't 
+		 * do anything but gives us two functions with similar names in case developers forget
+		 * they can just use they inv return 'as is' for warnings.
+		 */
+		def: asWarning(verdict : Boolean) : Boolean = if verdict then true else false endif
+				
 
-	def: allReferencedPCs(): Set(UopPortableComponent) =
-		self.allReferencedComponents()->selectByKind(UopPortableComponent)->collect(oclAsType(UopPortableComponent))->asSet()
-
-	def: allReferencedPSCs(): Set(UopPlatformSpecificComponent) =
-		self.allReferencedComponents()->selectByKind(UopPlatformSpecificComponent)->collect(oclAsType(UopPlatformSpecificComponent))->asSet()
-
-	/**
-	 * This approach checks for the interfaces actually used. The uop realized by the instances may define more interfaces
-	 */
-	def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
-		self.connection->collect(referencedModelTypes())->asSet()
-
-	def: referencesModelType(t: uddl::ConceptualObservable): Boolean =
-		self.referencedModelTypes()->includes(t)
-
-	def: allReferencedUopInstances(): Set(IntegrationUoPInstance) =
-		let dests = self.connection->select(c| 
-				c.destination.oclIsKindOf(IntegrationUoPInputEndPoint))->collect(destination)->collect(oclAsType(IntegrationUoPInputEndPoint))  in
-		let sources = self.connection->select(c| 
-				c.source.oclIsKindOf(IntegrationUoPOutputEndPoint))->collect(source)->collect(oclAsType(IntegrationUoPOutputEndPoint)) in
-		let dinsts = dests->collect(oclAsType(ecore::EObject)).eContainer() in
-		let sinsts = sources->collect(oclAsType(ecore::EObject)).eContainer() in 		
-		dinsts->asSet()->union(dinsts->asSet())->collect(oclAsType(IntegrationUoPInstance))->asSet()
-
-context IntegrationUoPInputEndPoint
-	def: referencedModelTypes():Set(uddl::ConceptualComposableElement) =
-		self.connection.referencedModelTypes()
-		
-context IntegrationUoPOutputEndPoint
-	def: referencedModelTypes():Set(uddl::ConceptualComposableElement) =
-		self.connection.referencedModelTypes()
-
-context IntegrationUoPInstance 
-	/**
-	 * This approach checks for the interfaces actually used. The uop realized by the instances may define more interfaces
-	 */
-	def: actualReferencedModelTypes(): Set(uddl::ConceptualComposableElement) =
-		let inputs = self.input->collect(referencedModelTypes())->asSet() in
-		let outputs = self.output->collect(referencedModelTypes())->asSet() in
-		inputs->union(outputs)->asSet()
-		
-	def: actuallyReferencesModelType(t: uddl::ConceptualObservable): Boolean =
-		self.actualReferencedModelTypes()->includes(t)
-
-	/**
-	 * This approach checks for the interfaces that could possibly be used. The instance interfaces may not use all of them
-	 */
-	def: possibleReferencedModelTypes(): Set(uddl::ConceptualComposableElement) =
-		self.realizes.referencedModelTypes()
-
-	def: possiblyReferencesModelType(t: uddl::ConceptualObservable): Boolean =
-		self.possibleReferencedModelTypes()->includes(t)
+	context IntegrationIntegrationContext
+		def: allReferencedComponents(): Set(UopUnitOfPortability) =
+			let dests = self.connection->select(c| 
+					c.destination.oclIsKindOf(IntegrationUoPInputEndPoint))->collect(destination)->collect(oclAsType(IntegrationUoPInputEndPoint))  in
+			let sources = self.connection->select(c| 
+					c.source.oclIsKindOf(IntegrationUoPOutputEndPoint))->collect(source)->collect(oclAsType(IntegrationUoPOutputEndPoint)) in
+			let dcomps = dests->collect(connection).oclAsType(ecore::EObject).eContainer() in
+			let scomps = sources->collect(connection).oclAsType(ecore::EObject).eContainer() in 		
+			dcomps->asSet()->union(scomps->asSet())->collect(oclAsType(UopUnitOfPortability))->asSet()
 	
-	/**
-	 * This just returns nearby UoPs - not the one this realizes
-	 */	
-	def: allReferencedUops(): Set(UopUnitOfPortability) =
-		let inputs = self.input->collect(connection) in
-		let outputs = self.output->collect(connection) in
-		inputs->collect(referencedUop())->union(outputs->collect(referencedUop()))->asSet()
-		
-
-context IntegrationIntegrationModel
-	/**
-	 * This looks at the interfaces actually used throughout the model. The referenced UoPs may define additional interfaces not used here.
-	 */
-	def: actualReferencedModelTypes(): Set(uddl::ConceptualComposableElement) =
-		self.element->selectByKind(IntegrationUoPInstance)->collect(actualReferencedModelTypes())->asSet()
-
-	/**
-	 * This looks at all the interfaces defined on all the UoPs referenced in the model. Some of those interfaces may not be used
-	 */
-	def: possibleReferencedModelTypes(): Set(uddl::ConceptualComposableElement) =
-		self.element->selectByKind(IntegrationUoPInstance)->collect(possibleReferencedModelTypes())->asSet()
+		def: allReferencedPCs(): Set(UopPortableComponent) =
+			self.allReferencedComponents()->selectByKind(UopPortableComponent)->collect(oclAsType(UopPortableComponent))->asSet()
 	
-	def: allUopInstances(): Set(IntegrationUoPInstance) =
-		self.element->selectByKind(IntegrationUoPInstance)->asSet()
-
-	def: allReferencedUops(): Set(UopUnitOfPortability) =
-		self.allUopInstances()->collect(input.connection)->collect(allReferencedUops())->asSet()
+		def: allReferencedPSCs(): Set(UopPlatformSpecificComponent) =
+			self.allReferencedComponents()->selectByKind(UopPlatformSpecificComponent)->collect(oclAsType(UopPlatformSpecificComponent))->asSet()
+	
+		/**
+		 * This approach checks for the interfaces actually used. The uop realized by the instances may define more interfaces
+		 */
+		def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
+			self.connection->collect(referencedModelTypes())->asSet()
+	
+		def: referencesModelType(t: uddl::ConceptualObservable): Boolean =
+			self.referencedModelTypes()->includes(t)
+	
+		def: allReferencedUopInstances(): Set(IntegrationUoPInstance) =
+			let dests = self.connection->select(c| 
+					c.destination.oclIsKindOf(IntegrationUoPInputEndPoint))->collect(destination)->collect(oclAsType(IntegrationUoPInputEndPoint))  in
+			let sources = self.connection->select(c| 
+					c.source.oclIsKindOf(IntegrationUoPOutputEndPoint))->collect(source)->collect(oclAsType(IntegrationUoPOutputEndPoint)) in
+			let dinsts = dests->collect(oclAsType(ecore::EObject)).eContainer() in
+			let sinsts = sources->collect(oclAsType(ecore::EObject)).eContainer() in 		
+			dinsts->asSet()->union(dinsts->asSet())->collect(oclAsType(IntegrationUoPInstance))->asSet()
+	
+	context IntegrationUoPInputEndPoint
+		def: referencedModelTypes():Set(uddl::ConceptualComposableElement) =
+			self.connection.referencedModelTypes()
+			
+	context IntegrationUoPOutputEndPoint
+		def: referencedModelTypes():Set(uddl::ConceptualComposableElement) =
+			self.connection.referencedModelTypes()
+	
+	context IntegrationUoPInstance 
+		/**
+		 * This approach checks for the interfaces actually used. The uop realized by the instances may define more interfaces
+		 */
+		def: actualReferencedModelTypes(): Set(uddl::ConceptualComposableElement) =
+			let inputs = self.input->collect(referencedModelTypes())->asSet() in
+			let outputs = self.output->collect(referencedModelTypes())->asSet() in
+			inputs->union(outputs)->asSet()
+			
+		def: actuallyReferencesModelType(t: uddl::ConceptualObservable): Boolean =
+			self.actualReferencedModelTypes()->includes(t)
+	
+		/**
+		 * This approach checks for the interfaces that could possibly be used. The instance interfaces may not use all of them
+		 */
+		def: possibleReferencedModelTypes(): Set(uddl::ConceptualComposableElement) =
+			self.realizes.referencedModelTypes()
+	
+		def: possiblyReferencesModelType(t: uddl::ConceptualObservable): Boolean =
+			self.possibleReferencedModelTypes()->includes(t)
 		
-	def: allReferencedPCs(): Set(UopPortableComponent) =
-		self.allReferencedUops()->selectByKind(UopPortableComponent)->collect(oclAsType(UopPortableComponent))->asSet()
-
-	def: allReferencedPSCs(): Set(UopPlatformSpecificComponent) =
-		self.allReferencedUops()->selectByKind(UopPlatformSpecificComponent)->collect(oclAsType(UopPlatformSpecificComponent))->asSet()
-
-	def: actuallyReferencesModelType(t: uddl::ConceptualObservable): Boolean =
-		self.actualReferencedModelTypes()->includes(t)
-
-	def: possiblyReferencesModelType(t: uddl::ConceptualObservable): Boolean =
-		self.possibleReferencedModelTypes()->includes(t)
-
+		/**
+		 * This just returns nearby UoPs - not the one this realizes
+		 */	
+		def: allReferencedUops(): Set(UopUnitOfPortability) =
+			let inputs = self.input->collect(connection) in
+			let outputs = self.output->collect(connection) in
+			inputs->collect(referencedUop())->union(outputs->collect(referencedUop()))->asSet()
+			
+	
+	context IntegrationIntegrationModel
+		/**
+		 * This looks at the interfaces actually used throughout the model. The referenced UoPs may define additional interfaces not used here.
+		 */
+		def: actualReferencedModelTypes(): Set(uddl::ConceptualComposableElement) =
+			self.element->selectByKind(IntegrationUoPInstance)->collect(actualReferencedModelTypes())->asSet()
+	
+		/**
+		 * This looks at all the interfaces defined on all the UoPs referenced in the model. Some of those interfaces may not be used
+		 */
+		def: possibleReferencedModelTypes(): Set(uddl::ConceptualComposableElement) =
+			self.element->selectByKind(IntegrationUoPInstance)->collect(possibleReferencedModelTypes())->asSet()
+		
+		def: allUopInstances(): Set(IntegrationUoPInstance) =
+			self.element->selectByKind(IntegrationUoPInstance)->asSet()
+	
+		def: allReferencedUops(): Set(UopUnitOfPortability) =
+			self.allUopInstances()->collect(input.connection)->collect(allReferencedUops())->asSet()
+			
+		def: allReferencedPCs(): Set(UopPortableComponent) =
+			self.allReferencedUops()->selectByKind(UopPortableComponent)->collect(oclAsType(UopPortableComponent))->asSet()
+	
+		def: allReferencedPSCs(): Set(UopPlatformSpecificComponent) =
+			self.allReferencedUops()->selectByKind(UopPlatformSpecificComponent)->collect(oclAsType(UopPlatformSpecificComponent))->asSet()
+	
+		def: actuallyReferencesModelType(t: uddl::ConceptualObservable): Boolean =
+			self.actualReferencedModelTypes()->includes(t)
+	
+		def: possiblyReferencesModelType(t: uddl::ConceptualObservable): Boolean =
+			self.possibleReferencedModelTypes()->includes(t)
+	
+		def: allIntegrationContexts(): Set(IntegrationIntegrationContext) =
+			let localICs = self.element->selectByType(IntegrationIntegrationContext)->asSet() in
+			let localIMs = self.element->selectByType(IntegrationIntegrationModel) in
+			let subICs = localIMs->collect(allIntegrationContexts())->flatten() in
+			localICs->union(subICs)->asSet()
+			
+		def: allIntegrationModels(): Set(IntegrationIntegrationModel) =
+			self->closure(im)
+		
 endpackage

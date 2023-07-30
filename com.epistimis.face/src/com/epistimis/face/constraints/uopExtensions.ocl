@@ -10,91 +10,105 @@ include 'platform:/resource/com.epistimis.uddl/src/com/epistimis/uddl/constraint
 include 'platform:/resource/com.epistimis.uddl/src/com/epistimis/uddl/constraints/platformExtensions.ocl'
 
 package face
+	context FaceElement
+	   /**
+		 * Declare a helper operation to map an ok/warning verdict to ok/error.
+		 */
+		def: asError(verdict : Boolean) : Boolean = if verdict then true else null endif
+
+	   /**
+		 * Declare a helper operation to map an ok/warning verdict to ok/warning. This doesn't 
+		 * do anything but gives us two functions with similar names in case developers forget
+		 * they can just use they inv return 'as is' for warnings.
+		 */
+		def: asWarning(verdict : Boolean) : Boolean = if verdict then true else false endif
 
 
-context UopConnection
 
-	def: matchingObservablesOnConnection(checklist: Set(uddl::ConceptualObservable) ): Set(uddl::ConceptualObservable) = 
-		if (self.oclIsKindOf(UopPubSubConnection)) then
-			self.oclAsType(UopPubSubConnection).matchingObservablesOnConnection(checklist)
-		else 
-			self.oclAsType(UopClientServerConnection).matchingObservablesOnConnection(checklist)
-		endif
-		
-	/**
-	 * Are any of the listed observables on this connection?
-	 */
-	def: observablesOnConnection(checklist: Set(uddl::ConceptualObservable) ): Boolean = 
-		not matchingObservablesOnConnection(checklist)->isEmpty()
-		
-	def: referencedUop(): UopUnitOfPortability = 
-		self.oclAsType(ecore::EObject).eContainer().oclAsType(UopUnitOfPortability)
-				
-	def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
-		if (self.oclIsKindOf(UopPubSubConnection)) then
-			self.oclAsType(UopPubSubConnection).referencedModelTypes()
-		else 
-			self.oclAsType(UopClientServerConnection).referencedModelTypes()
-		endif
-
-
-context UopPubSubConnection
-	/**
-	 * Find only the observables referenced on this connection
-	 */
-	def: matchingObservablesOnConnection(checklist: Set(uddl::ConceptualObservable) ): Set(uddl::ConceptualObservable) = 
-		self.messageType.referencedModelTypes()->selectByType(uddl::ConceptualObservable)->select(t|checklist->includes(t))->asSet()
-
-	def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
-		self.messageType.referencedModelTypes()->asSet()
-
-
+	context UopConnection
 	
-context UopClientServerConnection
-	def: matchingObservablesOnConnection(checklist: Set(uddl::ConceptualObservable) ): Set(uddl::ConceptualObservable) = 
-		let reqRefs = self.requestType.referencedModelTypes()->selectByType(uddl::ConceptualObservable)->select(t|checklist->includes(t)) in
-		let resRefs = self.responseType.referencedModelTypes()->selectByType(uddl::ConceptualObservable)->select(t|checklist->includes(t)) in
-		reqRefs->union(resRefs)->asSet()
-		
-	def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
-		let reqRefs = self.requestType.referencedModelTypes() in
-		let resRefs = self.responseType.referencedModelTypes() in
-		reqRefs->union(resRefs)->asSet()
-
-
-
+		def: matchingObservables(checklist: Set(uddl::ConceptualObservable) ): Set(uddl::ConceptualObservable) = 
+			if (self.oclIsKindOf(UopPubSubConnection)) then
+				self.oclAsType(UopPubSubConnection).matchingObservables(checklist)
+			else 
+				self.oclAsType(UopClientServerConnection).matchingObservables(checklist)
+			endif
+			
+		/**
+		 * Are any of the listed observables on this connection?
+		 */
+		def: observablesOnConnection(checklist: Set(uddl::ConceptualObservable) ): Boolean = 
+			not matchingObservables(checklist)->isEmpty()
+			
+		def: referencedUop(): UopUnitOfPortability = 
+			self.oclAsType(ecore::EObject).eContainer().oclAsType(UopUnitOfPortability)
+					
+		def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
+			if (self.oclIsKindOf(UopPubSubConnection)) then
+				self.oclAsType(UopPubSubConnection).referencedModelTypes()
+			else 
+				self.oclAsType(UopClientServerConnection).referencedModelTypes()
+			endif
 	
-context UopMessageType
-
-	def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
-		if (self.oclIsKindOf(UopTemplate))	then
-			self.oclAsType(UopTemplate).referencedModelTypes()
-		else
-			self.oclAsType(UopCompositeTemplate)->collect(referencedModelTypes())->flatten()->asSet()
-		endif
-
-context UopUnitOfPortability
-
-	def: realizingInstances(): Set(IntegrationUoPInstance) = 
-		IntegrationUoPInstance.allInstances()->select(i | i.realizes = self)->asSet()
-
-context UopTemplate
-
-	def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
-		self.boundQuery.referencedModelTypes()
-
-
+	
+	context UopPubSubConnection
+		/**
+		 * Find only the observables referenced on this connection
+		 */
+		def: matchingObservables(checklist: Set(uddl::ConceptualObservable) ): Set(uddl::ConceptualObservable) = 
+			self.messageType.referencedModelTypes()->selectByType(uddl::ConceptualObservable)->select(t|checklist->includes(t))->asSet()
+	
+		def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
+			self.messageType.referencedModelTypes()->asSet()
+	
+	
 		
-context UopCompositeTemplate
-
-	def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
-		self.composition->collect(type.referencedModelTypes())->flatten()->asSet()
+	context UopClientServerConnection
+		def: matchingObservables(checklist: Set(uddl::ConceptualObservable) ): Set(uddl::ConceptualObservable) = 
+			let reqRefs = self.requestType.referencedModelTypes()->selectByType(uddl::ConceptualObservable)->select(t|checklist->includes(t)) in
+			let resRefs = self.responseType.referencedModelTypes()->selectByType(uddl::ConceptualObservable)->select(t|checklist->includes(t)) in
+			reqRefs->union(resRefs)->asSet()
+			
+		def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
+			let reqRefs = self.requestType.referencedModelTypes() in
+			let resRefs = self.responseType.referencedModelTypes() in
+			reqRefs->union(resRefs)->asSet()
+	
+	
+	context UopUnitOfPortability
+	
+		def: realizingInstances(): Set(IntegrationUoPInstance) = 
+			IntegrationUoPInstance.allInstances()->select(i | i.realizes = self)->asSet()
+	
+		def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
+			self.connection->collect(referencedModelTypes())->asSet()
+	
+	
 		
-
-context UopUnitOfPortability
-
-	def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
-		self.connection->collect(referencedModelTypes())->asSet()
+	context UopMessageType
+	
+		def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
+			if (self.oclIsKindOf(UopTemplate))	then
+				self.oclAsType(UopTemplate).referencedModelTypes()
+			else
+				self.oclAsType(UopCompositeTemplate).referencedModelTypes()
+			endif
+	
+		def: matchingObservables(checklist: Set(uddl::ConceptualObservable) ): Set(uddl::ConceptualObservable) = 
+			self.referencedModelTypes()->selectByType(uddl::ConceptualObservable)->select(t|checklist->includes(t))->asSet()
+	
+	context UopTemplate
+	
+		def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
+			self.boundQuery.referencedModelTypes()
+	
+	
+			
+	context UopCompositeTemplate
+	
+		def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
+			self.composition->collect(type.referencedModelTypes())->flatten()->asSet()
+		
 
 
 endpackage
