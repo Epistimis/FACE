@@ -91,8 +91,44 @@ package face
 			let outputs = self.output->collect(connection) in
 			inputs->collect(referencedUop())->union(outputs->collect(referencedUop()))->asSet()
 			
+
+		/**
+		 * Return the containment hierarchy of IntegrationModels as a Sequence - closest first
+		 * this is effectively the same as how Scoping works
+		 * 
+		 * TODO: How do you cast an empty collection to the type you want?
+		 */	
+		def: containingIntegrationModels():Sequence(IntegrationIntegrationModel) =
+			let container = self.oclAsType(ecore::EObject).eContainer() in
+			if (not container.oclIsKindOf(IntegrationIntegrationModel)) then
+				Sequence{}--:IntegrationIntegrationModel
+			else
+				let im = container.oclAsType(IntegrationIntegrationModel) in
+				Sequence{im}->append(im.containingIntegrationModels())
+			endif
+		/**
+		 * Find all the integration contexts that reference this IC. They must all be contained
+		 * in the (root) IntegrationModel that also contains this IC
+		 */
+--		def: referencingICs(): Set(IntegrationIntegrationContext) =
+			
+	
 	
 	context IntegrationIntegrationModel
+		/**
+		 * Return the containment hierarchy of IntegrationModels as a Sequence - closest first
+		 * this is effectively the same as how Scoping works
+		 */	
+		def: containingIntegrationModels():Sequence(IntegrationIntegrationModel) =
+			let container = self.oclAsType(ecore::EObject).eContainer() in
+			if (not container.oclIsKindOf(IntegrationIntegrationModel)) then
+				Sequence{}--:IntegrationIntegrationModel
+			else
+				let im = container.oclAsType(IntegrationIntegrationModel) in
+				Sequence{im}->append(im.containingIntegrationModels())
+			endif
+
+
 		/**
 		 * This looks at the interfaces actually used throughout the model. The referenced UoPs may define additional interfaces not used here.
 		 */
