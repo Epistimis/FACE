@@ -2,6 +2,8 @@ package com.epistimis.face.exceptions;
 
 public class MissingRealizationException extends RuntimeException {
 
+	private static final long serialVersionUID = 1703939139560012094L;
+
 	public MissingRealizationException() {
 		// TODO Auto-generated constructor stub
 	}
