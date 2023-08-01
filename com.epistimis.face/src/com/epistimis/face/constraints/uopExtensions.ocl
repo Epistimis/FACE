@@ -38,7 +38,7 @@ package face
 		 * Are any of the listed observables on this connection?
 		 */
 		def: observablesOnConnection(checklist: Set(uddl::ConceptualObservable) ): Boolean = 
-			not matchingObservables(checklist)->isEmpty()
+			matchingObservables(checklist)->notEmpty()
 			
 		def: referencedUop(): UopUnitOfPortability = 
 			self.oclAsType(ecore::EObject).eContainer().oclAsType(UopUnitOfPortability)

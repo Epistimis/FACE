@@ -3,8 +3,10 @@ import query : 'platform:/resource/com.epistimis.uddl.query/model/generated/Quer
 
 
 /**
- * TODO: As long as uddl has a dependency on uddl.query (which it does as of 2023-01-01), then query constraints cannot have a dependency on uddl (circular dependency problem).
- *  So we can only provide helper methods that uddl or face ocl can use. Hence, this is in the FACE set of constraints since it will be used by FACE
+ * TODO: As long as uddl has a dependency on uddl.query (which it does as of 2023-01-01), 
+ * then query constraints cannot have a dependency on uddl (circular dependency problem).
+ *  So we can only provide helper methods that uddl or face ocl can use. Hence, this is in the FACE set of 
+ * constraints since it will be used by FACE
  */
  
 package query
