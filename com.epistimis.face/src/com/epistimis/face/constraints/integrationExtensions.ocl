@@ -1,6 +1,8 @@
 import ecore : 'http://www.eclipse.org/emf/2002/Ecore#/'
+--import uddl : 'http://www.epistimis.com/uddl/Uddl/'
+--import face : 'http://www.epistimis.com/face/Face/'
 import 'platform:/resource/com.epistimis.uddl/model/generated/Uddl.ecore'
-import '/resource/com.epistimis.face/model/generated/Face.ecore'
+import 'platform:/resource/com.epistimis.face/model/generated/Face.ecore'
 
 include 'platform:/resource/com.epistimis.face/src/com/epistimis/face/constraints/uopExtensions.ocl'
 
