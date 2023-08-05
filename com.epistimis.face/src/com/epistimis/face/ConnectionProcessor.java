@@ -3,6 +3,8 @@ package com.epistimis.face;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import com.epistimis.face.face.UoPClientServerRole;
 import com.epistimis.face.face.UopClientServerConnection;
 import com.epistimis.face.face.UopCompositeTemplate;
@@ -14,6 +16,7 @@ import com.epistimis.face.face.UopSingleInstanceMessageConnection;
 import com.epistimis.face.face.UopTemplate;
 import com.epistimis.face.face.UopTemplateComposition;
 import com.epistimis.face.generator.QueryUtilities;
+import com.epistimis.face.validation.StructureChecks;
 import com.epistimis.uddl.CLPExtractors;
 import com.epistimis.uddl.ConceptualQueryProcessor;
 import com.epistimis.uddl.LogicalQueryProcessor;
@@ -48,6 +51,8 @@ public class ConnectionProcessor {
 	@Inject
 	QueryUtilities qu;
 
+	static Logger logger = Logger.getLogger(ConnectionProcessor.class);
+
 	public static String getDefinedRole(UopConnection conn) {
 		if (conn == null) {
 			return "";
@@ -73,7 +78,7 @@ public class ConnectionProcessor {
 //			rb = ((UopClientServerConnection) conn).getDefinedRole();
 //		} else {
 //			// If we get here, it's an error
-//			System.out.println("Unsupported Connection type: " + conn.getClass().toString());
+//			logger.error("Unsupported Connection type: " + conn.getClass().toString());
 //			return new String();			
 //		}
 //		
@@ -158,7 +163,7 @@ public class ConnectionProcessor {
 			return getSelectedConceptualCharacteristicsMap((UopClientServerConnection) conn);
 		}
 		// If we get here, it's an error
-		System.out.println("Unsupported Connection type: " + conn.getClass().toString());
+		logger.error("Unsupported Connection type: " + conn.getClass().toString());
 		return new HashMap<>();
 	}
 

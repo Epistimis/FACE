@@ -8,6 +8,8 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Provider;
 import java.util.List;
+
+import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -21,9 +23,11 @@ import org.eclipse.xtext.validation.Issue;
 
 public class Main {
 
+	static Logger logger = Logger.getLogger(Main.class);
+
 	public static void main(String[] args) {
 		if (args.length == 0) {
-			System.err.println("Aborting: no path to EMF resource provided!");
+			logger.error("Aborting: no path to EMF resource provided!");
 			return;
 		}
 		Injector injector = new FaceStandaloneSetup().createInjectorAndDoEMFRegistration();
@@ -52,7 +56,7 @@ public class Main {
 		List<Issue> list = validator.validate(resource, CheckMode.ALL, CancelIndicator.NullImpl);
 		if (!list.isEmpty()) {
 			for (Issue issue : list) {
-				System.err.println(issue);
+				logger.error(issue);
 			}
 			return;
 		}
@@ -63,6 +67,6 @@ public class Main {
 		context.setCancelIndicator(CancelIndicator.NullImpl);
 		generator.generate(resource, fileAccess, context);
 
-		System.out.println("Code generation finished.");
+		logger.info("Code generation finished.");
 	}
 }

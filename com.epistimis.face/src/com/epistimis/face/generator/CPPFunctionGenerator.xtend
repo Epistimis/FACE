@@ -11,9 +11,11 @@ import java.util.List
 import com.epistimis.face.face.UopConnection
 import java.util.Collection
 import java.util.Map
+import org.apache.log4j.Logger
 
 class CPPFunctionGenerator extends CommonFunctionGenerator implements IFaceLangGenerator {
 
+	static Logger logger = Logger.getLogger(CPPFunctionGenerator);
 
 	/**
 	 * Eventually this code generator can look at the version of language (look up SupportingComponents for runtimes and see
@@ -94,7 +96,7 @@ class CPPFunctionGenerator extends CommonFunctionGenerator implements IFaceLangG
 	def genParameter(UopConnection conn) {
 		val Map<String,PlatformEntity> pes = qu.getReferencedPlatformEntities(conn);
 		if (pes.empty) {
-			System.out.println("Connection " + conn.fullyQualifiedName + " references missing type");
+			logger.error("Connection " + conn.fullyQualifiedName + " references missing type");
 			return "<Missing parameter>"
 		}
 		return  pes.entrySet.get(0).value.typeString + " " + genParameterName(conn);

@@ -30,9 +30,12 @@ import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGenerator2
 import org.eclipse.xtext.generator.IGeneratorContext
+import com.epistimis.uddl.validation.UddlValidator
+import org.apache.log4j.Logger
 
 abstract class CommonFunctionGenerator extends CommonDataStructureGenerator implements IFaceLangGenerator {
 
+	static Logger logger = Logger.getLogger(CommonFunctionGenerator);
 
 	List<UopUnitOfPortability> processedComponents;
 
@@ -97,7 +100,7 @@ abstract class CommonFunctionGenerator extends CommonDataStructureGenerator impl
 	
 	override processAnInstance(IntegrationUoPInstance inst,  IFileSystemAccess2 fsa, IGeneratorContext context) {
 		if (inst.realizes === null) {
-			System.out.println("No realized component for instance " + qnp.getFullyQualifiedName(inst).toString);
+			logger.warn("No realized component for instance " + qnp.getFullyQualifiedName(inst).toString);
 			return;
 		}
 		
@@ -133,7 +136,7 @@ abstract class CommonFunctionGenerator extends CommonDataStructureGenerator impl
 			var boolean missingInfo = false;
 			for (UopConnection conn: comp.connection) {
 				if (conn.missingPlatformDetail) {
-					System.out.println("Platform detail missing for connection " + conn.fullyQualifiedName + ". Cannot generate code for component " + comp.fullyQualifiedName);
+					logger.info("Platform detail missing for connection " + conn.fullyQualifiedName + ". Cannot generate code for component " + comp.fullyQualifiedName);
 					missingInfo = true;
 				}
 			}

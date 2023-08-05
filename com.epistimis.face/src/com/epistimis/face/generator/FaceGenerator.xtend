@@ -16,6 +16,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import com.epistimis.uddl.exceptions.QueryMatchException
+import org.apache.log4j.Logger
 
 /**
  * Generates code from your model files on save.
@@ -30,6 +31,8 @@ class FaceGenerator extends AbstractGenerator {
 	// @Inject extension IndexUtilities ndxUtil;
 	// @Inject extension QueryProcessor qp; 
 	@Inject extension QueryUtilities qu;
+
+	static Logger logger = Logger.getLogger(FaceGenerator);
 
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
 //		/**
@@ -73,7 +76,7 @@ class FaceGenerator extends AbstractGenerator {
 							"Component {0} is supposed to be generated in {1} but no generator yet available for that language",
 							qnp.getFullyQualifiedName(comp).toString(), comp.transportAPILanguage.toString);
 
-						System.out.println(fmttedMessage);
+						logger.info(fmttedMessage);
 					} else {
 						// for (PlatformEntity entity : entities.values) {
 						generator.processEntities(entities.values, fsa, context);
@@ -88,7 +91,7 @@ class FaceGenerator extends AbstractGenerator {
 					fmttedMessage += "\n" + t.toString;
 				}
 				
-				System.out.println(fmttedMessage);
+				logger.info(fmttedMessage);
 			}
 		}
 
