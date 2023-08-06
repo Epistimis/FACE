@@ -488,40 +488,6 @@
 			<newWizardShortcut id="com.epistimis.face.ui.wizard.FaceNewFileWizard"/>
 		</perspectiveExtension>
 	</extension>
-	<!-- Rename Refactoring -->
-	<extension point="org.eclipse.ui.handlers">
-		<handler
-			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.refactoring.ui.DefaultRenameElementHandler"
-			commandId="org.eclipse.xtext.ui.refactoring.RenameElement">
-			<activeWhen>
-				<reference
-					definitionId="com.epistimis.face.Face.Editor.opened">
-				</reference>
-			</activeWhen>
-		</handler>
-	</extension>
-	<extension point="org.eclipse.ui.menus">
-		<menuContribution
-			locationURI="popup:#TextEditorContext?after=group.edit">
-			<command commandId="org.eclipse.xtext.ui.refactoring.RenameElement"
-				style="push">
-				<visibleWhen checkEnabled="false">
-					<reference
-						definitionId="com.epistimis.face.Face.Editor.opened">
-					</reference>
-				</visibleWhen>
-			</command>
-		</menuContribution>
-	</extension>
-	<extension point="org.eclipse.ui.preferencePages">
-		<page
-			category="com.epistimis.face.Face"
-			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.xtext.ui.refactoring.ui.RefactoringPreferencePage"
-			id="com.epistimis.face.Face.refactoring"
-			name="Refactoring">
-			<keywordReference id="com.epistimis.face.ui.keyword_Face"/>
-		</page>
-	</extension>
 	<!-- code mining -->
 	<extension point="org.eclipse.ui.workbench.texteditor.codeMiningProviders">
 		<codeMiningProvider
