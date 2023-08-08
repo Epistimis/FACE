@@ -1,20 +1,25 @@
+/**
+ * UDDL standard constraints - adjusted for this metamodel
+ */
 import ecore : 'http://www.eclipse.org/emf/2002/Ecore#/'
-import uddl  : 'platform:/resource/com.epistimis.uddl/model/generated/Uddl.ecore'
-import 'platform:/resource/com.epistimis.face/model/generated/Face.ecore'
+import uddl  : 'platform:/plugin/com.epistimis.uddl/model/generated/Uddl.ecore'
+import 'platform:/plugin/com.epistimis.face/model/generated/Face.ecore'
 
-
-include 'uop.ocl'
+--include 'uop.ocl'
+include 'platform:/plugin/com.epistimis.face/src/com/epistimis/face/constraints/uop.ocl'
 
 package face
 
-  context IntegrationElement
-    /*
-     * All Integration Elements have a unique name.
-     */
-    inv hasUniqueName:
-      not IntegrationElement.allInstances()->excluding(self)
-                                ->collect(name.toLowerCase())
-                                ->includes(self.name.toLowerCase())
+--  context IntegrationElement
+--    /*
+--     * All Integration Elements have a unique name.
+--     * 
+--     * NOTE: XText automatically enforces unique FQNs - which is what we want
+--     */
+--    inv hasUniqueName:
+--      not IntegrationElement.allInstances()->excluding(self)
+--                                ->collect(name.toLowerCase())
+--                                ->includes(self.name.toLowerCase())
                                 
   context IntegrationUoPInstance
     /*

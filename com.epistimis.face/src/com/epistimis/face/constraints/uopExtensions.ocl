@@ -1,15 +1,18 @@
+/**
+ * FACE UoP level - Epistimis extensions outside of the FACE spec
+ */
 import ecore : 'http://www.eclipse.org/emf/2002/Ecore#/'
 --import 'http://www.epistimis.com/uddl/Uddl'
 --import 'http://www.epistimis.com/face/Face'
-import 'platform:/resource/com.epistimis.uddl/model/generated/Uddl.ecore'
-import 'platform:/resource/com.epistimis.face/model/generated/Face.ecore'
+import 'platform:/plugin/com.epistimis.uddl/model/generated/Uddl.ecore'
+import 'platform:/plugin/com.epistimis.face/model/generated/Face.ecore'
 
 /**
  * Includes apparently work like imports to bring in other files. And this approach makes it free of 
  * the directory specifics between repos
  */
-include 'platform:/resource/com.epistimis.uddl/src/com/epistimis/uddl/constraints/conceptualExtensions.ocl'
-include 'platform:/resource/com.epistimis.uddl/src/com/epistimis/uddl/constraints/platformExtensions.ocl'
+include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/constraints/conceptualExtensions.ocl'
+include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/constraints/platformExtensions.ocl'
 
 package face
 	context FaceElement

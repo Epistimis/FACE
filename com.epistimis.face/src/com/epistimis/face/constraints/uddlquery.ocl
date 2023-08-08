@@ -1,5 +1,8 @@
-import query : 'platform:/resource/com.epistimis.uddl.query/model/generated/Query.ecore'
+/**
+ * UDDL Query Language - Epistimis extensions outside of the FACE spec
+ */
 
+import query : 'platform:/plugin/com.epistimis.uddl.query/model/generated/Query.ecore'
 
 
 /**
@@ -17,5 +20,23 @@ package query
 	     */
 	    def: referencedEntityTypeName() : String =
 	        self.selectedEntityExpression.from.entity.selectedEntity.entityType.oclAsType(QueryIdentifier).id
+  
+  context SelectedEntityExpression
+	    def: referencedEntityTypeName() : String =
+	        self.from.entity.selectedEntity.entityType.oclAsType(QueryIdentifier).id
+  
+ 
+  context SelectedEntity
+		/**
+		 * 
+		 */
+	    def: referencedEntityTypeName() : String =
+	        self.entityType.oclAsType(QueryIdentifier).id
+  
+  		/**
+  		 * This will return all type names. Will it only do that for a single query? 
+  		 */
+  		static def: allReferencedEntityTypeNames(): Set(String) =
+  			SelectedEntity.allInstances()->collect(referencedEntityTypeName())->asSet()
 
 endpackage

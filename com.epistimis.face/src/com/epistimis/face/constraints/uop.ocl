@@ -1,19 +1,26 @@
-import uddl : 'platform:/resource/com.epistimis.uddl/model/generated/Uddl.ecore'
-import  '../../../../../model/generated/Face.ecore'
+/**
+ * UDDL standard constraints - adjusted for this metamodel
+ */
+import uddl : 'platform:/plugin/com.epistimis.uddl/model/generated/Uddl.ecore'
+--import  '../../../../../model/generated/Face.ecore'
+import 'platform:/plugin/com.epistimis.face/model/generated/Face.ecore'
 
 -- include 'platform.ocl'
-include 'face.ocl'
+--include 'face.ocl'
+include 'platform:/plugin/com.epistimis.face/src/com/epistimis/face/constraints/face.ocl'
 
 package face
 
-  context UopElement
-    /*
-     * All UoP Elements have a unique name.
-     */
-    inv hasUniqueName:
-      not UopElement.allInstances()->excluding(self)
-                                ->collect(name)
-                                ->includes(self.name)
+--  context UopElement
+--    /*
+--     * All UoP Elements have a unique name.
+--     * 
+--     * NOTE: XText automatically enforces unique FQNs - which is all we care about
+--     */
+--    inv hasUniqueName:
+--      not UopElement.allInstances()->excluding(self)
+--                                ->collect(name)
+--                                ->includes(self.name)
 
   context UopConnection
     /*

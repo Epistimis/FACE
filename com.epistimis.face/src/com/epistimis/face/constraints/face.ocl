@@ -1,5 +1,9 @@
-import uddl : 'platform:/resource/com.epistimis.uddl/model/generated/Uddl.ecore'
-import  '../../../../../model/generated/Face.ecore'
+/**
+ * UDDL standard constraints - adjusted for this metamodel
+ */
+import uddl : 'platform:/plugin/com.epistimis.uddl/model/generated/Uddl.ecore'
+import   'platform:/plugin/com.epistimis.face/model/generated/Face.ecore'
+--import  '../../../../../model/generated/Face.ecore'
 
 -- include 'conceptual.ocl'
 -- include 'logical.ocl'
