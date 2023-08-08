@@ -46,7 +46,7 @@ package face
 			matchingObservables(checklist)->notEmpty()
 			
 		def: referencedUop(): UopUnitOfPortability = 
-			self.oclAsType(ecore::EObject).eContainer().oclAsType(UopUnitOfPortability)
+			self.oclContainer.oclAsType(UopUnitOfPortability)
 					
 		def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
 			if (self.oclIsKindOf(UopPubSubConnection)) then

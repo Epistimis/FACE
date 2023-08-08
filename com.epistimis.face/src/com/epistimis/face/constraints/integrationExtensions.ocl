@@ -27,13 +27,11 @@ package face
 
 	context IntegrationIntegrationContext
 		def: allReferencedComponents(): Set(UopUnitOfPortability) =
-			let dests = self.connection->select(c| 
-					c.destination.oclIsKindOf(IntegrationUoPInputEndPoint))->collect(destination)->collect(oclAsType(IntegrationUoPInputEndPoint))  in
-			let sources = self.connection->select(c| 
-					c.source.oclIsKindOf(IntegrationUoPOutputEndPoint))->collect(source)->collect(oclAsType(IntegrationUoPOutputEndPoint)) in
-			let dcomps = dests->collect(connection).oclAsType(ecore::EObject).eContainer() in
-			let scomps = sources->collect(connection).oclAsType(ecore::EObject).eContainer() in 		
-			dcomps->asSet()->union(scomps->asSet())->collect(oclAsType(UopUnitOfPortability))->asSet()
+			let dests = self.connection->collect(destination)->select(oclIsKindOf(face::IntegrationUoPInputEndPoint))->collect(oclAsType(face::IntegrationUoPInputEndPoint))  in
+			let sources = self.connection->collect(source)->select(oclIsKindOf(face::IntegrationUoPOutputEndPoint))->collect(oclAsType(face::IntegrationUoPOutputEndPoint)) in
+			let dcomps = dests->collect(connection)->collect(oclContainer) in
+			let scomps = sources->collect(connection)->collect(oclContainer) in 		
+			dcomps->asSet()->union(scomps->asSet())->collect(oclAsType(face::UopUnitOfPortability))->asSet()
 	
 		def: allReferencedPCs(): Set(UopPortableComponent) =
 			self.allReferencedComponents()->selectByKind(UopPortableComponent)->collect(oclAsType(UopPortableComponent))->asSet()
@@ -51,12 +49,10 @@ package face
 			self.referencedModelTypes()->includes(t)
 	
 		def: allReferencedUopInstances(): Set(IntegrationUoPInstance) =
-			let dests = self.connection->select(c| 
-					c.destination.oclIsKindOf(IntegrationUoPInputEndPoint))->collect(destination)->collect(oclAsType(IntegrationUoPInputEndPoint))  in
-			let sources = self.connection->select(c| 
-					c.source.oclIsKindOf(IntegrationUoPOutputEndPoint))->collect(source)->collect(oclAsType(IntegrationUoPOutputEndPoint)) in
-			let dinsts = dests->collect(oclAsType(ecore::EObject)).eContainer() in
-			let sinsts = sources->collect(oclAsType(ecore::EObject)).eContainer() in 		
+			let dests = self.connection->collect(destination)->select(oclIsKindOf(face::IntegrationUoPInputEndPoint))->collect(oclAsType(face::IntegrationUoPInputEndPoint))  in
+			let sources = self.connection->collect(source)->select(oclIsKindOf(face::IntegrationUoPOutputEndPoint))->collect(oclAsType(face::IntegrationUoPOutputEndPoint)) in
+			let dinsts = dests->collect(oclContainer) in
+			let sinsts = sources->collect(oclContainer) in 		
 			dinsts->asSet()->union(dinsts->asSet())->collect(oclAsType(IntegrationUoPInstance))->asSet()
 	
 	context IntegrationUoPInputEndPoint
@@ -104,7 +100,7 @@ package face
 		 * TODO: How do you cast an empty collection to the type you want?
 		 */	
 		def: containingIntegrationModels():Sequence(IntegrationIntegrationModel) =
-			let container = self.oclAsType(ecore::EObject).eContainer() in
+			let container = self.oclContainer in
 			if (not container.oclIsKindOf(IntegrationIntegrationModel)) then
 				Sequence{}--:IntegrationIntegrationModel
 			else
@@ -127,7 +123,7 @@ package face
 		 * this is effectively the same as how Scoping works
 		 */	
 		def: containingIntegrationModels():Sequence(IntegrationIntegrationModel) =
-			let container = self.oclAsType(ecore::EObject).eContainer() in
+			let container = self.oclContainer in
 			if (not container.oclIsKindOf(IntegrationIntegrationModel)) then
 				Sequence{}--:IntegrationIntegrationModel
 			else
