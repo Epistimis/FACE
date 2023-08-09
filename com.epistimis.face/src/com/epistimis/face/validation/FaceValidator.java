@@ -55,13 +55,20 @@ public class FaceValidator extends AbstractFaceValidator {
 	public void register(EValidatorRegistrar registrar) {
 		super.register(registrar);
 
-		loadOCLAndRegister(registrar,"src/com/epistimis/face/constraints/uopExtensions.ocl",FacePackage.eINSTANCE, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
-		loadOCLAndRegister(registrar,"src/com/epistimis/face/constraints/integrationExtensions.ocl",FacePackage.eINSTANCE, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
-		//loadOCLAndRegister(registrar,"src/com/epistimis/face/constraints/face.ocl",FacePackage.eINSTANCE, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
-		//loadOCLAndRegister(registrar, "src/com/epistimis/face/constraints/uop.ocl",FacePackage.eINSTANCE, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
-//		// TODO: Before registering this, need to fix issues that are the result of grammar changes - or fix grammar
-//		// to avoid them
-//		//loadOCLAndRegister(registrar, "/com.epistimis.face/src/com/epistimis/face/constraints/integration.ocl");
+		/**
+		 * Registrations here are for OCL we ALWAYS want available.
+		 * These provide foundational rules about the FACE metamodel
+		 */	
+//		loadOCLAndRegister(registrar,"src/com/epistimis/face/constraints/face.ocl",FacePackage.eINSTANCE, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
+//		loadOCLAndRegister(registrar, "src/com/epistimis/face/constraints/uop.ocl",FacePackage.eINSTANCE, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
+//		loadOCLAndRegister(registrar, "src/com/epistimis/face/constraints/integration.ocl",FacePackage.eINSTANCE, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
+
+		/**
+		 * These will be automatically loaded as needed by other files
+		 */
+//		loadOCLAndRegister(registrar, "src/com/epistimis/face/constraints/uddlquery.ocl",FacePackage.eINSTANCE, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
+//		loadOCLAndRegister(registrar,"src/com/epistimis/face/constraints/uopExtensions.ocl",FacePackage.eINSTANCE, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
+//		loadOCLAndRegister(registrar,"src/com/epistimis/face/constraints/integrationExtensions.ocl",FacePackage.eINSTANCE, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
 	}
 
 
