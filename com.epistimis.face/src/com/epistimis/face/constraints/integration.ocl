@@ -283,10 +283,13 @@ package face
     /*
      * Helper method that gets the set of TransportNodes that are
      * "upstream" from a given IntegrationTransportNode.
+     * 
+     * BUGFIX: this has been modified to use self.inPort rather than self.outPort
+     * 
      */
     def: getPreviousNodes() : Set(IntegrationTransportNode) =
       IntegrationTSNodeConnection.allInstances()
-                      ->select(c | self.outPort->includes(c.destination))
+                      ->select(c | self.inPort->includes(c.destination))
                       ->collect(source)
                       ->selectByKind(IntegrationTSNodeOutputPort)
                       ->collect(oclAsType(IntegrationTSNodePortBase))
