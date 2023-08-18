@@ -107,6 +107,19 @@ package face
 			)->asSet()
 	
 	context IntegrationUoPInstance 
+
+		/**
+		 * Is this an entry point in the specified IntegrationContext?
+		 */
+		def: entryPoint(ic: IntegrationIntegrationContext): Boolean =
+			self.getImmediatelyUpstreamUoPInstances(ic)->isEmpty() 
+
+		/**
+		 * Is this an exit point in the specified IntegrationContext?
+		 */
+		def: exitPoint(ic: IntegrationIntegrationContext): Boolean =
+			self.getImmediatelyDownstreamUoPInstances(ic)->isEmpty() 
+
 		/**
 		 * This approach checks for the interfaces actually used. The uop realized by the instances may define more interfaces
 		 */
@@ -128,7 +141,7 @@ package face
 			self.possibleReferencedModelTypes()->includes(t)
 		
 		/**
-		 * This just returns nearby UoPs - not the one this realizes
+		 * This just linked UoPs - not the one this realizes
 		 */	
 		def: allReferencedUops(): Set(UopUnitOfPortability) =
 			let inputs = self.input->collect(connection) in
