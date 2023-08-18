@@ -55,6 +55,22 @@ package face
 			let dinsts = dests->collect(oclContainer) in
 			let sinsts = sources->collect(oclContainer) in 		
 			dinsts->asSet()->union(dinsts->asSet())->collect(oclAsType(IntegrationUoPInstance))->asSet()
+
+		/**
+		 * The entry points in an IntegrationContext are all those instances that have no 
+		 * other instances upstream
+		 */
+		def: entryPoints(): Set(IntegrationUoPInstance) =
+			let instances = self.allReferencedUopInstances() in
+			instances->select(getImmediatelyUpstreamUoPInstances(self)->isEmpty()) 
+
+		/**
+		 * The exit points in an IntegrationContext are all those instances that have no 
+		 * other instances upstream
+		 */
+		def: exitPoints(): Set(IntegrationUoPInstance) =
+			let instances = self.allReferencedUopInstances() in
+			instances->select(getImmediatelyDownstreamUoPInstances(self)->isEmpty()) 
 	
 	context IntegrationUoPInputEndPoint
 		def: referencedModelTypes():Set(uddl::ConceptualComposableElement) =
@@ -208,7 +224,6 @@ package face
 	                      ->collect(getParentUoPInstance())
 	                      ->asSet()
 			
-
 				
 	    /*
 	     * Helper method that gets the set of IntegrationUoPInstances that are immediately
