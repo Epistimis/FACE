@@ -45,7 +45,7 @@ package face
 		def: observablesOnConnection(checklist: Set(uddl::ConceptualObservable) ): Boolean = 
 			matchingObservables(checklist)->notEmpty()
 			
-		def: referencedUop(): UopUnitOfPortability = 
+		def: owningUop(): UopUnitOfPortability = 
 			self.oclContainer.oclAsType(UopUnitOfPortability)
 					
 		def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
@@ -88,6 +88,8 @@ package face
 		def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
 			self.connection->collect(referencedModelTypes())->asSet()
 	
+		def: referencesModelType(t: uddl::ConceptualComposableElement): Boolean =
+			self.referencedModelTypes()->includes(t)
 	
 		
 	context UopMessageType
