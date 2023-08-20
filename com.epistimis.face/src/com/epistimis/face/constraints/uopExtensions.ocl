@@ -48,6 +48,10 @@ package face
 		def: owningUop(): UopUnitOfPortability = 
 			self.oclContainer.oclAsType(UopUnitOfPortability)
 					
+		/**
+		 * NOTE: Gets all of the referenced model types, regardless of direction of connection
+		 *  This may not be  what you want.  
+		 */
 		def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
 			if (self.oclIsKindOf(UopPubSubConnection)) then
 				self.oclAsType(UopPubSubConnection).referencedModelTypes()
@@ -55,6 +59,16 @@ package face
 				self.oclAsType(UopClientServerConnection).referencedModelTypes()
 			endif
 	
+		/**
+		 * Get the referenced model types for the specified direction. Might be empty if 
+		 * this connection is uni directional going in the opposite direction.
+		 */
+		def: referencedModelTypes(dir: UopMessageExchangeType): Set(uddl::ConceptualComposableElement) =
+			if (self.oclIsKindOf(UopPubSubConnection)) then
+				self.oclAsType(UopPubSubConnection).referencedModelTypes(dir)
+			else 
+				self.oclAsType(UopClientServerConnection).referencedModelTypes(dir)
+			endif
 	
 	context UopPubSubConnection
 		/**
@@ -63,30 +77,84 @@ package face
 		def: matchingObservables(checklist: Set(uddl::ConceptualObservable) ): Set(uddl::ConceptualObservable) = 
 			self.messageType.referencedModelTypes()->selectByType(uddl::ConceptualObservable)->select(t|checklist->includes(t))->asSet()
 	
+		/**
+		 * NOTE: Gets all of the referenced model types, regardless of direction of connection
+		 *  This may not be  what you want.  
+		 */
 		def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
 			self.messageType.referencedModelTypes()->asSet()
-	
-	
+		
+		/**
+		 * Get the referenced model types for the specified direction. Will be empty if 
+		 * this connection is going in the opposite direction.
+		 */
+		def: referencedModelTypes(dir: UopMessageExchangeType): Set(uddl::ConceptualComposableElement) =
+				if (dir = self.messageExchangeType) then
+					self.referencedModelTypes(dir)
+				else
+					Set{}
+				endif
 		
 	context UopClientServerConnection
+		/**
+		 * NOTE: Gets all of the matchingObservables, regardless of direction of connection
+		 *  This may not be  what you want.  
+		 */
 		def: matchingObservables(checklist: Set(uddl::ConceptualObservable) ): Set(uddl::ConceptualObservable) = 
 			let reqRefs = self.requestType.referencedModelTypes()->selectByType(uddl::ConceptualObservable)->select(t|checklist->includes(t)) in
 			let resRefs = self.responseType.referencedModelTypes()->selectByType(uddl::ConceptualObservable)->select(t|checklist->includes(t)) in
 			reqRefs->union(resRefs)->asSet()
 			
+		/**
+		 * NOTE: Gets all of the referenced model types, regardless of direction of connection
+		 *  This may not be  what you want.  
+		 */
 		def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
 			let reqRefs = self.requestType.referencedModelTypes() in
 			let resRefs = self.responseType.referencedModelTypes() in
 			reqRefs->union(resRefs)->asSet()
 	
+		/**
+		 * Get the referenced model types for the specified direction. 
+		 */
+		def: referencedModelTypes(dir: UopMessageExchangeType): Set(uddl::ConceptualComposableElement) =
+				if (dir = UopMessageExchangeType::INBOUND_MESSAGE) then
+					self.responseType.referencedModelTypes()
+				else
+					self.requestType.referencedModelTypes()
+				endif
 	
 	context UopUnitOfPortability
 	
 		def: realizingInstances(): Set(IntegrationUoPInstance) = 
 			IntegrationUoPInstance.allInstances()->select(i | i.realizes = self)->asSet()
 	
+		/**
+		 * Return all the model types referenced by this UoP, regardless of direction
+		 */
 		def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
 			self.connection->collect(referencedModelTypes())->asSet()
+
+		/**
+		 * Return only the model types referenced by this UoP for the direction specified
+		 */
+		def: referencedModelTypes(dir: UopMessageExchangeType): Set(uddl::ConceptualComposableElement) =
+			let psConns = self.connection->selectByKind(face::UopPubSubConnection) in
+			let csConns = self.connection->selectByKind(face::UopClientServerConnection) in
+			let psIns = psConns->select(messageExchangeType = UopMessageExchangeType::INBOUND_MESSAGE) in
+			let psOuts = psConns->select(messageExchangeType = UopMessageExchangeType::OUTBOUND_MESSAGE) in
+			let csIns = csConns->select(role = UoPClientServerRole::SERVER) in
+			let csOuts = csConns->select(role = UoPClientServerRole::CLIENT) in
+			let resultConns = 
+				if (dir = UopMessageExchangeType::INBOUND_MESSAGE) then
+					psIns->union(csIns)
+				else 
+					psOuts->union(csOuts)
+				endif
+				in
+			resultConns->iterate(conn: UopConnection; result: Set(uddl::ConceptualComposableElement) = Set{} |
+				result->includingAll(conn.referencedModelTypes())
+			)
 	
 		def: referencesModelType(t: uddl::ConceptualComposableElement): Boolean =
 			self.referencedModelTypes()->includes(t)

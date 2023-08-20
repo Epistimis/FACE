@@ -124,9 +124,26 @@ package face
 		 * This approach checks for the interfaces actually used. The uop realized by the instances may define more interfaces
 		 */
 		def: actualReferencedModelTypes(): Set(uddl::ConceptualComposableElement) =
-			let inputs = self.input->collect(referencedModelTypes())->asSet() in
-			let outputs = self.output->collect(referencedModelTypes())->asSet() in
+			let inMsg = self.input->collect(getMessageType()) in
+			let outMsg = self.output->collect(getMessageType()) in
+			let inputs = inMsg->collect(referencedModelTypes()) in
+			let outputs = outMsg->collect(referencedModelTypes()) in
+--			let inputs = self.input->collect(referencedModelTypes())->asSet() in
+--			let outputs = self.output->collect(referencedModelTypes())->asSet() in
 			inputs->union(outputs)->asSet()
+
+		/**
+		 * Get only those types referenced on input/output - 
+		 * NOTE: For ClientServerConnections, we need to retrieve either the Request or Response
+		 * depending on the direction. That is handled by getMessageType()
+		 */
+		def: actualReferencedModelTypes(dir: UopMessageExchangeType): Set(uddl::ConceptualComposableElement) =
+			if (dir = UopMessageExchangeType::INBOUND_MESSAGE) then
+				self.input->collect(getMessageType())->collect(referencedModelTypes())->asSet() 
+			else
+				self.output->collect(getMessageType())->collect(referencedModelTypes())->asSet()
+			endif
+		
 			
 		def: actuallyReferencesModelType(t: uddl::ConceptualObservable): Boolean =
 			self.actualReferencedModelTypes()->includes(t)
@@ -136,6 +153,9 @@ package face
 		 */
 		def: possibleReferencedModelTypes(): Set(uddl::ConceptualComposableElement) =
 			self.realizes.referencedModelTypes()
+
+		def: possibleReferencedModelTypes(dir: UopMessageExchangeType): Set(uddl::ConceptualComposableElement) =
+			self.realizes.referencedModelTypes(dir)
 	
 		def: possiblyReferencesModelType(t: uddl::ConceptualObservable): Boolean =
 			self.possibleReferencedModelTypes()->includes(t)
