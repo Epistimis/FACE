@@ -57,20 +57,18 @@ package face
 			dinsts->asSet()->union(dinsts->asSet())->collect(oclAsType(IntegrationUoPInstance))->asSet()
 
 		/**
-		 * The entry points in an IntegrationContext are all those instances that have no 
-		 * other instances upstream
+		 * The entry points in an IntegrationContext 
 		 */
 		def: entryPoints(): Set(IntegrationUoPInstance) =
 			let instances = self.allReferencedUopInstances() in
-			instances->select(getImmediatelyUpstreamUoPInstances(self)->isEmpty()) 
+			instances->select(entryPoint(self)) 
 
 		/**
-		 * The exit points in an IntegrationContext are all those instances that have no 
-		 * other instances upstream
+		 * The exit points in an IntegrationContext 
 		 */
 		def: exitPoints(): Set(IntegrationUoPInstance) =
 			let instances = self.allReferencedUopInstances() in
-			instances->select(getImmediatelyDownstreamUoPInstances(self)->isEmpty()) 
+			instances->select(exitPoint(self)) 
 	
 	context IntegrationUoPInputEndPoint
 		def: referencedModelTypes():Set(uddl::ConceptualComposableElement) =
@@ -110,15 +108,39 @@ package face
 
 		/**
 		 * Is this an entry point in the specified IntegrationContext?
+		 * That means it has no upstreams but has some downstreams somewhere (otherwise it isn't referenced
+		 * at all)
 		 */
-		def: entryPoint(ic: IntegrationIntegrationContext): Boolean =
-			self.getImmediatelyUpstreamUoPInstances(ic)->isEmpty() 
+		def: entryPoint(): Boolean =
+			self.getImmediatelyUpstreamUoPInstances()->isEmpty() and
+			self.getImmediatelyDownstreamUoPInstances()->notEmpty()
 
 		/**
 		 * Is this an exit point in the specified IntegrationContext?
+		 * That means it has no downstreams but has some upstreams somewhere (otherwise it isn't referenced
+		 * in the IC at all)
+		 */
+		def: exitPoint(): Boolean =
+			self.getImmediatelyDownstreamUoPInstances()->isEmpty() and
+			self.getImmediatelyUpstreamUoPInstances()->notEmpty() 
+
+		/**
+		 * Is this an entry point in the specified IntegrationContext?
+		 * That means it has no upstreams but has some downstreams in this IC (otherwise it isn't referenced
+		 * in the IC at all)
+		 */
+		def: entryPoint(ic: IntegrationIntegrationContext): Boolean =
+			self.getImmediatelyUpstreamUoPInstances(ic)->isEmpty() and
+			self.getImmediatelyDownstreamUoPInstances(ic)->notEmpty()
+
+		/**
+		 * Is this an exit point in the specified IntegrationContext?
+		 * That means it has no downstreams but has some upstreams in this IC (otherwise it isn't referenced
+		 * in the IC at all)
 		 */
 		def: exitPoint(ic: IntegrationIntegrationContext): Boolean =
-			self.getImmediatelyDownstreamUoPInstances(ic)->isEmpty() 
+			self.getImmediatelyDownstreamUoPInstances(ic)->isEmpty() and
+			self.getImmediatelyUpstreamUoPInstances(ic)->notEmpty() 
 
 		/**
 		 * This approach checks for the interfaces actually used. The uop realized by the instances may define more interfaces
@@ -405,9 +427,29 @@ package face
 		def: possibleReferencedModelTypes(): Set(uddl::ConceptualComposableElement) =
 			self.element->selectByKind(IntegrationUoPInstance)->collect(possibleReferencedModelTypes())->asSet()
 		
-		def: allUopInstances(): Set(IntegrationUoPInstance) =
+		def: allIntegrationModels(): Set(IntegrationIntegrationModel) =
+			self->closure(im)
+
+		/**
+		 * All the local UopInstances (does not include instances in nested models)
+		 */
+		def: allLocalUopInstances(): Set(IntegrationUoPInstance) =
 			self.element->selectByKind(IntegrationUoPInstance)->asSet()
 	
+		/**
+		 * All the IntegrationContexts (local and nested)
+		 */
+		def: allIntegrationContexts(): Set(IntegrationIntegrationContext) =
+			let models = self.allIntegrationModels() in
+				models->collect(element->selectByKind(IntegrationIntegrationContext))->asSet()
+			
+		/**
+		 * All the UopInstances (local and nested)
+		 */
+		def: allUopInstances(): Set(IntegrationUoPInstance) =
+			let models = self.allIntegrationModels() in
+				models->collect(element->selectByKind(IntegrationUoPInstance))->asSet()
+
 		def: allReferencedUops(): Set(UopUnitOfPortability) =
 			self.allUopInstances()->collect(input.connection)->collect(allReferencedUops())->asSet()
 			
@@ -423,14 +465,21 @@ package face
 		def: possiblyReferencesModelType(t: uddl::ConceptualObservable): Boolean =
 			self.possibleReferencedModelTypes()->includes(t)
 	
-		def: allIntegrationContexts(): Set(IntegrationIntegrationContext) =
-			let localICs = self.element->selectByType(IntegrationIntegrationContext)->asSet() in
-			let localIMs = self.element->selectByType(IntegrationIntegrationModel) in
-			let subICs = localIMs->collect(allIntegrationContexts())->flatten() in
-			localICs->union(subICs)->asSet()
-			
-		def: allIntegrationModels(): Set(IntegrationIntegrationModel) =
-			self->closure(im)
+		/**
+		 * The entry points in an IntegrationModel (local and nested)
+		 */
+		def: entryPoints(): Set(IntegrationUoPInstance) =
+			let instances = self.allUopInstances() in
+			instances->select(entryPoint()) 
+
+		/**
+		 * The exit points in an IntegrationModel (local and nested)
+		 */
+		def: exitPoints(): Set(IntegrationUoPInstance) =
+			let instances = self.allUopInstances() in
+			instances->select(exitPoint()) 
+	
+	
 
 	  context IntegrationTSNodePortBase
 	    /*
