@@ -64,12 +64,77 @@ package face
 			instances->select(entryPoint(self)) 
 
 		/**
-		 * The exit points in an IntegrationContext 
+		 * ViewSource nodes are the entry nodes in an IntegrationContext 
+		 * That seems to be their entire function
+		 */
+		def:entryNodes(): Set(face::IntegrationViewSource) =
+			face::IntegrationViewSource.allInstances()->select(oclContainer = self)
+
+		/**
+		 * The exit points in an IntegrationContext.
 		 */
 		def: exitPoints(): Set(IntegrationUoPInstance) =
 			let instances = self.allReferencedUopInstances() in
 			instances->select(exitPoint(self)) 
+
+		/**
+		 * ViewSink nodes are the exit nodes in an IntegrationContext 
+		 * That seems to be their entire function
+		 */
+		def: exitNodes(): Set(face::IntegrationViewSink) =
+			face::IntegrationViewSink.allInstances()->select(oclContainer = self)
+			
+		/**
+		 * Follow the path of data through the graph.  For now, we just follow at the ConceptualEntity level because
+		 * we aren't parsing queries close enough to pick out individual fields (use Java for that)
+		 * To do this, we must follow links from upstream to downstream. We start with entryPoints and then find
+		 * all their downstream instances. The possible consumers of data can only be in this set - so we just need
+		 * to follow it. Alternatively, we can traverse node by node or UoPInstance by UoPInstance. 
+		 * 
+		 * The advantage of node by node is that we can filter out, at each step, the nodes that can be used, limiting 
+		 * the combinatorial explosion. 
+		 * 1) ViewSinks are a dead end - 
+		 * 2) ViewFilter may be a dead end - check the downstream connected outPort
+		 * 3) ViewTransporter is a pass through
+		 * 4) ViewAggregation is a pass through
+		 * 5) ViewTransformer
+		 * 6) ViewSource - a starting point only
+		 */
 	
+	context IntegrationTSNodeInputPort
+		def: referencedModelTypes():Set(uddl::ConceptualComposableElement) =
+			self.view.referencedModelTypes()
+
+		def: owner(): IntegrationTransportNode =
+			self.oclContainer.oclAsType(IntegrationTransportNode)
+
+		def: linksInIC(ic: IntegrationIntegrationContext): Set(IntegrationTSNodeConnection) =
+			ic.connection->select(l|l.destination = self)->asSet()
+
+		def: linksInIM(ic: IntegrationIntegrationContext): Set(IntegrationTSNodeConnection) =
+			let model = self.owner().oclContainer.oclAsType(IntegrationIntegrationModel) in
+			let ics = model.element->select(oclIsKindOf(face::IntegrationIntegrationContext)) in
+			ics->iterate(ic: IntegrationIntegrationContext; result:Set(IntegrationTSNodeConnection) = Set{} |
+				result->includingAll(self.linksInIC(ic))
+			)->asSet()
+
+	context IntegrationTSNodeOutputPort
+		def: referencedModelTypes():Set(uddl::ConceptualComposableElement) =
+			self.view.referencedModelTypes()
+
+		def: owner(): IntegrationTransportNode =
+			self.oclContainer.oclAsType(IntegrationTransportNode)
+
+		def: linksInIC(ic: IntegrationIntegrationContext): Set(IntegrationTSNodeConnection) =
+			ic.connection->select(l|l.source = self)->asSet()
+
+		def: linksInIM(ic: IntegrationIntegrationContext): Set(IntegrationTSNodeConnection) =
+			let model = self.owner().oclContainer.oclAsType(IntegrationIntegrationModel) in
+			let ics = model.element->select(oclIsKindOf(face::IntegrationIntegrationContext)) in
+			ics->iterate(ic: IntegrationIntegrationContext; result:Set(IntegrationTSNodeConnection) = Set{} |
+				result->includingAll(self.linksInIC(ic))
+			)->asSet()
+
 	context IntegrationUoPInputEndPoint
 		def: referencedModelTypes():Set(uddl::ConceptualComposableElement) =
 			self.connection.referencedModelTypes()
@@ -418,7 +483,29 @@ package face
 				Sequence{im}->append(im.containingIntegrationModels())
 			endif
 
+		/**
+		 * Returns a flattened list of all the IntegrationModels nested in this one
+		 */
+		def: containedIMs():Set(IntegrationIntegrationModel) =
+			self->closure(im)->asSet()
+			
+		/**
+		 * Returns a set of all the IntegrationElements in all IMs (this one and all its nested IMs)
+		 */
+		def: containedElements(): Set(IntegrationElement) =
+			self.containedIMs()->collect(element)->asSet()
 
+		/**
+		 * Returns a set of all the IntegrationTransportNodes in all IMs (this one and all its nested IMs)
+		 */
+		def: containedTransportNodes():Set(IntegrationTransportNode) =
+			self.containedElements()->selectByKind(IntegrationTransportNode)
+
+		/**
+		 * Returns a set of all the IntegrationTSNodeConnections in all IMs (this one and all its nested IMs)
+		 */
+		def: containedTSNodeConnections():Set(IntegrationTSNodeConnection) =
+			self.containedElements()->selectByKind(IntegrationTSNodeConnection)
 		/**
 		 * This looks at the interfaces actually used throughout the model. The referenced UoPs may define additional interfaces not used here.
 		 */
@@ -476,6 +563,24 @@ package face
 			let instances = self.allUopInstances() in
 			instances->select(entryPoint()) 
 
+		/**
+		 * Returns a set of all the IntegrationViewSources in all IMs (this one and all its nested IMs)
+		 */
+		def: containedEntryNodes():Set(IntegrationViewSource) =
+			self.containedTransportNodes()->selectByKind(IntegrationViewSource)
+			
+		/**
+		 * Returns a set of all the IntegrationViewSinks in all IMs (this one and all its nested IMs)
+		 */
+		def: containedExitNodes():Set(IntegrationViewSink) =
+			self.containedTransportNodes()->selectByKind(IntegrationViewSink)
+
+		/**
+		 * ViewSource nodes are the entry nodes in an IntegrationContext 
+		 * That seems to be their entire function
+		 */
+		def:entryNodes(): Set(face::IntegrationTransportNode) =
+			face::IntegrationViewSource.allInstances()->select(oclContainer = self)
 		/**
 		 * The exit points in an IntegrationModel (local and nested)
 		 */
@@ -765,5 +870,16 @@ package face
 			linkedDUI->iterate(inst: IntegrationUoPInstance; result: Set(IntegrationUoPInstance) = Set{}|
 				result->includingAll(inst->closure(getAllUpstreamUoPInstances(ic)))
 			)
+
+		/**
+		 * Get the referenced model types. These only exist within an IC, so everything that is there is used
+		 */
+		def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
+			let inMsg = self.inPort->collect(getMessageType()) in
+			let outMsg = self.outPort->collect(getMessageType()) in
+			let inputs = inMsg->collect(referencedModelTypes()) in
+			let outputs = outMsg->collect(referencedModelTypes()) in
+			inputs->union(outputs)->asSet()
+
 				
 endpackage
