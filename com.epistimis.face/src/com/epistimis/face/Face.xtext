@@ -26,7 +26,9 @@ FaceElement:
 	ArchitectureModel |
 	UopUoPModel |
 	IntegrationIntegrationModel |
-	UopElement
+	UopElement |
+	IntegrationElement |
+	IntegrationTransportNode
 ;
 
 enum UoPClientServerRole:
