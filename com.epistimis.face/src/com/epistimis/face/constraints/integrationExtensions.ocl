@@ -576,10 +576,10 @@ package face
 			self.containedTransportNodes()->selectByKind(IntegrationViewSink)
 
 		/**
-		 * ViewSource nodes are the entry nodes in an IntegrationContext 
+		 * ViewSource nodes are the entry nodes in an IntegrationModel 
 		 * That seems to be their entire function
 		 */
-		def:entryNodes(): Set(face::IntegrationTransportNode) =
+		def:entryNodes(): Set(face::IntegrationViewSource) =
 			face::IntegrationViewSource.allInstances()->select(oclContainer = self)
 		/**
 		 * The exit points in an IntegrationModel (local and nested)
@@ -588,6 +588,12 @@ package face
 			let instances = self.allUopInstances() in
 			instances->select(exitPoint()) 
 	
+		/**
+		 * ViewSink nodes are the exit nodes in an IntegrationModel 
+		 * That seems to be their entire function
+		 */
+		def:exitNodes(): Set(face::IntegrationViewSink) =
+			face::IntegrationViewSink.allInstances()->select(oclContainer = self)
 	
 	  context IntegrationTSNodeConnection
 	    /*
@@ -697,7 +703,27 @@ package face
 	                                                inst.output = self)
 	                                  ->any(true)
 	
+		def: referencedModelTypes():Set(uddl::ConceptualComposableElement) =
+			if (self.oclIsKindOf(face::IntegrationTSNodeOutputPort)) then
+				self.oclAsType(face::IntegrationTSNodeOutputPort).referencedModelTypes()
+			else
+				if (self.oclIsKindOf(face::IntegrationTSNodeInputPort)) then
+					self.oclAsType(face::IntegrationTSNodeInputPort).referencedModelTypes()
+				else
+					if (self.oclIsKindOf(face::IntegrationUoPOutputEndPoint)) then
+						self.oclAsType(face::IntegrationUoPOutputEndPoint).referencedModelTypes()
+					else
+--						if (self.oclIsKindOf(face::IntegrationUoPInputEndPoint)) then
+							self.oclAsType(face::IntegrationUoPInputEndPoint).referencedModelTypes()
+--						endif
+					endif
+				endif
+			endif
+	
 	  context IntegrationTransportNode
+
+		def: owner(): IntegrationIntegrationContext =
+			self.oclContainer.oclAsType(IntegrationIntegrationContext)
 
 	    /*
 	     * Helper method that gets the set of TransportNodes that are
