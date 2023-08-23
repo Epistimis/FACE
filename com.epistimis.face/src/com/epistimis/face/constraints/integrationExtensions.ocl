@@ -93,13 +93,19 @@ package face
 		 * 
 		 * The advantage of node by node is that we can filter out, at each step, the nodes that can be used, limiting 
 		 * the combinatorial explosion. 
-		 * 1) ViewSinks are a dead end - 
+		 * 1) ViewSinks are a dead end - 	`
 		 * 2) ViewFilter may be a dead end - check the downstream connected outPort
 		 * 3) ViewTransporter is a pass through
 		 * 4) ViewAggregation is a pass through
 		 * 5) ViewTransformer
 		 * 6) ViewSource - a starting point only
 		 */
+	
+		/**
+		 * Get all the components that this IC implements
+		 */
+		def: implements():Set(UopUnitOfPortability) =
+			UopUnitOfPortability.allInstances()->select(uop|uop.implementedBy = self)
 	
 	context IntegrationTSNodeInputPort
 		def: referencedModelTypes():Set(uddl::ConceptualComposableElement) =
@@ -170,6 +176,17 @@ package face
 			)->asSet()
 	
 	context IntegrationUoPInstance 
+
+		/**
+		 * Technically, a UoPInstance can be 'owned' by any IC containing links to it.
+		 * It should be rare for it to be split between more than 1, but it could be done.
+		 * We can limit possible owners to ICs contained in the same IM hierarchy - and
+		 * for now we arbitrarily limit it to only ICs at the same level in the IM hierarchy
+		 */
+		def: owners(): Set(IntegrationIntegrationContext) =
+			let im = self.oclContainer.oclAsType(IntegrationIntegrationModel) in
+			let candidateICs = im.element->selectByKind(IntegrationIntegrationContext)->asSet() in
+			candidateICs->select(ic|ic.connection->select(conn|(conn.source = self) or (conn.destination = self))->notEmpty())
 
 		/**
 		 * Is this an entry point in the specified IntegrationContext?

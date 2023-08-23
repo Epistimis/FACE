@@ -126,7 +126,10 @@ package face
 	
 	context UopUnitOfPortability
 	
-		def: realizingInstances(): Set(IntegrationUoPInstance) = 
+		/**
+		 * Get all the instances that realize this component
+		 */
+		def: realizations(): Set(IntegrationUoPInstance) = 
 			IntegrationUoPInstance.allInstances()->select(i | i.realizes = self)->asSet()
 	
 		/**
