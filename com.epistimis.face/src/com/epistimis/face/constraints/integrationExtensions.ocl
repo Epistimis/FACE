@@ -300,15 +300,41 @@ package face
 				Sequence{im}->append(im.containingIntegrationModels())
 			endif
 			
+		def: getPrevPortBase():Set(IntegrationTSNodePortBase) =
+	      let conns = IntegrationTSNodeConnection.allInstances() in
+					self.getPrevPortBaseImpl(conns)
+
+		def: getPrevPortBase(ic: IntegrationIntegrationContext):Set(IntegrationTSNodePortBase) =
+	      let conns = IntegrationTSNodeConnection.allInstances()
+	      				  ->select(c | c.oclContainer = ic) in	      				 
+					self.getPrevPortBaseImpl(conns)
+					
+		def: getPrevPortBaseImpl(conns: Collection(IntegrationTSNodeConnection)):Set(IntegrationTSNodePortBase) =
+				   conns  ->select(c | self.input->includes(c.destination)) 
+				     	  ->collect(source)->asSet()
+
+		def: getNextPortBase():Set(IntegrationTSNodePortBase) =
+	      let conns = IntegrationTSNodeConnection.allInstances() in
+					self.getNextPortBaseImpl(conns)
+
+		def: getNextPortBase(ic: IntegrationIntegrationContext):Set(IntegrationTSNodePortBase) =
+	      let conns = IntegrationTSNodeConnection.allInstances()
+	      				  ->select(c | c.oclContainer = ic) in	      				 
+					self.getNextPortBaseImpl(conns)
+					
+		def: getNextPortBaseImpl(conns: Collection(IntegrationTSNodeConnection)):Set(IntegrationTSNodePortBase) =
+				   conns  ->select(c | self.output->includes(c.source)) 
+				     	  ->collect(destination)->asSet()
 			
 	    /*
 	     * Helper method that gets the set of TransportNodes that are
 	     * "upstream" from a given IntegrationTransportNode.
 	     */
 	    def: getPreviousNodes() : Set(IntegrationTransportNode) =
-	      IntegrationTSNodeConnection.allInstances()
-	                      ->select(c | self.input->includes(c.destination))
-	                      ->collect(source)
+--	      IntegrationTSNodeConnection.allInstances()
+--	                      ->select(c | self.input->includes(c.destination))
+--	                      ->collect(source)
+				self.getPrevPortBase()
 	                      ->selectByKind(IntegrationTSNodeOutputPort)
 	                      ->collect(oclAsType(IntegrationTSNodePortBase))
 	                      ->collect(getParentTransportNode())
@@ -326,9 +352,10 @@ package face
 	     * "downstream" from a given IntegrationTransportNode.
 	     */
 	    def: getNextNodes() : Set(IntegrationTransportNode) =
-	      IntegrationTSNodeConnection.allInstances()
-	                      ->select(c | self.output->includes(c.source))
-	                      ->collect(destination)
+--	      IntegrationTSNodeConnection.allInstances()
+--	                      ->select(c | self.output->includes(c.source))
+--	                      ->collect(destination)
+				self.getNextPortBase()
 	                      ->selectByKind(IntegrationTSNodeInputPort)
 	                      ->collect(oclAsType(IntegrationTSNodePortBase))
 	                      ->collect(getParentTransportNode())
@@ -368,8 +395,9 @@ package face
 		               self.getImmediatelyUpstreamUoPInstancesImpl(conns)
 
 	    def: getImmediatelyUpstreamUoPInstancesImpl(conns: Collection(IntegrationTSNodeConnection)) : Set(IntegrationUoPInstance) =
-				   conns  ->select(c | self.input->includes(c.destination)) 
-				     	  ->collect(source)
+--				   conns  ->select(c | self.input->includes(c.destination)) 
+--				     	  ->collect(source)
+					self.getPrevPortBaseImpl(conns)
 	                      ->selectByKind(IntegrationUoPOutputEndPoint)
 	                      ->collect(oclAsType(IntegrationTSNodePortBase))
 	                      ->collect(getParentUoPInstance())
@@ -397,8 +425,9 @@ package face
 
 
 	    def: getImmediatelyDownstreamUoPInstancesImpl(conns: Collection(IntegrationTSNodeConnection)) : Set(IntegrationUoPInstance) =
-	               conns  ->select(c | self.output->includes(c.source))
-	                      ->collect(destination)
+--	               conns  ->select(c | self.output->includes(c.source))
+--	                      ->collect(destination)
+					self.getNextPortBaseImpl(conns)
 	                      ->selectByKind(IntegrationUoPInputEndPoint)
 	                      ->collect(oclAsType(IntegrationTSNodePortBase))
 	                      ->collect(getParentUoPInstance())
