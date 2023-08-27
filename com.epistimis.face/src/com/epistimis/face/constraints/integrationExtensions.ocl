@@ -106,6 +106,7 @@ package face
 		 */
 		def: implements():Set(UopUnitOfPortability) =
 			UopUnitOfPortability.allInstances()->select(uop|uop.implementedBy = self)
+			
 	
 	context IntegrationTSNodeInputPort
 		def: referencedModelTypes():Set(uddl::ConceptualComposableElement) =
@@ -523,6 +524,65 @@ package face
 			linkedDUI->iterate(inst: IntegrationUoPInstance; result: Set(IntegrationUoPInstance) = Set{}|
 				result->includingAll(inst.getAllUpstreamUoPInstances(ic))
 			)
+
+		/**
+		 * Helper method to filter a set of instances by the type of data they process
+		 */
+		static def: filterByTypes(insts: Set(IntegrationUoPInstance), types: Set(uddl::ConceptualComposableElement), dir: UopMessageExchangeType): Set(IntegrationUoPInstance) =
+				insts->select(inst|
+				let rmt = inst.actualReferencedModelTypes(dir) in
+				-- select all the connections that contain info from the parameter 'types'
+				rmt->intersection(types)->notEmpty()	
+			)
+		
+		/**
+		 * Get all the downstream instances with links in this IC that reference any of the types listed
+		 */
+		def: getAllDownstreamUoPInstances(ic: IntegrationIntegrationContext,types: Set(uddl::ConceptualComposableElement)): Set(IntegrationUoPInstance) =
+			let insts = self.getAllDownstreamUoPInstances(ic) in
+			filterByTypes(insts,types,UopMessageExchangeType::OUTBOUND_MESSAGE)
+
+		/**
+		 * Get all the upstream instances with links in this IC that reference any of the types listed
+		 */
+		def: getAllUpstreamUoPInstances(ic: IntegrationIntegrationContext,types: Set(uddl::ConceptualComposableElement)): Set(IntegrationUoPInstance) =
+			let insts = self.getAllUpstreamUoPInstances(ic) in
+			filterByTypes(insts,types,UopMessageExchangeType::INBOUND_MESSAGE)
+
+
+		/**
+		 * Helper method to filter a set of instances by the type of data they process
+		 */
+		static def: filterByTypes(nodes: Set(IntegrationTransportNode), types: Set(uddl::ConceptualComposableElement), dir: UopMessageExchangeType): Set(IntegrationTransportNode) =
+				nodes->select(node|
+				let rmt = node.referencedModelTypes(dir) in
+				-- select all the nodes that contain info from the parameter 'types'
+				rmt->intersection(types)->notEmpty()	
+			)
+
+		/**
+		 * Get all the downstream nodes with links in this IC that reference any of the types listed
+		 */
+		def: getAllDownstreamNodes(ic: IntegrationIntegrationContext): Set(IntegrationTransportNode) =
+			let prevNodes = self.getNextNodes(ic) in
+			prevNodes->iterate(inst: IntegrationTransportNode; result: Set(IntegrationTransportNode) = Set{}|
+				result->includingAll(inst->closure(getNextNodes(ic)))
+			)
+		def: getAllDownstreamNodes(ic: IntegrationIntegrationContext,types: Set(uddl::ConceptualComposableElement)): Set(IntegrationTransportNode) =
+			let nodes = self.getAllDownstreamNodes(ic) in
+			filterByTypes(nodes, types,UopMessageExchangeType::OUTBOUND_MESSAGE )
+			
+		def: getAllUpstreamNodes(ic: IntegrationIntegrationContext): Set(IntegrationTransportNode) =
+			let prevNodes = self.getPreviousNodes(ic) in
+			prevNodes->iterate(inst: IntegrationTransportNode; result: Set(IntegrationTransportNode) = Set{}|
+				result->includingAll(inst->closure(getPreviousNodes(ic)))
+			)
+		/**
+		 * Get all the upstream nodes with links in this IC that reference any of the types listed
+		 */
+		def: getAllUpstreamUoPInstances(ic: IntegrationIntegrationContext,types: Set(uddl::ConceptualComposableElement)): Set(IntegrationTransportNode) =
+			let nodes = self.getAllUpstreamNodes(ic) in
+			filterByTypes(nodes, types,UopMessageExchangeType::INBOUND_MESSAGE )
 				
 	/**
 	 * Infrastructure for IntegrationIntegrationModel
@@ -802,7 +862,42 @@ package face
 
 		def: owner(): IntegrationIntegrationContext =
 			self.oclContainer.oclAsType(IntegrationIntegrationContext)
+			
+		/**
+		 * Is this an entry point in the specified IntegrationContext?
+		 * That means it has no upstreams but has some downstreams somewhere (otherwise it isn't referenced
+		 * at all).
+		 */
+		def: entryNode(): Boolean =
+			self.oclIsKindOf(IntegrationViewSource)
 
+		/**
+		 * Is this an exit point in the specified IntegrationContext?
+		 * That means it has no downstreams but has some upstreams somewhere (otherwise it isn't referenced
+		 * in the IC at all).
+		 */
+		def: exitNode(): Boolean =
+			self.oclIsKindOf(IntegrationViewSink)
+
+		/**
+		 * Is this an entry point in the specified IntegrationContext?
+		 * That means it has no upstreams but has some downstreams in this IC (otherwise it isn't referenced
+		 * in the IC at all).
+		 */
+		def: entryNode(ic: IntegrationIntegrationContext): Boolean =
+			self.entryNode() and
+			self.owner() = ic
+
+		/**
+		 * Is this an exit point in the specified IntegrationContext?
+		 * That means it has no downstreams but has some upstreams in this IC (otherwise it isn't referenced
+		 * in the IC at all).
+		 */
+		def: exitNode(ic: IntegrationIntegrationContext): Boolean =
+			self.exitNode() and
+			self.owner() = ic
+		
+		
 		def: getPrevPortBase():Set(IntegrationTSNodePortBase) =
 	      let conns = IntegrationTSNodeConnection.allInstances() in
 					self.getPrevPortBaseImpl(conns)
@@ -836,10 +931,6 @@ package face
 	     * in the specified IntegrationContext
 	     */
 	    def: getPreviousNodes(ic: IntegrationIntegrationContext) : Set(IntegrationTransportNode) =
---	      IntegrationTSNodeConnection.allInstances()
---	 	      			  ->select(c | c.oclContainer = ic)
---	                      ->select(c | self.inPort->includes(c.destination))
---	                      ->collect(source)
 			self.getPrevPortBase(ic)
 	                      ->selectByKind(IntegrationTSNodeOutputPort)
 	                      ->collect(oclAsType(IntegrationTSNodePortBase))
@@ -851,10 +942,6 @@ package face
 	     * in the specified IntegrationContext
 	     */
 	    def: getNextNodes(ic: IntegrationIntegrationContext) : Set(IntegrationTransportNode) =
---	      IntegrationTSNodeConnection.allInstances()
---	 	      			  ->select(c | c.oclContainer = ic) 
---	                      ->select(c | self.outPort->includes(c.source))
---	                      ->collect(destination)
 			self.getNextPortBase(ic)
 	                      ->selectByKind(IntegrationTSNodeInputPort)
 	                      ->collect(oclAsType(IntegrationTSNodePortBase))
@@ -880,8 +967,6 @@ package face
 	                      
 
 	    def: getImmediatelyUpstreamUoPInstancesImpl(conns: Collection(IntegrationTSNodeConnection)) : Set(IntegrationUoPInstance) =
---				   conns  ->select(c | self.inPort->includes(c.destination)) 
---				     	  ->collect(source)
 				self.getPrevPortBaseImpl(conns)
 	                      ->selectByKind(IntegrationUoPOutputEndPoint)
 	                      ->collect(oclAsType(IntegrationTSNodePortBase))
@@ -907,8 +992,6 @@ package face
 
 
 	    def: getImmediatelyDownstreamUoPInstancesImpl(conns: Collection(IntegrationTSNodeConnection)) : Set(IntegrationUoPInstance) =
---	               conns  ->select(c | self.outPort->includes(c.source))
---	                      ->collect(destination)
 				self.getNextPortBaseImpl(conns)
 	                      ->selectByKind(IntegrationUoPInputEndPoint)
 	                      ->collect(oclAsType(IntegrationTSNodePortBase))
@@ -977,6 +1060,7 @@ package face
 				result->includingAll(inst->closure(getAllDownstreamUoPInstances()))
 			)
 
+
 		/**
 		 * Get all the downstream UoPInstances, no matter how far down the chain they are, that
 		 * you can reach using only links in the specified IntegrationContext
@@ -1007,6 +1091,160 @@ package face
 			)
 
 		/**
+		 * Helper method to filter a set of instances by the type of data they process
+		 */
+		static def: filterByTypes(insts: Set(IntegrationUoPInstance), types: Set(uddl::ConceptualComposableElement), dir: UopMessageExchangeType): Set(IntegrationUoPInstance) =
+				insts->select(inst|
+				let rmt = inst.actualReferencedModelTypes(dir) in
+				-- select all the instances that contain info from the parameter 'types'
+				rmt->intersection(types)->notEmpty()	
+			)
+			
+		/**
+		 * Get all the downstream instances with links in this IC that reference any of the types listed
+		 */
+		def: getAllDownstreamUoPInstances(ic: IntegrationIntegrationContext,types: Set(uddl::ConceptualComposableElement)): Set(IntegrationUoPInstance) =
+			let insts = self.getAllDownstreamUoPInstances(ic) in
+			filterByTypes(insts, types,UopMessageExchangeType::OUTBOUND_MESSAGE )
+			
+		/**
+		 * Get all the upstream instances with links in this IC that reference any of the types listed
+		 */
+		def: getAllUpstreamUoPInstances(ic: IntegrationIntegrationContext,types: Set(uddl::ConceptualComposableElement)): Set(IntegrationUoPInstance) =
+			let insts = self.getAllUpstreamUoPInstances(ic) in
+			filterByTypes(insts, types,UopMessageExchangeType::INBOUND_MESSAGE )
+
+
+		/**
+		 * Helper method to filter a set of instances by the type of data they process
+		 */
+		static def: filterByTypes(nodes: Set(IntegrationTransportNode), types: Set(uddl::ConceptualComposableElement), dir: UopMessageExchangeType): Set(IntegrationTransportNode) =
+				nodes->select(node|
+				let rmt = node.referencedModelTypes(dir) in
+				-- select all the nodes that contain info from the parameter 'types'
+				rmt->intersection(types)->notEmpty()	
+			)
+
+		/**
+		 * Get all the downstream nodes with links in this IC that reference any of the types listed
+		 */
+		def: getAllDownstreamNodes(ic: IntegrationIntegrationContext): Set(IntegrationTransportNode) =
+			let prevNodes = self.getNextNodes(ic) in
+			prevNodes->iterate(inst: IntegrationTransportNode; result: Set(IntegrationTransportNode) = Set{}|
+				result->includingAll(inst->closure(getNextNodes(ic)))
+			)
+		def: getAllDownstreamNodes(ic: IntegrationIntegrationContext,types: Set(uddl::ConceptualComposableElement)): Set(IntegrationTransportNode) =
+			let nodes = self.getAllDownstreamNodes(ic) in
+			filterByTypes(nodes, types,UopMessageExchangeType::OUTBOUND_MESSAGE )
+			
+		def: getAllUpstreamNodes(ic: IntegrationIntegrationContext): Set(IntegrationTransportNode) =
+			let prevNodes = self.getPreviousNodes(ic) in
+			prevNodes->iterate(inst: IntegrationTransportNode; result: Set(IntegrationTransportNode) = Set{}|
+				result->includingAll(inst->closure(getPreviousNodes(ic)))
+			)
+		/**
+		 * Get all the upstream nodes with links in this IC that reference any of the types listed
+		 */
+		def: getAllUpstreamUoPInstances(ic: IntegrationIntegrationContext,types: Set(uddl::ConceptualComposableElement)): Set(IntegrationTransportNode) =
+			let nodes = self.getAllUpstreamNodes(ic) in
+			filterByTypes(nodes, types,UopMessageExchangeType::INBOUND_MESSAGE )
+
+
+
+
+
+		def: getPrevNodeConnections():Set(IntegrationTSNodeConnection) =
+	      let conns = IntegrationTSNodeConnection.allInstances() in
+					self.getPrevNodeConnectionsImpl(conns)
+
+		def: getPrevNodeConnections(ic: IntegrationIntegrationContext):Set(IntegrationTSNodeConnection) =
+	      let conns = IntegrationTSNodeConnection.allInstances()
+	      				  ->select(c | c.oclContainer = ic) in	      				 
+					self.getPrevNodeConnectionsImpl(conns)
+					
+		def: getPrevNodeConnectionsImpl(conns: Collection(IntegrationTSNodeConnection)):Set(IntegrationTSNodeConnection) =
+				   conns  ->select(c | self.inPort->includes(c.destination)) 
+				     	  ->asSet()
+
+		/**
+		 * Get all the upstream connections that reference any of the 'types' regardless of which IC they are in
+		 * @param types The types to check for on the connection
+		 * @return The set of connections going upstream from this node that contain info from any of 'types'
+		 */
+		def: getPrevNodeConnections(types: Set(uddl::ConceptualComposableElement)):Set(IntegrationTSNodeConnection) =
+	    	let conns = IntegrationTSNodeConnection.allInstances() in
+			let dconns = self.getPrevNodeConnectionsImpl(conns) in
+			dconns->select(c|
+				-- referencedModelTypes contains the 'specialization' hierarchy
+				let rmt = c.source.referencedModelTypes() in
+				-- select all the connections that contain info from the parameter 'types'
+				rmt->intersection(types)->notEmpty()
+			)
+
+		/**
+		 * Get all the upstream connections that reference any of the 'types' that are in IC
+		 * @param ic The IntegrationContext (wiring diagram) to which we limit our search
+		 * @param types The types to check for on the connection
+		 * @return The set of connections going upstream from this node that contain info from any of 'types'
+		 */
+		def: getPrevNodeConnections(ic: IntegrationIntegrationContext, types:  Set(uddl::ConceptualComposableElement)):Set(IntegrationTSNodeConnection) =
+	      let conns = IntegrationTSNodeConnection.allInstances()
+	      				  ->select(c | c.oclContainer = ic) in	      				 
+			let dconns = self.getPrevNodeConnectionsImpl(conns) in
+			dconns->select(c|
+				-- referencedModelTypes contains the 'specialization' hierarchy
+				let rmt = c.source.referencedModelTypes() in
+				-- select all the connections that contain info from the parameter 'types'
+				rmt->exists(t|types->selectByKind(t.oclModelType())->notEmpty())
+			)
+					
+
+		def: getNextNodeConnections():Set(IntegrationTSNodeConnection) =
+	      let conns = IntegrationTSNodeConnection.allInstances() in
+					self.getNextNodeConnectionsImpl(conns)
+
+		def: getNextNodeConnections(ic: IntegrationIntegrationContext):Set(IntegrationTSNodeConnection) =
+	      let conns = IntegrationTSNodeConnection.allInstances()
+	      				  ->select(c | c.oclContainer = ic) in	      				 
+					self.getNextNodeConnectionsImpl(conns)
+					
+		def: getNextNodeConnectionsImpl(conns: Collection(IntegrationTSNodeConnection)):Set(IntegrationTSNodeConnection) =
+				   conns  ->select(c | self.outPort->includes(c.source)) 
+				     	  ->asSet()
+
+		/**
+		 * Get all the downstream connections that reference any of the 'types' regardless of which IC they are in
+		 * @param types The types to check for on the connection
+		 * @return The set of connections going upstream from this node that contain info from any of 'types'
+		 */
+		def: getNextNodeConnections(types: Set(uddl::ConceptualComposableElement)):Set(IntegrationTSNodeConnection) =
+	    	let conns = IntegrationTSNodeConnection.allInstances() in
+			let dconns = self.getNextNodeConnectionsImpl(conns) in
+			dconns->select(c|
+				-- referencedModelTypes contains the 'specialization' hierarchy
+				let rmt = c.source.referencedModelTypes() in
+				-- select all the connections that contain info from the parameter 'types'
+				rmt->intersection(types)->notEmpty()
+			)
+
+		/**
+		 * Get all the downstream connections that reference any of the 'types' that are in IC
+		 * @param ic The IntegrationContext (wiring diagram) to which we limit our search
+		 * @param types The types to check for on the connection
+		 * @return The set of connections going upstream from this node that contain info from any of 'types'
+		 */
+		def: getNextNodeConnections(ic: IntegrationIntegrationContext, types:  Set(uddl::ConceptualComposableElement)):Set(IntegrationTSNodeConnection) =
+	      let conns = IntegrationTSNodeConnection.allInstances()
+	      				  ->select(c | c.oclContainer = ic) in	      				 
+			let dconns = self.getNextNodeConnectionsImpl(conns) in
+			dconns->select(c|
+				-- referencedModelTypes contains the 'specialization' hierarchy
+				let rmt = c.source.referencedModelTypes() in
+				-- select all the connections that contain info from the parameter 'types'
+				rmt->exists(t|types->selectByKind(t.oclModelType())->notEmpty())
+			)
+
+		/**
 		 * Get the referenced model types. These only exist within an IC, so everything that is there is used
 		 */
 		def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
@@ -1016,5 +1254,22 @@ package face
 			let outputs = outMsg->collect(referencedModelTypes()) in
 			inputs->union(outputs)->asSet()
 
+		/**
+		 * Get the referenced model types by direction. ViewFilter, ViewSource, ViewSink will differ based on direction
+		 */
+		def: referencedModelTypes(dir: UopMessageExchangeType): Set(uddl::ConceptualComposableElement) =
+			if (dir = UopMessageExchangeType::INBOUND_MESSAGE) then
+				self.inPort->collect(getMessageType())->collect(referencedModelTypes())->asSet() 
+			else
+				self.outPort->collect(getMessageType())->collect(referencedModelTypes())->asSet()
+			endif
+		
+
+		/**
+		 * Find all the paths from the starting from this node. That means
+		 * collecting downstream links. Further refinements limit to a specific IC and/or
+		 * links with any of a set of ConceptualComposableElements
+		 */
+		
 				
 endpackage
