@@ -202,7 +202,7 @@ UopClientServerConnection:
 	 		   (synchronizationStyle=UopSynchronizationStyle)?
 	 	'role:' role=UoPClientServerRole
 	 	('period:' period=FLOAT)?
-		('mapsTo:' mapsTo=[IntegrationTransportNode|QN]) // EXTENSION: If the owning UoPComponent has an implementing IC, this should map to a TransportNode in that IC
+		('mapsTo:' mapsTo=[IntegrationTransportNode|QN])? // EXTENSION: If the owning UoPComponent has an implementing IC, this should map to a TransportNode in that IC
 	'}'
 ;
 
@@ -220,7 +220,7 @@ UopQueuingConnection:
 	 			(synchronizationStyle=UopSynchronizationStyle)? 
 		('depth:' depth=INT)?
 	 	('period:' period=FLOAT)?
-		('mapsTo:' mapsTo=[IntegrationTransportNode|QN]) // EXTENSION: If the owning UoPComponent has an implementing IC, this should map to a TransportNode in that IC
+		('mapsTo:' mapsTo=[IntegrationTransportNode|QN])? // EXTENSION: If the owning UoPComponent has an implementing IC, this should map to a TransportNode in that IC
 		'}'
 ;
 
@@ -231,7 +231,7 @@ UopSingleInstanceMessageConnection:
 	 			messageType=[UopMessageType|QN]
 	 			(synchronizationStyle=UopSynchronizationStyle )?
 	 	('period:' period=FLOAT)?
-		('mapsTo:' mapsTo=[IntegrationTransportNode|QN]) // EXTENSION: If the owning UoPComponent has an implementing IC, this should map to a TransportNode in that IC
+		('mapsTo:' mapsTo=[IntegrationTransportNode|QN])? // EXTENSION: If the owning UoPComponent has an implementing IC, this should map to a TransportNode in that IC
 		'}'
 ;
 
