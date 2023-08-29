@@ -54,14 +54,15 @@ package face
 			let sources = self.connection->collect(source)->select(oclIsKindOf(face::IntegrationUoPOutputEndPoint))->collect(oclAsType(face::IntegrationUoPOutputEndPoint)) in
 			let dinsts = dests->collect(oclContainer) in
 			let sinsts = sources->collect(oclContainer) in 		
-			dinsts->asSet()->union(dinsts->asSet())->collect(oclAsType(IntegrationUoPInstance))->asSet()
+			dinsts->asSet()->union(sinsts->asSet())->collect(oclAsType(IntegrationUoPInstance))->asSet()
 
 		/**
-		 * The entry points in an IntegrationContext 
+		 * The entry points in an IntegrationContext. These can only be source instances 
 		 */
 		def: entryPoints(): Set(IntegrationUoPInstance) =
-			let instances = self.allReferencedUopInstances() in
-			instances->select(entryPoint(self)) 
+			let sources = self.connection->collect(source)->select(oclIsKindOf(face::IntegrationUoPOutputEndPoint))->collect(oclAsType(face::IntegrationUoPOutputEndPoint)) in
+			let sinsts = sources->asSet()->collect(owner())->asSet() in 		
+			sinsts->select(entryPoint(self)) 
 
 		/**
 		 * ViewSource nodes are the entry nodes in an IntegrationContext 
@@ -71,11 +72,12 @@ package face
 			face::IntegrationViewSource.allInstances()->select(oclContainer = self)
 
 		/**
-		 * The exit points in an IntegrationContext.
+		 * The exit points in an IntegrationContext. These can only be destination instances
 		 */
 		def: exitPoints(): Set(IntegrationUoPInstance) =
-			let instances = self.allReferencedUopInstances() in
-			instances->select(exitPoint(self)) 
+			let dests = self.connection->collect(destination)->select(oclIsKindOf(face::IntegrationUoPInputEndPoint))->collect(oclAsType(face::IntegrationUoPInputEndPoint))  in
+			let dinsts = dests->asSet()->collect(owner())->asSet() in
+			dinsts->select(exitPoint(self)) 
 
 		/**
 		 * ViewSink nodes are the exit nodes in an IntegrationContext 
@@ -795,17 +797,17 @@ package face
 		 * at all).
 		 */
 		def: entryPoint(): Boolean =
-			self.getLinkedUpstreamUoPInstances()->isEmpty() and
-			self.getLinkedDownstreamUoPInstances()->notEmpty()
+	    	(not self.anyPrevPortBase()) and
+	    	self.anyNextPortBase()
 
 		/**
 		 * Is this an exit point in the specified IntegrationContext?
 		 * That means it has no downstreams but has some upstreams somewhere (otherwise it isn't referenced
-		 * in the IC at all).
+		 * at all).
 		 */
 		def: exitPoint(): Boolean =
-			self.getLinkedDownstreamUoPInstances()->isEmpty() and
-			self.getLinkedUpstreamUoPInstances()->notEmpty() 
+	    	self.anyPrevPortBase() and
+	    	(not self.anyNextPortBase())
 
 		/**
 		 * Is this an entry point in the specified IntegrationContext?
@@ -813,8 +815,8 @@ package face
 		 * in the IC at all).
 		 */
 		def: entryPoint(ic: IntegrationIntegrationContext): Boolean =
-			self.getLinkedUpstreamUoPInstances(ic)->isEmpty() and
-			self.getLinkedDownstreamUoPInstances(ic)->notEmpty()
+	    	(not self.anyPrevPortBase(ic)) and
+	    	self.anyNextPortBase(ic)
 
 		/**
 		 * Is this an exit point in the specified IntegrationContext?
@@ -822,8 +824,8 @@ package face
 		 * in the IC at all).
 		 */
 		def: exitPoint(ic: IntegrationIntegrationContext): Boolean =
-			self.getLinkedDownstreamUoPInstances(ic)->isEmpty() and
-			self.getLinkedUpstreamUoPInstances(ic)->notEmpty() 
+	    	self.anyPrevPortBase(ic) and
+	    	(not self.anyNextPortBase(ic))
 
 		/**
 		 * This approach checks for the interfaces actually used. The uop realized by the instances may define more interfaces
@@ -887,6 +889,33 @@ package face
 				Sequence{im}->append(im.containingIntegrationModels())
 			endif
 			
+		def: anyPrevPortBase():Boolean =
+	      let conns = IntegrationTSNodeConnection.allInstances() in
+					self.anyPrevPortBaseImpl(conns)
+		
+		def: anyPrevPortBase(ic: IntegrationIntegrationContext):Boolean =
+	      let conns = IntegrationTSNodeConnection.allInstances()
+	      				  ->select(c | c.oclContainer = ic) in	      				 
+					self.anyPrevPortBaseImpl(conns)
+		
+		def: anyPrevPortBaseImpl(conns: Collection(IntegrationTSNodeConnection)):Boolean =
+				   conns  ->select(c | self.input->includes(c.destination)) 
+				     	  ->notEmpty()
+
+		def: anyNextPortBase():Boolean =
+	      let conns = IntegrationTSNodeConnection.allInstances() in
+					self.anyNextPortBaseImpl(conns)
+
+		def: anyNextPortBase(ic: IntegrationIntegrationContext):Boolean =
+	      let conns = IntegrationTSNodeConnection.allInstances()
+	      				  ->select(c | c.oclContainer = ic) in	      				 
+					self.anyNextPortBaseImpl(conns)
+					
+		def: anyNextPortBaseImpl(conns: Collection(IntegrationTSNodeConnection)):Boolean =
+				   conns  ->select(c | self.output->includes(c.source)) 
+				     	  ->notEmpty()
+
+		
 		def: getPrevPortBase():Set(IntegrationTSNodePortBase) =
 	      let conns = IntegrationTSNodeConnection.allInstances() in
 					self.getPrevPortBaseImpl(conns)
@@ -1276,7 +1305,7 @@ package face
 		 * That seems to be their entire function
 		 */
 		def:entryNodes(): Set(face::IntegrationViewSource) =
-			face::IntegrationViewSource.allInstances()->select(oclContainer = self)
+			IntegrationViewSource.allInstances()->select(oclContainer = self)
 		/**
 		 * The exit points in an IntegrationModel (local and nested)
 		 */
@@ -1289,7 +1318,7 @@ package face
 		 * That seems to be their entire function
 		 */
 		def:exitNodes(): Set(face::IntegrationViewSink) =
-			face::IntegrationViewSink.allInstances()->select(oclContainer = self)
+			IntegrationViewSink.allInstances()->select(oclContainer = self)
 	
 	  context IntegrationTSNodeConnection
 	   /**
@@ -1411,13 +1440,13 @@ package face
 				endif
 	    	endif
 	    /*
-	     * Helper method that gets the IntegrationTransportNode containing a given
+	     * Helper method that gets the IntegrationUoPInstance containing a given
 	     * IntegrationTSNodePortBase
 	     */
 	    def: getParentUoPInstance() : IntegrationUoPInstance =
-	      IntegrationUoPInstance.allInstances()->select(inst | inst.input->includes(self) or
-	                                                inst.output = self)
-	                                  ->any(true)
+	      IntegrationUoPInstance.allInstances()->any(inst | inst.input->includes(self) or
+	                                                inst.output->includes(self))
+	                                 
 	
 		def: referencedModelTypes():Set(uddl::ConceptualComposableElement) =
 			if (self.oclIsKindOf(face::IntegrationTSNodeOutputPort)) then
