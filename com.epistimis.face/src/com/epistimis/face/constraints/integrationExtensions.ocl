@@ -1284,10 +1284,13 @@ package face
 		/**
 		 * The entry points in an IntegrationModel (local and nested)
 		 */
-		def: entryPoints(): Set(IntegrationUoPInstance) =
+		def: allEntryPoints(): Set(IntegrationUoPInstance) =
 			let instances = self.allUopInstances() in
 			instances->select(entryPoint()) 
 
+		def: localEntryPoints(): Set(IntegrationUoPInstance) =
+			let instances = self.allLocalUopInstances() in
+			instances->select(entryPoint()) 
 		/**
 		 * Returns a set of all the IntegrationViewSources in all IMs (this one and all its nested IMs)
 		 */
@@ -1304,20 +1307,31 @@ package face
 		 * ViewSource nodes are the entry nodes in an IntegrationModel 
 		 * That seems to be their entire function
 		 */
-		def:entryNodes(): Set(face::IntegrationViewSource) =
-			IntegrationViewSource.allInstances()->select(oclContainer = self)
+		def:allEntryNodes(): Set(face::IntegrationViewSource) =
+			let allICs = self.allIntegrationContexts() in 
+			face::IntegrationViewSource.allInstances()->select(allICs->exists(oclContainer))
+
+		def:localEntryNodes(): Set(face::IntegrationViewSource) =
+			face::IntegrationViewSource.allInstances()->select(oclContainer.oclContainer = self)
 		/**
 		 * The exit points in an IntegrationModel (local and nested)
 		 */
-		def: exitPoints(): Set(IntegrationUoPInstance) =
+		def: allExitPoints(): Set(IntegrationUoPInstance) =
 			let instances = self.allUopInstances() in
 			instances->select(exitPoint()) 
 	
+		def: localExitPoints(): Set(IntegrationUoPInstance) =
+			let instances = self.allLocalUopInstances() in
+			instances->select(exitPoint()) 
 		/**
 		 * ViewSink nodes are the exit nodes in an IntegrationModel 
 		 * That seems to be their entire function
 		 */
-		def:exitNodes(): Set(face::IntegrationViewSink) =
+		def:allExitNodes(): Set(face::IntegrationViewSink) =
+			let allICs = self.allIntegrationContexts() in 
+			face::IntegrationViewSink.allInstances()->select(allICs->exists(oclContainer))
+
+		def:localExitNodes(): Set(face::IntegrationViewSink) =
 			IntegrationViewSink.allInstances()->select(oclContainer = self)
 	
 	  context IntegrationTSNodeConnection
