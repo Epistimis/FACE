@@ -24,7 +24,6 @@
 		<module>com.epistimis.face</module>
 		<module>com.epistimis.face.ide</module>
 		<module>com.epistimis.face.ui</module>
-		<module>com.epistimis.face.web</module>
 		<module>com.epistimis.face.target</module>
 		<module>com.epistimis.face.feature</module>
 		<module>com.epistimis.face.repository</module>

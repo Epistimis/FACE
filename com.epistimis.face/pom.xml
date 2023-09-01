@@ -91,12 +91,6 @@
 							</includes>
 						</fileset>
 						<fileset>
-							<directory>${basedir}/../com.epistimis.face.web/src-gen/</directory>
-							<includes>
-								<include>**/*</include>
-							</includes>
-						</fileset>
-						<fileset>
 							<directory>${basedir}/model/generated/</directory>
 						</fileset>
 					</filesets>
