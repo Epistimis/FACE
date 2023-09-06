@@ -500,6 +500,30 @@ package face
 
 
 	    /*
+	     * Helper method that gets the set of IntegrationUoPOutputEndPoints that are immediately
+	     * "upstream" from a given IntegrationUoPInstance. Note that this only traverses 1 link - 
+	     * which may terminate at a TSNodePort => the result set may be empty.
+	     */
+	    def: getImmediatelyUpstreamUoPOutputEndPoints() : Set(IntegrationUoPOutputEndPoint) =
+	      let conns = IntegrationTSNodeConnection.allInstances() in
+	                   self.getImmediatelyUpstreamUoPOutputEndPointsImpl(conns)
+
+		/**
+		 * Get only the immediately previous IntegrationUoPOutputEndPoints that you can by following links in the
+		 * specified IntegrationContext.Note that this only traverses 1 link - 
+	     * which may terminate at a TSNodePort => the result set may be empty.
+		 */
+	    def: getImmediatelyUpstreamUoPOutputEndPoints(ic: IntegrationIntegrationContext) : Set(IntegrationUoPOutputEndPoint) =
+	      let conns = IntegrationTSNodeConnection.allInstances()
+	      				  ->select(c | c.oclContainer = ic) in	      				 
+		               self.getImmediatelyUpstreamUoPOutputEndPointsImpl(conns)
+
+	    def: getImmediatelyUpstreamUoPOutputEndPointsImpl(conns: Collection(IntegrationTSNodeConnection)) : Set(IntegrationUoPOutputEndPoint) =
+					self.getPrevPortBaseImpl(conns)
+	                      ->selectByKind(IntegrationUoPOutputEndPoint)
+	                      ->asSet()
+			
+	    /*
 	     * Helper method that gets the set of IntegrationUoPInstances that are immediately
 	     * "upstream" from a given IntegrationUoPInstance. Note that this only traverses 1 link - 
 	     * which may terminate at a TSNodePort => the result set may be empty.
@@ -526,6 +550,33 @@ package face
 	                      ->asSet()
 			
 				
+				
+
+	    /*
+	     * Helper method that gets the set of IntegrationUoPOutputEndPoints that are 
+	     * "upstream" from a given IntegrationUoPInstance via links that only connect
+	     * to 'intermediate' IntgrationTransportNodes (in other words, these are the 
+	     * upstream UoPInstances whose links to 'self' do not go through another UoPInstance).
+	     */
+	    def: getLinkedUpstreamUoPOutputEndPoints() : Set(IntegrationUoPOutputEndPoint) =
+	    	let immediateInstances = self.getImmediatelyUpstreamUoPOutputEndPoints() in
+	    	let prevNodes = self.getPreviousNodes() in
+	    	let instancesViaNodes = prevNodes->iterate(n: IntegrationTransportNode; result: Set(IntegrationUoPOutputEndPoint) = Set{} |
+	    		result->includingAll(n.getLinkedUpstreamUoPOutputEndPoints())
+	    	) in
+			immediateInstances->union(instancesViaNodes)->asSet()
+
+		/**
+		 * Get only the linked previous IntegrationUoPOutputEndPoints that you can by following links in the
+		 * specified IntegrationContext
+		 */
+	    def: getLinkedUpstreamUoPOutputEndPoints(ic: IntegrationIntegrationContext) : Set(IntegrationUoPOutputEndPoint) =
+	    	let immediateInstances = self.getImmediatelyUpstreamUoPOutputEndPoints(ic) in
+	    	let prevNodes = self.getPreviousNodes(ic) in
+	    	let instancesViaNodes = prevNodes->iterate(n: IntegrationTransportNode; result: Set(IntegrationUoPOutputEndPoint) = Set{} |
+	    		result->includingAll(n.getLinkedUpstreamUoPOutputEndPoints(ic))
+	    	) in
+			immediateInstances->union(instancesViaNodes)->asSet()
 
 	    /*
 	     * Helper method that gets the set of IntegrationUoPInstances that are 
@@ -553,6 +604,27 @@ package face
 	    	) in
 			immediateInstances->union(instancesViaNodes)->asSet()
 
+
+		/**
+		 * Get all the upstream UoPInstances, no matter how far up the chain they are
+		 */
+		def: getAllUpstreamUoPOutputEndPoints(): Set(IntegrationUoPOutputEndPoint) =
+			let linkedEPs = self.getLinkedUpstreamUoPOutputEndPoints() in
+			let linkedDUI = self.getLinkedUpstreamUoPInstances() in
+			linkedDUI->iterate(inst: IntegrationUoPInstance; result: Set(IntegrationUoPOutputEndPoint) = linkedEPs|
+				result->includingAll(inst.getAllUpstreamUoPOutputEndPoints())
+			)
+
+		/**
+		 * Get all the upstream UoPInstances, no matter how far up the chain they are, that
+		 * you can reach using only links in the specified IntegrationContext
+		 */
+		def: getAllUpstreamUoPOutputEndPoints(ic: IntegrationIntegrationContext): Set(IntegrationUoPOutputEndPoint) =
+			let linkedEPs = self.getLinkedUpstreamUoPOutputEndPoints() in
+			let linkedDUI = self.getLinkedUpstreamUoPInstances(ic) in
+			linkedDUI->iterate(inst: IntegrationUoPInstance; result: Set(IntegrationUoPOutputEndPoint) = linkedEPs|
+				result->includingAll(inst.getAllUpstreamUoPOutputEndPoints(ic))
+			)
 
 		/**
 		 * Get all the upstream UoPInstances, no matter how far up the chain they are
@@ -664,6 +736,32 @@ package face
 	    	let rawNodes = self.getNextNodes() in
 	    		rawNodes->select(n| n.oclContainer = ic)
 				
+
+	    /*
+	     * Helper method that gets the set of IntegrationUoPInputEndPoints that are immediately
+	     * "downstream" from a given IntegrationUoPInstance. Note that this only traverses 1 link - 
+	     * which may terminate at a TSNodePort => the result set may be empty.
+	     */
+	    def: getImmediatelyDownstreamUoPInputEndPoints() : Set(IntegrationUoPInputEndPoint) =
+	      let conns = IntegrationTSNodeConnection.allInstances() in
+	      				  self.getImmediatelyDownstreamUoPInputEndPointsImpl(conns)
+
+		/**
+		 * Get only the immediately next IntegrationUoPInputEndPoints that you can by following links in the
+		 * specified IntegrationContext.Note that this only traverses 1 link - 
+	     * which may terminate at a TSNodePort => the result set may be empty.
+		 */
+	    def: getImmediatelyDownstreamUoPInputEndPoints(ic: IntegrationIntegrationContext) : Set(IntegrationUoPInputEndPoint) =
+	      let conns = IntegrationTSNodeConnection.allInstances()
+	      				  ->select(c | c.oclContainer = ic) in
+	      				  self.getImmediatelyDownstreamUoPInputEndPointsImpl(conns)
+
+
+	    def: getImmediatelyDownstreamUoPInputEndPointsImpl(conns: Collection(IntegrationTSNodeConnection)) : Set(IntegrationUoPInputEndPoint) =
+					self.getNextPortBaseImpl(conns)
+	                      ->selectByKind(IntegrationUoPInputEndPoint)
+	                      ->asSet()
+
 	    /*
 	     * Helper method that gets the set of IntegrationUoPInstances that are immediately
 	     * "downstream" from a given IntegrationUoPInstance. Note that this only traverses 1 link - 
@@ -693,6 +791,32 @@ package face
 
 
 	    /*
+	     * Helper method that gets the set of IntegrationUoPInputEndPoints that are 
+	     * "downstream" from a given IntegrationUoPInstance via links that only connect
+	     * to 'intermediate' IntgrationTransportNodes (in other words, these are the 
+	     * downstream UoPInstances whose links to 'self' do not go through another UoPInstance)
+	     */
+	    def: getLinkedDownstreamUoPInputEndPoints() : Set(IntegrationUoPInputEndPoint) =
+	    	let immediateInstances = self.getImmediatelyDownstreamUoPInputEndPoints() in
+	    	let nextNodes = self.getNextNodes() in
+	    	let instancesViaNodes = nextNodes->iterate(n: IntegrationTransportNode; result: Set(IntegrationUoPInputEndPoint) = Set{} |
+	    		result->includingAll(n.getLinkedDownstreamUoPInputEndPoints())
+	    	) in
+			immediateInstances->union(instancesViaNodes)->asSet()
+
+		/**
+		 * Get only the linked next IntegrationUoPInputEndPoints that you can by following links in the
+		 * specified IntegrationContext
+		 */
+	    def: getLinkedDownstreamUoPInputEndPoints(ic: IntegrationIntegrationContext) : Set(IntegrationUoPInputEndPoint) =
+	    	let immediateInstances = self.getImmediatelyDownstreamUoPInputEndPoints(ic) in
+	    	let nextNodes = self.getNextNodes(ic) in
+	    	let instancesViaNodes = nextNodes->iterate(n: IntegrationTransportNode; result: Set(IntegrationUoPInputEndPoint) = Set{} |
+	    		result->includingAll(n.getLinkedDownstreamUoPInputEndPoints(ic))
+	    	) in
+			immediateInstances->union(instancesViaNodes)->asSet()
+
+	    /*
 	     * Helper method that gets the set of IntegrationUoPInstances that are 
 	     * "downstream" from a given IntegrationUoPInstance via links that only connect
 	     * to 'intermediate' IntgrationTransportNodes (in other words, these are the 
@@ -719,6 +843,29 @@ package face
 			immediateInstances->union(instancesViaNodes)->asSet()
 
 		/**
+		 * Get all the downstream IntegrationUoPInputEndPoints, no matter how far down the chain they are
+		 */
+		def: getAllDownstreamUoPInputEndPoints(): Set(IntegrationUoPInputEndPoint) =
+			let linkedEPs = self.getLinkedDownstreamUoPInputEndPoints() in
+			-- We have to get the input endpoints by navigating through the instances and their outputs
+			let linkedDUI = self.getLinkedDownstreamUoPInstances() in
+			linkedDUI->iterate(inst: IntegrationUoPInstance; result: Set(IntegrationUoPInputEndPoint) = linkedEPs|
+				result->includingAll(inst.getAllDownstreamUoPInputEndPoints())
+			)
+
+		/**
+		 * Get all the downstream IntegrationUoPInputEndPoints, no matter how far down the chain they are, that
+		 * you can reach using only links in the specified IntegrationContext
+		 */
+		def: getAllDownstreamUoPInputEndPoints(ic: IntegrationIntegrationContext): Set(IntegrationUoPInputEndPoint) =
+			let linkedEPs = self.getLinkedDownstreamUoPInputEndPoints(ic) in
+			-- We have to get the input endpoints by navigating through the instances and their outputs
+			let linkedDUI = self.getLinkedDownstreamUoPInstances(ic) in
+			linkedDUI->iterate(inst: IntegrationUoPInstance; result: Set(IntegrationUoPInputEndPoint) = linkedEPs|
+				result->includingAll(inst.getAllDownstreamUoPInputEndPoints(ic))
+			)
+
+		/**
 		 * Get all the downstream UoPInstances, no matter how far down the chain they are
 		 */
 		def: getAllDownstreamUoPInstances(): Set(IntegrationUoPInstance) =
@@ -736,6 +883,7 @@ package face
 			linkedDUI->iterate(inst: IntegrationUoPInstance; result: Set(IntegrationUoPInstance) = Set{}|
 				result->includingAll(inst.getAllDownstreamUoPInstances(ic))
 			)
+
 
 		/**
 		 * Helper method to filter a set of instances by the type of data they process
@@ -981,12 +1129,31 @@ package face
 	    	let rawNodes = self.getNextNodes() in
 	    		rawNodes->select(n| n.oclContainer = ic)
 
+	
+	    /*
+	     * Helper method that gets the set of IntegrationUoPOutputEndPoints that are immediately
+	     * "upstream" from a given IntegrationUoPInstance. Note that this only traverses 1 link - 
+	     * which may terminate at a TSNodePort => the result set may be empty.
+	     */
+	    def: getImmediatelyUpstreamUoPOutputEndPoints() : Set(IntegrationUoPOutputEndPoint) =
+	      let conns = IntegrationTSNodeConnection.allInstances() in
+	                   self.getImmediatelyUpstreamUoPOutputEndPointsImpl(conns)
+
 		/**
-		 * Find all the integration contexts that reference this IC. They must all be contained
-		 * in the (root) IntegrationModel that also contains this IC
+		 * Get only the immediately previous UoPInstances that you can by following links in the
+		 * specified IntegrationContext.Note that this only traverses 1 link - 
+	     * which may terminate at a TSNodePort => the result set may be empty.
 		 */
---		def: referencingICs(): Set(IntegrationIntegrationContext) =
-			
+	    def: getImmediatelyUpstreamUoPOutputEndPoints(ic: IntegrationIntegrationContext) : Set(IntegrationUoPOutputEndPoint) =
+	      let conns = IntegrationTSNodeConnection.allInstances()
+	      				  ->select(c | c.oclContainer = ic) in	      				 
+		               self.getImmediatelyUpstreamUoPOutputEndPointsImpl(conns)
+
+	    def: getImmediatelyUpstreamUoPOutputEndPointsImpl(conns: Collection(IntegrationTSNodeConnection)) : Set(IntegrationUoPOutputEndPoint) =
+					self.getPrevPortBaseImpl(conns)
+	                      ->selectByKind(IntegrationUoPOutputEndPoint)
+	                      ->asSet()
+		
 	    /*
 	     * Helper method that gets the set of IntegrationUoPInstances that are immediately
 	     * "upstream" from a given IntegrationUoPInstance. Note that this only traverses 1 link - 
@@ -1009,11 +1176,36 @@ package face
 	    def: getImmediatelyUpstreamUoPInstancesImpl(conns: Collection(IntegrationTSNodeConnection)) : Set(IntegrationUoPInstance) =
 					self.getPrevPortBaseImpl(conns)
 	                      ->selectByKind(IntegrationUoPOutputEndPoint)
-	                      ->collect(oclAsType(IntegrationTSNodePortBase))
+--	                      ->collect(oclAsType(IntegrationTSNodePortBase))
 	                      ->collect(getParentUoPInstance())
 	                      ->asSet()
 			
 				
+	    /*
+	     * Helper method that gets the set of IntegrationUoPInputEndPoints that are immediately
+	     * "downstream" from a given IntegrationUoPInstance. Note that this only traverses 1 link - 
+	     * which may terminate at a TSNodePort => the result set may be empty.
+	     */
+	    def: getImmediatelyDownstreamUoPInputEndPoints() : Set(IntegrationUoPInputEndPoint) =
+	      let conns = IntegrationTSNodeConnection.allInstances() in
+	      				  self.getImmediatelyDownstreamUoPInputEndPointsImpl(conns)
+
+		/**
+		 * Get only the immediately next UoPInstances that you can by following links in the
+		 * specified IntegrationContext.Note that this only traverses 1 link - 
+	     * which may terminate at a TSNodePort => the result set may be empty.
+		 */
+	    def: getImmediatelyDownstreamUoPInputEndPoints(ic: IntegrationIntegrationContext) : Set(IntegrationUoPInputEndPoint) =
+	      let conns = IntegrationTSNodeConnection.allInstances()
+	      				  ->select(c | c.oclContainer = ic) in
+	      				  self.getImmediatelyDownstreamUoPInputEndPointsImpl(conns)
+
+
+	    def: getImmediatelyDownstreamUoPInputEndPointsImpl(conns: Collection(IntegrationTSNodeConnection)) : Set(IntegrationUoPInputEndPoint) =
+					self.getNextPortBaseImpl(conns)
+	                      ->selectByKind(IntegrationUoPInputEndPoint)
+	                      ->asSet()
+
 	    /*
 	     * Helper method that gets the set of IntegrationUoPInstances that are immediately
 	     * "downstream" from a given IntegrationUoPInstance. Note that this only traverses 1 link - 
@@ -1037,10 +1229,36 @@ package face
 	    def: getImmediatelyDownstreamUoPInstancesImpl(conns: Collection(IntegrationTSNodeConnection)) : Set(IntegrationUoPInstance) =
 					self.getNextPortBaseImpl(conns)
 	                      ->selectByKind(IntegrationUoPInputEndPoint)
-	                      ->collect(oclAsType(IntegrationTSNodePortBase))
+--	                      ->collect(oclAsType(IntegrationTSNodePortBase))
 	                      ->collect(getParentUoPInstance())
 	                      ->asSet()
 
+
+	    /*
+	     * Helper method that gets the set of IntegrationUoPOutputEndPoints that are 
+	     * "upstream" from a given IntegrationUoPInstance via links that only connect
+	     * to 'intermediate' IntgrationTransportNodes (in other words, these are the 
+	     * upstream UoPInstances whose links to 'self' do not go through another UoPInstance).
+	     */
+	    def: getLinkedUpstreamUoPOutputEndPoints() : Set(IntegrationUoPOutputEndPoint) =
+	    	let immediateInstances = self.getImmediatelyUpstreamUoPOutputEndPoints() in
+	    	let prevNodes = self.getPreviousNodes() in
+	    	let instancesViaNodes = prevNodes->iterate(n: IntegrationTransportNode; result: Set(IntegrationUoPOutputEndPoint) = Set{} |
+	    		result->includingAll(n.getLinkedUpstreamUoPOutputEndPoints())
+	    	) in
+			immediateInstances->union(instancesViaNodes)->asSet()
+
+		/**
+		 * Get only the linked previous IntegrationUoPOutputEndPoints that you can by following links in the
+		 * specified IntegrationContext
+		 */
+	    def: getLinkedUpstreamUoPOutputEndPoints(ic: IntegrationIntegrationContext) : Set(IntegrationUoPOutputEndPoint) =
+	    	let immediateInstances = self.getImmediatelyUpstreamUoPOutputEndPoints(ic) in
+	    	let prevNodes = self.getPreviousNodes(ic) in
+	    	let instancesViaNodes = prevNodes->iterate(n: IntegrationTransportNode; result: Set(IntegrationUoPOutputEndPoint) = Set{} |
+	    		result->includingAll(n.getLinkedUpstreamUoPOutputEndPoints(ic))
+	    	) in
+			immediateInstances->union(instancesViaNodes)->asSet()
 
 	    /*
 	     * Helper method that gets the set of IntegrationUoPInstances that are 
@@ -1065,6 +1283,32 @@ package face
 	    	let prevNodes = self.getPreviousNodes(ic) in
 	    	let instancesViaNodes = prevNodes->iterate(n: IntegrationTransportNode; result: Set(IntegrationUoPInstance) = Set{} |
 	    		result->includingAll(n.getLinkedUpstreamUoPInstances(ic))
+	    	) in
+			immediateInstances->union(instancesViaNodes)->asSet()
+
+	    /*
+	     * Helper method that gets the set of IntegrationUoPInputEndPoints that are 
+	     * "downstream" from a given IntegrationUoPInstance via links that only connect
+	     * to 'intermediate' IntgrationTransportNodes (in other words, these are the 
+	     * downstream UoPInstances whose links to 'self' do not go through another UoPInstance)
+	     */
+	    def: getLinkedDownstreamUoPInputEndPoints() : Set(IntegrationUoPInputEndPoint) =
+	    	let immediateInstances = self.getImmediatelyDownstreamUoPInputEndPoints() in
+	    	let nextNodes = self.getNextNodes() in
+	    	let instancesViaNodes = nextNodes->iterate(n: IntegrationTransportNode; result: Set(IntegrationUoPInputEndPoint) = Set{} |
+	    		result->includingAll(n.getLinkedDownstreamUoPInputEndPoints())
+	    	) in
+			immediateInstances->union(instancesViaNodes)->asSet()
+
+		/**
+		 * Get only the linked next IntegrationUoPInputEndPoints that you can by following links in the
+		 * specified IntegrationContext
+		 */
+	    def: getLinkedDownstreamUoPInputEndPoints(ic: IntegrationIntegrationContext) : Set(IntegrationUoPInputEndPoint) =
+	    	let immediateInstances = self.getImmediatelyDownstreamUoPInputEndPoints(ic) in
+	    	let nextNodes = self.getNextNodes(ic) in
+	    	let instancesViaNodes = nextNodes->iterate(n: IntegrationTransportNode; result: Set(IntegrationUoPInputEndPoint) = Set{} |
+	    		result->includingAll(n.getLinkedDownstreamUoPInputEndPoints(ic))
 	    	) in
 			immediateInstances->union(instancesViaNodes)->asSet()
 
@@ -1095,6 +1339,29 @@ package face
 			immediateInstances->union(instancesViaNodes)->asSet()
 
 		/**
+		 * Get all the downstream IntegrationUoPInputEndPoints, no matter how far down the chain they are
+		 */
+		def: getAllDownstreamUoPInputEndPoints(): Set(IntegrationUoPInputEndPoint) =
+			let linkedEP = self.getLinkedDownstreamUoPInputEndPoints() in
+			-- To get more inputs must work through UoPInstances and their outputs
+			let linkedDUI = self.getLinkedDownstreamUoPInstances() in
+			linkedDUI->iterate(inst: IntegrationUoPInstance; result: Set(IntegrationUoPInputEndPoint) = linkedEP|
+				result->includingAll(inst.getAllDownstreamUoPInputEndPoints())
+			)
+
+		/**
+		 * Get all the downstream UoPInstances, no matter how far down the chain they are, that
+		 * you can reach using only links in the specified IntegrationContext
+		 */
+		def: getAllDownstreamUoPInputEndPoints(ic: IntegrationIntegrationContext): Set(IntegrationUoPInputEndPoint) =
+			let linkedEP = self.getLinkedDownstreamUoPInputEndPoints(ic) in
+			-- To get more inputs must work through UoPInstances and their outputs
+			let linkedDUI = self.getLinkedDownstreamUoPInstances(ic) in
+			linkedDUI->iterate(inst: IntegrationUoPInstance; result: Set(IntegrationUoPInputEndPoint) = linkedEP|
+				result->includingAll(inst.getAllDownstreamUoPInputEndPoints(ic))
+			)
+
+		/**
 		 * Get all the downstream UoPInstances, no matter how far down the chain they are
 		 */
 		def: getAllDownstreamUoPInstances(): Set(IntegrationUoPInstance) =
@@ -1111,6 +1378,27 @@ package face
 			let linkedDUI = self.getLinkedDownstreamUoPInstances(ic) in
 			linkedDUI->iterate(inst: IntegrationUoPInstance; result: Set(IntegrationUoPInstance) = Set{}|
 				result->includingAll(inst.getAllDownstreamUoPInstances(ic))
+			)
+
+		/**
+		 * Get all the upstream UoPInstances, no matter how far up the chain they are
+		 */
+		def: getAllUpstreamUoPOutputEndPoints(): Set(IntegrationUoPOutputEndPoint) =
+			let linkedEP = self.getLinkedUpstreamUoPOutputEndPoints() in
+			let linkedDUI = self.getLinkedUpstreamUoPInstances() in
+			linkedDUI->iterate(inst: IntegrationUoPInstance; result: Set(IntegrationUoPOutputEndPoint) = linkedEP|
+				result->includingAll(inst.getAllUpstreamUoPOutputEndPoints())
+			)
+
+		/**
+		 * Get all the upstream UoPInstances, no matter how far up the chain they are, that
+		 * you can reach using only links in the specified IntegrationContext
+		 */
+		def: getAllUpstreamUoPOutputEndPoints(ic: IntegrationIntegrationContext): Set(IntegrationUoPOutputEndPoint) =
+			let linkedEP = self.getLinkedUpstreamUoPOutputEndPoints(ic) in
+			let linkedDUI = self.getLinkedUpstreamUoPInstances(ic) in
+			linkedDUI->iterate(inst: IntegrationUoPInstance; result: Set(IntegrationUoPOutputEndPoint) = linkedEP|
+				result->includingAll(inst.getAllUpstreamUoPOutputEndPoints(ic))
 			)
 
 		/**
@@ -1565,8 +1853,31 @@ package face
 	    def: getNextNodes(ic: IntegrationIntegrationContext) : Set(IntegrationTransportNode) =
 			self.getNextPortBase(ic)
 	                      ->selectByKind(IntegrationTSNodeInputPort)
-	                      ->collect(oclAsType(IntegrationTSNodePortBase))
+--	                      ->collect(oclAsType(IntegrationTSNodePortBase))
 	                      ->collect(getParentTransportNode())
+	                      ->asSet()
+
+	    /*
+	     * Helper method that gets the set of IntegrationUoPOutputEndPoints that are
+	     * "upstream" from a given IntegrationTransportNode.
+	     */
+	    def: getImmediatelyUpstreamUoPOutputEndPoints() : Set(IntegrationUoPOutputEndPoint) =
+	      let conns = IntegrationTSNodeConnection.allInstances() in
+		               self.getImmediatelyUpstreamUoPOutputEndPointsImpl(conns)
+
+		/**
+		 * Get only the immediately previous UoPInstances that you can by following links in the
+		 * specified IntegrationContext
+		 */
+	    def: getImmediatelyUpstreamUoPOutputEndPoints(ic: IntegrationIntegrationContext) : Set(IntegrationUoPOutputEndPoint) =
+	      let conns = IntegrationTSNodeConnection.allInstances()
+	      				  ->select(c | c.oclContainer = ic) in	      				 
+		               self.getImmediatelyUpstreamUoPOutputEndPointsImpl(conns)
+	                      
+
+	    def: getImmediatelyUpstreamUoPOutputEndPointsImpl(conns: Collection(IntegrationTSNodeConnection)) : Set(IntegrationUoPOutputEndPoint) =
+				self.getPrevPortBaseImpl(conns)
+	                      ->selectByKind(IntegrationUoPOutputEndPoint)
 	                      ->asSet()
 
 	    /*
@@ -1590,8 +1901,31 @@ package face
 	    def: getImmediatelyUpstreamUoPInstancesImpl(conns: Collection(IntegrationTSNodeConnection)) : Set(IntegrationUoPInstance) =
 				self.getPrevPortBaseImpl(conns)
 	                      ->selectByKind(IntegrationUoPOutputEndPoint)
-	                      ->collect(oclAsType(IntegrationTSNodePortBase))
+--	                      ->collect(oclAsType(IntegrationTSNodePortBase))
 	                      ->collect(getParentUoPInstance())
+	                      ->asSet()
+
+	    /*
+	     * Helper method that gets the set of IntegrationUoPInstances that are
+	     * "downstream" from a given IntegrationTransportNode.
+	     */
+	    def: getImmediatelyDownstreamUoPInputEndPoints() : Set(IntegrationUoPInputEndPoint) =
+	      let conns = IntegrationTSNodeConnection.allInstances() in
+	      				  self.getImmediatelyDownstreamUoPInputEndPointsImpl(conns)
+
+		/**
+		 * Get only the immediately next UoPInstances that you can by following links in the
+		 * specified IntegrationContext
+		 */
+	    def: getImmediatelyDownstreamUoPInputEndPoints(ic: IntegrationIntegrationContext) : Set(IntegrationUoPInputEndPoint) =
+	      let conns = IntegrationTSNodeConnection.allInstances()
+	      				  ->select(c | c.oclContainer = ic) in
+	      				  self.getImmediatelyDownstreamUoPInputEndPointsImpl(conns)
+
+
+	    def: getImmediatelyDownstreamUoPInputEndPointsImpl(conns: Collection(IntegrationTSNodeConnection)) : Set(IntegrationUoPInputEndPoint) =
+				self.getNextPortBaseImpl(conns)
+	                      ->selectByKind(IntegrationUoPInputEndPoint)
 	                      ->asSet()
 
 	    /*
@@ -1618,6 +1952,32 @@ package face
 	                      ->collect(oclAsType(IntegrationTSNodePortBase))
 	                      ->collect(getParentUoPInstance())
 	                      ->asSet()
+
+		/*
+	     * Helper method that gets the set of IntegrationUoPOutputEndPoints that are 
+	     * "upstream" from a given IntegrationUoPInstance via links that only connect
+	     * to 'intermediate' IntgrationTransportNodes (in other words, these are the 
+	     * upstream UoPInstances whose links to 'self' do not go through another UoPInstance)
+	     */
+	    def: getLinkedUpstreamUoPOutputEndPoints() : Set(IntegrationUoPOutputEndPoint) =
+	    	let immediateInstances = self.getImmediatelyUpstreamUoPOutputEndPoints() in
+	    	let prevNodes = self.getPreviousNodes() in
+	    	let instancesViaNodes = prevNodes->iterate(n: IntegrationTransportNode; result: Set(IntegrationUoPOutputEndPoint) = Set{} |
+	    		result->includingAll(n.getLinkedUpstreamUoPOutputEndPoints())
+	    	) in
+			immediateInstances->union(instancesViaNodes)->asSet()
+
+		/**
+		 * Get only the linked previous IntegrationUoPOutputEndPoints that you can by following links in the
+		 * specified IntegrationContext
+		 */
+	    def: getLinkedUpstreamUoPOutputEndPoints(ic: IntegrationIntegrationContext) : Set(IntegrationUoPOutputEndPoint) =
+	    	let immediateInstances = self.getImmediatelyUpstreamUoPOutputEndPoints(ic) in
+	    	let prevNodes = self.getPreviousNodes(ic) in
+	    	let instancesViaNodes = prevNodes->iterate(n: IntegrationTransportNode; result: Set(IntegrationUoPOutputEndPoint) = Set{} |
+	    		result->includingAll(n.getLinkedUpstreamUoPOutputEndPoints(ic))
+	    	) in
+			immediateInstances->union(instancesViaNodes)->asSet()
 
 		/*
 	     * Helper method that gets the set of IntegrationUoPInstances that are 
@@ -1651,6 +2011,32 @@ package face
 	     * to 'intermediate' IntgrationTransportNodes (in other words, these are the 
 	     * downstream UoPInstances whose links to 'self' do not go through another UoPInstance)
 	     */
+	    def: getLinkedDownstreamUoPInputEndPoints() : Set(IntegrationUoPInputEndPoint) =
+	    	let immediateInstances = self.getImmediatelyDownstreamUoPInputEndPoints() in
+	    	let nextNodes = self.getNextNodes() in
+	    	let instancesViaNodes = nextNodes->iterate(n: IntegrationTransportNode; result: Set(IntegrationUoPInputEndPoint) = Set{} |
+	    		result->includingAll(n.getLinkedDownstreamUoPInputEndPoints())
+	    	) in
+			immediateInstances->union(instancesViaNodes)->asSet()
+
+		/**
+		 * Get only the linked next UoPInstances that you can by following links in the
+		 * specified IntegrationContext
+		 */
+	    def: getLinkedDownstreamUoPInputEndPoints(ic: IntegrationIntegrationContext) : Set(IntegrationUoPInputEndPoint) =
+	    	let immediateInstances = self.getImmediatelyDownstreamUoPInputEndPoints(ic) in
+	    	let nextNodes = self.getNextNodes(ic) in
+	    	let instancesViaNodes = nextNodes->iterate(n: IntegrationTransportNode; result: Set(IntegrationUoPInputEndPoint) = Set{} |
+	    		result->includingAll(n.getLinkedDownstreamUoPInputEndPoints(ic))
+	    	) in
+			immediateInstances->union(instancesViaNodes)->asSet()
+	
+	    /*
+	     * Helper method that gets the set of IntegrationUoPInstances that are 
+	     * "downstream" from a given IntegrationUoPInstance via links that only connect
+	     * to 'intermediate' IntgrationTransportNodes (in other words, these are the 
+	     * downstream UoPInstances whose links to 'self' do not go through another UoPInstance)
+	     */
 	    def: getLinkedDownstreamUoPInstances() : Set(IntegrationUoPInstance) =
 	    	let immediateInstances = self.getImmediatelyDownstreamUoPInstances() in
 	    	let nextNodes = self.getNextNodes() in
@@ -1673,6 +2059,25 @@ package face
 	
 	
 		/**
+		 * Get all the downstream IntegrationUoPInputEndPoints, no matter how far down the chain they are
+		 */
+		def: getAllDownstreamUoPInputEndPoints(): Set(IntegrationUoPInputEndPoint) =
+			let linkedDUI = self.getLinkedDownstreamUoPInputEndPoints() in
+			linkedDUI->iterate(inst: IntegrationUoPInputEndPoint; result: Set(IntegrationUoPInputEndPoint) = Set{}|
+				result->includingAll(inst->closure(getAllDownstreamUoPInputEndPoints()))
+			)
+
+
+		/**
+		 * Get all the downstream IntegrationUoPInputEndPoints, no matter how far down the chain they are, that
+		 * you can reach using only links in the specified IntegrationContext
+		 */
+		def: getAllDownstreamUoPInputEndPoints(ic: IntegrationIntegrationContext): Set(IntegrationUoPInputEndPoint) =
+			let linkedDUI = self.getLinkedDownstreamUoPInputEndPoints(ic) in
+			linkedDUI->iterate(inst: IntegrationUoPInputEndPoint; result: Set(IntegrationUoPInputEndPoint) = Set{}|
+				result->includingAll(inst->closure(getAllDownstreamUoPInputEndPoints(ic)))
+			)
+		/**
 		 * Get all the downstream UoPInstances, no matter how far down the chain they are
 		 */
 		def: getAllDownstreamUoPInstances(): Set(IntegrationUoPInstance) =
@@ -1690,6 +2095,25 @@ package face
 			let linkedDUI = self.getLinkedDownstreamUoPInstances(ic) in
 			linkedDUI->iterate(inst: IntegrationUoPInstance; result: Set(IntegrationUoPInstance) = Set{}|
 				result->includingAll(inst->closure(getAllDownstreamUoPInstances(ic)))
+			)
+
+		/**
+		 * Get all the upstream IntegrationUoPOutputEndPoints, no matter how far up the chain they are.
+		 */
+		def: getAllUpstreamUoPOutputEndPoints(): Set(IntegrationUoPOutputEndPoint) =
+			let linkedDUI = self.getLinkedUpstreamUoPOutputEndPoints() in
+			linkedDUI->iterate(inst: IntegrationUoPOutputEndPoint; result: Set(IntegrationUoPOutputEndPoint) = Set{}|
+				result->includingAll(inst->closure(getAllUpstreamUoPOutputEndPoints()))
+			)
+
+		/**
+		 * Get all the upstream UoPInstances, no matter how far up the chain they are, that
+		 * you can reach using only links in the specified IntegrationContext
+		 */
+		def: getAllUpstreamUoPOutputEndPoints(ic: IntegrationIntegrationContext): Set(IntegrationUoPOutputEndPoint) =
+			let linkedDUI = self.getLinkedUpstreamUoPOutputEndPoints(ic) in
+			linkedDUI->iterate(inst: IntegrationUoPOutputEndPoint; result: Set(IntegrationUoPOutputEndPoint) = Set{}|
+				result->includingAll(inst->closure(getAllUpstreamUoPOutputEndPoints(ic)))
 			)
 
 		/**
