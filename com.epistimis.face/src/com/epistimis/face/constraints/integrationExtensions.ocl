@@ -1767,6 +1767,20 @@ package face
 				endif
 			endif
 	
+		/**
+		 * Returns true if this node references *any* of the passed in model types
+		 */
+		def: referencesAnyModelTypes(types:Set(uddl::ConceptualComposableElement)): Boolean = 
+			let refdTypes = self.referencedModelTypes() in
+			not refdTypes->excludesAll(types)
+			
+		/**
+		 * Returns true if this node references *all* of the passed in model types
+		 */
+		def: referencesAllModelTypes(types:Set(uddl::ConceptualComposableElement)): Boolean = 
+			let refdTypes = self.referencedModelTypes() in
+			refdTypes->includesAll(types)
+
 	  context IntegrationTransportNode
 
 		def: owner(): IntegrationIntegrationContext =
