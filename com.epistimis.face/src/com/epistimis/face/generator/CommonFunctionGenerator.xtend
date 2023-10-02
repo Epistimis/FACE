@@ -30,7 +30,7 @@ import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGenerator2
 import org.eclipse.xtext.generator.IGeneratorContext
-import com.epistimis.uddl.validation.UddlValidator
+//import com.epistimis.uddl.validation.UddlValidator
 import org.apache.log4j.Logger
 
 abstract class CommonFunctionGenerator extends CommonDataStructureGenerator implements IFaceLangGenerator {

@@ -16,7 +16,7 @@ import org.eclipse.xtext.resource.IResourceDescription;
 import org.eclipse.xtext.scoping.impl.ImportUriGlobalScopeProvider;
 import org.eclipse.xtext.util.IResourceScopeCache;
 
-import com.epistimis.face.face.FacePackage;
+//import com.epistimis.face.face.FacePackage;
 import com.google.common.base.Splitter;
 import com.google.inject.Inject;
 import com.google.inject.Provider;

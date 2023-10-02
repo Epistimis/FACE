@@ -18,9 +18,9 @@ import com.epistimis.face.face.UopTemplate
 import com.epistimis.face.face.UopThread
 import com.epistimis.face.face.UopUnitOfPortability
 import com.epistimis.face.face.UopUoPModel
-import com.epistimis.face.services.FaceGrammarAccess
+//import com.epistimis.face.services.FaceGrammarAccess
 import com.epistimis.uddl.formatting2.UddlFormatter
-import com.google.inject.Inject
+//import com.google.inject.Inject
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.formatting2.IFormattableDocument
 
@@ -28,7 +28,7 @@ import static com.epistimis.face.face.FacePackage.Literals.*
 
 class FaceFormatter extends UddlFormatter {
 	
-	@Inject extension FaceGrammarAccess
+//	@Inject extension FaceGrammarAccess
 
 	/**
 	 * Several standard methods needed for formatting

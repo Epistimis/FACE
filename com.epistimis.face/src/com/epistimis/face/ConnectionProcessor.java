@@ -16,7 +16,7 @@ import com.epistimis.face.face.UopSingleInstanceMessageConnection;
 import com.epistimis.face.face.UopTemplate;
 import com.epistimis.face.face.UopTemplateComposition;
 import com.epistimis.face.generator.QueryUtilities;
-import com.epistimis.face.validation.StructureChecks;
+//import com.epistimis.face.validation.StructureChecks;
 import com.epistimis.uddl.CLPExtractors;
 import com.epistimis.uddl.ConceptualQueryProcessor;
 import com.epistimis.uddl.LogicalQueryProcessor;
