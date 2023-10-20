@@ -372,53 +372,53 @@ IntegrationTSNodeOutputPort:
 /** A ViewAggregation represents of an instance of aggregation of data from multiple incoming views into a single outgoing view type, including transformation of input data to that required by the output view type. */
 IntegrationViewAggregation:
 	'agg' name=ID description=STRING '{'
-		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
-		('output:'  outPort=IntegrationTSNodeOutputPort )?
+		'in:' '[' inPort+=IntegrationTSNodeInputPort+ ']'
+		'out:'  outPort=IntegrationTSNodeOutputPort 
 	'};'
 ;
 
 /** A ViewFilter represents of an instance of a filter of data allowing a view to either pass through a filter, or to be filtered out (i.e., not passed through). A ViewFilter performs no transformation of data. */
 IntegrationViewFilter:
 	'filter' name=ID description=STRING '{'
-		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
-		('output:'  outPort=IntegrationTSNodeOutputPort )?
+		'in:' '[' inPort+=IntegrationTSNodeInputPort+ ']'
+		('out:'  outPort=IntegrationTSNodeOutputPort )?
 	'};'
 ;
 
 /** A ViewSource is a TransportNode that only provides a View. */
-IntegrationViewSink:
-	'sink' name=ID description=STRING '{'
-		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
-		('output:'  outPort=IntegrationTSNodeOutputPort )?
+IntegrationViewSource:
+	'src' name=ID description=STRING '{'
+		('in:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
+		'out:'  outPort=IntegrationTSNodeOutputPort 
 	'};'
 ;
 
 /** A ViewSink is a TransportNode that only receives a View. */
-IntegrationViewSource:
-	'src' name=ID description=STRING '{'
-		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
-		('output:'  outPort=IntegrationTSNodeOutputPort )?
+IntegrationViewSink:
+	'sink' name=ID description=STRING '{'
+		'in:' '[' inPort+=IntegrationTSNodeInputPort+ ']'
+		('out:'  outPort=IntegrationTSNodeOutputPort )?
 	'};'
 ;
 
 /** A ViewTransformation represents an instance of transformation of data from one view type to another. */
 IntegrationViewTransformation:
 	'xform' name=ID description=STRING '{'
-		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
-		('output:'  outPort=IntegrationTSNodeOutputPort )?
+		'in:' '[' inPort+=IntegrationTSNodeInputPort+ ']'
+		'out:'  outPort=IntegrationTSNodeOutputPort 
 	'};'
 ;
 
 /** A ViewTransporter represents the use of a TransportChannel with the intent of moving a view over it. */
 IntegrationViewTransporter:
 	'xport' name=ID description=STRING '{'
-		('input:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
-		('output:'  outPort=IntegrationTSNodeOutputPort )?
+		'in:' '[' inPort+=IntegrationTSNodeInputPort+ ']'
+		'out:'  outPort=IntegrationTSNodeOutputPort 
 		'chan:' channel=[IntegrationTransportChannel|QN]
 	'};'
 ;
 
 /** A TransportChannel is a placeholder for an integrator supplied configuration between transport endpoints. */
 IntegrationTransportChannel:
-	name=ID description=STRING ';'
+	'itc' name=ID description=STRING ';'
 ;
