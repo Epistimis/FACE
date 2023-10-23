@@ -219,35 +219,35 @@ am CommonCo ""{
 
 		}
 		
-		cdm Queries "The queries used for this model" {
-			cquery FullCustomerRecord "All the Customer Data" {
+		pdm Queries "The queries used for this model" {
+			pquery FullCustomerRecord "All the Customer Data" {
 				spec:"SELECT * FROM Customer"
 			};
-			cquery Login "Info needed for to log into an existing account" {
+			pquery Login "Info needed for to log into an existing account" {
 				spec:"SELECT Customer.name, Customer.password FROM Customer"
 			};
-			cquery BillingInfo "Info needed for billing" {
+			pquery BillingInfo "Info needed for billing" {
 				spec: "SELECT Customer.name, Customer.address  FROM Customer"
 				};
 	 
-			cquery Ack "Info needed for acknowledgement" {
+			pquery Ack "Info needed for acknowledgement" {
 				spec: "SELECT Customer.name FROM Customer"
 			};
 
-			cquery NewCustomerQuestion "Info for a question from Customer" {
+			pquery NewCustomerQuestion "Info for a question from Customer" {
 				spec: "SELECT Customer.name, QA.question, QA.medicalCondition FROM Customer JOIN QA ON Customer.qsAndAs"
 			};
 
 
-			cquery RequestMore "Info needed for request" {
+			pquery RequestMore "Info needed for request" {
 				spec: "SELECT QA.question as startingQ, QA.question as newQ FROM QA JOIN QA ON startingQ.subquestions = newQ"
 			};
 			
-//			cquery AdvocateResponse "Question answered by Advocate" {
+//			pquery AdvocateResponse "Question answered by Advocate" {
 //				spec: "SELECT Customer.name, QA.* FROM Customer JOIN QA ON Customer.qsAndAs"
 //			};
 					
-  			cquery RequestCustomerData "Info needed for customer Dashboard" {
+  			pquery RequestCustomerData "Info needed for customer Dashboard" {
 				spec: "SELECT Customer.name FROM Customer"
 			};
 
@@ -255,31 +255,31 @@ am CommonCo ""{
 			 * Because this is just the answer associated with a question, it could be the main question or a subquestion -
 			 * no matter who asks it.
 			 */
-			cquery NewAnswer "Info answering a question" {
+			pquery NewAnswer "Info answering a question" {
 				spec: "SELECT QA.question, QA.answer FROM QA "
 			};
   
-			cquery RequestListOfCustomers "All the customers associated with this Advocate" {
+			pquery RequestListOfCustomers "All the customers associated with this Advocate" {
 				spec: "SELECT Advocate.name FROM Advocate"
 			};
 
-			cquery RetrieveListOfCustomers "All the customers associated with this Advocate" {
+			pquery RetrieveListOfCustomers "All the customers associated with this Advocate" {
 				spec: "SELECT Customer.name FROM Customer JOIN Advocate ON Advocate.customers"
 			};
 			
-			cquery RequestCustomerQuestionsList "Get all the questions associated with this Customer" {
+			pquery RequestCustomerQuestionsList "Get all the questions associated with this Customer" {
 				spec: "SELECT Customer.name FROM Customer"
 			};
 					
-			cquery RetrieveCustomerQuestionsList "All info related to a specific customer question" {
+			pquery RetrieveCustomerQuestionsList "All info related to a specific customer question" {
 				spec: "SELECT Customer.name, QA.question FROM Customer JOIN QA on Customer.qsAndAs"
 			};
 
-			cquery RequestQuestionDetail "Request detail on a question" {
+			pquery RequestQuestionDetail "Request detail on a question" {
 				spec: "SELECT QA.question FROM QA"
 			};
 	
-			cquery RetrieveQuestionDetail "All info related to a specific question" {
+			pquery RetrieveQuestionDetail "All info related to a specific question" {
 				spec: "SELECT QA.* FROM QA"
 			};
 
@@ -287,177 +287,203 @@ am CommonCo ""{
 		
 	}
 	um Components "Software Components Used" {
+		
+		templ patientRegistration "This is the message where patients register for an appointment" {
+			spec: " main (Patient) { Patient.name; Patient.id; Patient.phone; Patient.address; Patient.health; Patient.religion;}"
+			bound: DataModel.Queries.BillingInfo
+		};
+		templ patientRegAck "This acknowledges the registration" {
+			spec: " main (Patient) { Patient.name;  }"
+			bound: DataModel.Queries.Ack 		
+		};
+		templ patientExternalActionLogging "The info used when logging a new appointment" {
+			spec: "main (Patient) { Patient.name; Patient.id }"
+			bound: DataModel.Queries.Ack
+		};
+
+		templ systemAck "The info used when ack'ing a xaction" {
+			spec: "main (Patient) { Patient.name; Patient.id }"
+			bound: DataModel.Queries.Ack
+		};
+
+		templ patientReview "This is the message where doctors review a patient record" {
+			spec: " main (Patient) { Patient.name; Patient.id; Patient.health;  }"
+			bound: DataModel.Queries.BillingInfo
+		};
+
+		templ patientReviewAck "This acknowledges a patient record review" {
+			spec: " main (Patient) { Patient.name; Patient.id; Patient.health;  }"
+			bound: DataModel.Queries.Ack
+		};
+
+		templ patientReviewLogging "The info used when logging doctor's/ chaplain's review" {
+			spec: "main (Patient, Employee) { Patient.name; Patient.id; Patient.health; }"
+			bound: DataModel.Queries.FullCustomerRecord 
+		}; 
+		
+		templ patientChaplainReview "This is the message where chaplains review a patient record" {
+			spec: " main (Patient) { Patient.name; Patient.id; Patient.health; Patient.religion }"
+			bound: DataModel.Queries.BillingInfo
+		};
+
+		templ DBLogging "General DB Logging" {
+			spec: "main (DBLogging) { DBLogging.timestamp, DBLogging.processID, DBLogging.version, DBLogging.status }"
+			bound: DataModel.Queries.FullCustomerRecord
+		};	
 			
 		pc CreateAnAccount "This is where new Customers sign up" {
-			purpose: [ 
-				Privacy.General.CommonPurposes.ContractFulfillment.Registration
-			]
+			lang: Ada
+			
 			conn: [ 
 					csconn NewAccountInfo "Send new accnt info / ack back" {
-						msg:  [ cq: DataModel.Queries.BillingInfo  / cq: DataModel.Queries.Ack ] 
+						msg:  [ patientRegistration  /  patientRegAck ] 
 						role: client 
 					} 
 			]  
 		};   
 		   
 		pc LogIn "This is where existing Customers sign in" {
-			purpose: [ 
-				Privacy.General.CommonPurposes.ContractFulfillment.Authenticate
-			]
+			lang: Java
 			conn: [ 
 					csconn LoginInfo "Send login info / ack back" {
-						msg:  [ cq: DataModel.Queries.Login  / cq: DataModel.Queries.Ack ] 
+						msg:  [ patientReview /  systemAck ] 
 						role: client 
 					} 
 			]  
 		}; 
 			     
 		pc SubmitNewCustomerForm "This is where existing Customers create their initial  info record" {
-			purpose: [ 
-				Privacy.General.CommonPurposes.ContractFulfillment
-			]
+			lang: C
 			conn: [ 
 					/** This could also be the billing info because of how the new customer is set up */
 					simconn Login "Receiving a successful login" {
-						msg: InboundMessage  cq: DataModel.Queries.Login 
+						msg: InboundMessage  patientRegistration 
 					}
 					csconn CustomerInfo "Send base customer info / ack back" {
-						msg:  [ cq: DataModel.Queries.FullCustomerRecord  / cq: DataModel.Queries.Ack ] 
+						msg:  [ patientReview / systemAck ] 
 						role: client 
 					} 
 			]  
 		}; 
 			     
 		pc SubmitCustomerRequestForm "This is where existing Customers add a new request" {
-			purpose: [ 
-				Privacy.General.CommonPurposes.ContractFulfillment
-			]
+			lang: Scala
 			conn: [ 
 					simconn Login "Receiving a successful login" {
-						msg: InboundMessage  cq: DataModel.Queries.Login 
+						msg: InboundMessage  patientRegistration
 					}
 					csconn RequestInfo "Send new request / ack back" {
-						msg:  [ cq: DataModel.Queries.FullCustomerRecord  / cq: DataModel.Queries.Ack ] 
+						msg:  [ patientReview / patientReviewAck ] 
 						role: client 
 					} 
 			]  
 		};      
 
 		pc AdvocateReview "Advocate reviews requests - " {
-			purpose: [ 
-				Privacy.General.CommonPurposes.ContractFulfillment
-			]
+			lang: Rust
 			conn: [ 
 					simconn Advocate "Send customer rec and request info " {
-						msg: InboundMessage    cq: DataModel.Queries.FullCustomerRecord   
+						msg: InboundMessage    patientChaplainReview   
 					} 
 
 					csconn RequestListOfCustomers "Get the outstanding list of customers for this advocate" {
-						msg: [ cq: DataModel.Queries.RequestListOfCustomers / cq: DataModel.Queries.RetrieveCustomerQuestionsList ]
+						msg: [ patientChaplainReview / DataModel.Queries.RetrieveCustomerQuestionsList ]
 						role: client
 					}
 					
 					csconn RequestCustomerInfo "Get the outstanding list of questions for a specific customer" {
-						msg: [ cq: DataModel.Queries.RequestCustomerData / cq: DataModel.Queries.RetrieveCustomerQuestionsList ]
+						msg: [  DataModel.Queries.RequestCustomerData /  DataModel.Queries.RetrieveCustomerQuestionsList ]
 						role: client
 					}
 
 					csconn RequestQuestionList "Get my list of questions/ send list back back" {
-						msg:  [ cq: DataModel.Queries.RequestCustomerData  / cq: DataModel.Queries.RetrieveCustomerQuestionsList ] 
+						msg:  [  DataModel.Queries.RequestCustomerData  /  DataModel.Queries.RetrieveCustomerQuestionsList ] 
 						role: client 
 					} 
 
 					csconn RequestQuestionDetails "Get the details on a specific question" {
-						msg: [ cq: DataModel.Queries.RequestQuestionDetail  / cq: DataModel.Queries.RetrieveQuestionDetail ]
+						msg: [  DataModel.Queries.RequestQuestionDetail  /  DataModel.Queries.RetrieveQuestionDetail ]
 						role:  client
 					}
 
 					simconn MoreInfoRequest "Request more info from customer - this creates a new subquestion" {
-						msg: OutboundMessage cq: DataModel.Queries.RequestMore 
+						msg: OutboundMessage  DataModel.Queries.RequestMore 
 					}
 					
 					simconn AdvResponse "Advocate sends response back to customer" {
-						msg: OutboundMessage cq: DataModel.Queries.NewAnswer
+						msg: OutboundMessage  DataModel.Queries.NewAnswer
 					}
 				]  
 			};      
 
 		pc CustomerDashboard "Where the customer can see everything" {
-			purpose: [ 
-				Privacy.General.CommonPurposes.ContractFulfillment.ProvideServices 
-				Privacy.General.CommonPurposes.ContractFulfillment.AcctManagment
-				Privacy.General.CommonPurposes.ContractFulfillment.StatusUpdate
-			]
+			lang: Typescript
 			conn: [ 
 					csconn RequestCustomerInfo "Request my customer info  / send it back  - used for account mgt" {
-						msg:  [ cq: DataModel.Queries.RequestCustomerData  / cq: DataModel.Queries.FullCustomerRecord ] 
+						msg:  [  DataModel.Queries.RequestCustomerData  /  DataModel.Queries.FullCustomerRecord ] 
 						role: client 
 					} 
 					csconn RequestQuestionList "Get my list of questions/ send list back back" {
-						msg:  [ cq: DataModel.Queries.RequestCustomerData  / cq: DataModel.Queries.RetrieveCustomerQuestionsList ] 
+						msg:  [  DataModel.Queries.RequestCustomerData  /  DataModel.Queries.RetrieveCustomerQuestionsList ] 
 						role: client 
 					} 
 
 					csconn RequestQuestionDetails "Get details for a specific question/ send it back" {
-						msg:  [ cq: DataModel.Queries.RequestQuestionDetail  / cq: DataModel.Queries.RetrieveQuestionDetail ] 
+						msg:  [  DataModel.Queries.RequestQuestionDetail  /  DataModel.Queries.RetrieveQuestionDetail ] 
 						role: client 
 					} 
 
 					simconn SendAnswer "Send the  answer" {
-							msg: OutboundMessage cq: DataModel.Queries.NewAnswer  	
+							msg: OutboundMessage  DataModel.Queries.NewAnswer  	
 					}
 
 			]  
 		};	
 		
 		pc Datastore "The component that handles persistent storage" {
-			purpose: [Privacy.General.CommonPurposes.LegitimateInterests.Administer
-				Privacy.General.CommonPurposes.ContractFulfillment
-				Privacy.General.CommonPurposes.Legal
-				Privacy.General.CommonPurposes.Consent
-			]
+			lang: Unspecified
 			conn: [
 					csconn StoreNewLogin "store received new customer billing info (full record not there yet)" {
-							msg:  [ cq: DataModel.Queries.BillingInfo  / cq: DataModel.Queries.Ack ] 
+							msg:  [  DataModel.Queries.BillingInfo  /  DataModel.Queries.Ack ] 
 							role: server 		
 					}
 					csconn RetrieveLogin "retrieve login info " {
-							msg:  [ cq: DataModel.Queries.Ack  / cq: DataModel.Queries.Login ] 
+							msg:  [  DataModel.Queries.Ack  /  DataModel.Queries.Login ] 
 							role: server 		
 					}
 
 					csconn StoreCustomerInfo "store received customer info" {
-							msg:  [ cq: DataModel.Queries.FullCustomerRecord  / cq: DataModel.Queries.Ack ] 
+							msg:  [  DataModel.Queries.FullCustomerRecord  /  DataModel.Queries.Ack ] 
 							role: server 		
 					}
 	
 					csconn StoreCustomerQ "store received customer question" {
-							msg:  [ cq: DataModel.Queries.NewCustomerQuestion  / cq: DataModel.Queries.Ack ] 
+							msg:  [  DataModel.Queries.NewCustomerQuestion  /  DataModel.Queries.Ack ] 
 							role: server 		
 					}
 
 					csconn RequestListOfCustomers "Get the outstanding list of customers for this advocate" {
-						msg: [ cq: DataModel.Queries.RequestListOfCustomers / cq: DataModel.Queries.RetrieveCustomerQuestionsList ]
+						msg: [  DataModel.Queries.RequestListOfCustomers /  DataModel.Queries.RetrieveCustomerQuestionsList ]
 						role: server
 					}
 					
 					csconn RequestCustomerInfo "Get the outstanding list of questions for a specific customer" {
-						msg: [ cq: DataModel.Queries.RequestCustomerData / cq: DataModel.Queries.RetrieveCustomerQuestionsList ]
+						msg: [  DataModel.Queries.RequestCustomerData /  DataModel.Queries.RetrieveCustomerQuestionsList ]
 						role: server
 					}
 
 					csconn RequestQuestionList "Get my list of questions/ send list back back" {
-						msg:  [ cq: DataModel.Queries.RequestCustomerData  / cq: DataModel.Queries.RetrieveCustomerQuestionsList ] 
+						msg:  [  DataModel.Queries.RequestCustomerData  /  DataModel.Queries.RetrieveCustomerQuestionsList ] 
 						role: client 
 					} 
 
 					csconn RequestQuestionDetails "Get the details on a specific question" {
-						msg: [ cq: DataModel.Queries.RequestQuestionDetail  / cq: DataModel.Queries.RetrieveQuestionDetail ]
+						msg: [  DataModel.Queries.RequestQuestionDetail  /  DataModel.Queries.RetrieveQuestionDetail ]
 						role:  server
 					}
 
 					simconn StoreAnswer "store received answer" {
-							msg: InboundMessage cq: DataModel.Queries.NewAnswer  	
+							msg: InboundMessage  DataModel.Queries.NewAnswer  	
 					}
 				
 			]
@@ -481,29 +507,24 @@ am CommonCo ""{
 		 * The primary instances will run in California
 		 */
 		uinst CreateAnAccount1 "An Instance of the CreateAnAccount Page" -> Components.CreateAnAccount {
-			location: Privacy.General.CommonJurisdictions.UnitedStates.California
 			output: [ Components.CreateAnAccount.NewAccountInfo]
 		};
 	
 		uinst Login1 "An Instance of the Login Page" -> Components.LogIn {
-			location: Privacy.General.CommonJurisdictions.UnitedStates.California
 			output: [ Components.LogIn.LoginInfo ]
 		};
 	
 		uinst SubmitNewCustomerForm1 "An Instance of the New Customer Info page" -> Components.SubmitNewCustomerForm {
-			location: Privacy.General.CommonJurisdictions.UnitedStates.California
 			input: [ Components.SubmitNewCustomerForm.Login]
 			output: [ Components.SubmitNewCustomerForm.CustomerInfo ]
 		};
 	
 		uinst SubmitCustomerRequestForm1 "An Instance of the Customer New Request form" -> Components.SubmitCustomerRequestForm {
-			location: Privacy.General.CommonJurisdictions.UnitedStates.California
 			input: [Components.SubmitCustomerRequestForm.Login]
 			output: [ Components.SubmitCustomerRequestForm.RequestInfo ]
 		};
 	
 		uinst AdvocateReview1 "An Instance of the Advocate Review Dashboard" -> Components.AdvocateReview {
-			location: Privacy.General.CommonJurisdictions.UnitedStates.California
 			input: [ Components.AdvocateReview.Advocate  ]
 			output: [ 
 				Components.AdvocateReview.RequestListOfCustomers
@@ -516,7 +537,6 @@ am CommonCo ""{
 		};
 
 		uinst CustomerDashboard1 "An Instance of the Customer Dashboard" -> Components.CustomerDashboard {
-			location: Privacy.General.CommonJurisdictions.UnitedStates.California
 			output: [ 
 				Components.CustomerDashboard.RequestCustomerInfo
 				Components.CustomerDashboard.RequestQuestionList
@@ -526,7 +546,6 @@ am CommonCo ""{
 		};
 
 		uinst Datastore1 "An Instance of the Datastore" -> Components.Datastore {
-			location: Privacy.General.CommonJurisdictions.UnitedStates.California
 			/**
 			 * TODO: verify that C/S can be on both input and output
 			 */
