@@ -43,9 +43,9 @@ Workflow {
 			referencedResource="platform:/resource/com.epistimis.uddl.query/model/generated/Query.genmodel"
 
 // Only enable this when we need to regenerate Langium
-//		    fragment = io.typefox.xtext2langium.Xtext2LangiumFragment {
-//		        outputPath = './langium'
-//		    }
+		    fragment = io.typefox.xtext2langium.Xtext2LangiumFragment {
+		        outputPath = './langium'
+		    }
 
 			fragment = org.eclipse.xtext.xtext.generator.ui.codemining.CodeMiningFragment {}
 
