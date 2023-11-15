@@ -31,7 +31,7 @@ package face
 
 
 	context UopConnection
-	
+		
 		def: matchingObservables(checklist: Set(uddl::ConceptualObservable) ): Set(uddl::ConceptualObservable) = 
 			if (self.oclIsKindOf(UopPubSubConnection)) then
 				self.oclAsType(UopPubSubConnection).matchingObservables(checklist)
@@ -69,6 +69,28 @@ package face
 			else 
 				self.oclAsType(UopClientServerConnection).referencedModelTypes(dir)
 			endif
+
+
+		/**
+		 * Does this element reference the specified type?
+		 */
+		def: referencesModelType(rmt: uddl::ConceptualComposableElement): Boolean = 
+			if (self.oclIsKindOf(UopPubSubConnection)) then
+				self.oclAsType(UopPubSubConnection).referencesModelType(rmt)
+			else 
+				self.oclAsType(UopClientServerConnection).referencesModelType(rmt)
+			endif
+
+		/**
+		 * is this role used, and does it use the checkType in its structure.
+		 */
+		 def: roleUsesType(role: String, checkType: uddl::ConceptualComposableElement): Boolean =
+			if (self.oclIsKindOf(UopPubSubConnection)) then
+				self.oclAsType(UopPubSubConnection).roleUsesType(role, checkType)
+			else 
+				self.oclAsType(UopClientServerConnection).roleUsesType(role, checkType)
+			endif
+
 	
 	context UopPubSubConnection
 		/**
@@ -94,6 +116,22 @@ package face
 				else
 					Set{}
 				endif
+
+		/**
+		 * Does this element reference the specified type?
+		 */
+		def: referencesModelType(rmt: uddl::ConceptualComposableElement): Boolean = 
+			self.messageType.referencesModelType(rmt)
+
+
+		/**
+		 * check to see if the specified role is used anywhere. That
+		 * means first finding a composition element with the specified role name and then checking
+		 * from that type down to see if the checkType is used
+		 */
+		 def: roleUsesType(role: String, checkType: uddl::ConceptualComposableElement): Boolean =
+		 	self.messageType.roleUsesType(role, checkType)
+
 		
 	context UopClientServerConnection
 		/**
@@ -123,6 +161,25 @@ package face
 				else
 					self.requestType.referencedModelTypes()
 				endif
+
+
+		/**
+		 * Does this element reference the specified type?
+		 */
+		def: referencesModelType(rmt: uddl::ConceptualComposableElement): Boolean = 
+			self.requestType.referencesModelType(rmt) or 
+			self.responseType.referencesModelType(rmt) 
+
+
+		/**
+		 * check to see if the specified role is used anywhere. That
+		 * means first finding a composition element with the specified role name and then checking
+		 * from that type down to see if the checkType is used
+		 */
+		 def: roleUsesType(role: String, checkType: uddl::ConceptualComposableElement): Boolean =
+			self.requestType.roleUsesType(role, checkType) or 
+			self.responseType.roleUsesType(role, checkType) 
+
 	
 	context UopUnitOfPortability
 	
@@ -162,6 +219,12 @@ package face
 		def: referencesModelType(t: uddl::ConceptualComposableElement): Boolean =
 			self.referencedModelTypes()->includes(t)
 	
+		/**
+		 * Is this role used (on any connection), and does it use this type?
+		 */
+		def: roleUsesType(role: String, checkType: uddl::ConceptualComposableElement): Boolean = 
+			self.connection->exists(roleUsesType(role, checkType))
+
 		
 	context UopMessageType
 	
@@ -174,12 +237,47 @@ package face
 	
 		def: matchingObservables(checklist: Set(uddl::ConceptualObservable) ): Set(uddl::ConceptualObservable) = 
 			self.referencedModelTypes()->selectByType(uddl::ConceptualObservable)->select(t|checklist->includes(t))->asSet()
+
+
+		/**
+		 * Does this element reference the specified type?
+		 */
+		def: referencesModelType(rmt: uddl::ConceptualComposableElement): Boolean = 
+			if (self.oclIsKindOf(UopTemplate))	then
+				self.oclAsType(UopTemplate).referencesModelType(rmt)
+			else
+				self.oclAsType(UopCompositeTemplate).referencesModelType(rmt)
+			endif
+
+		/**
+		 * Is this role used, and does it use this type?
+		 */
+		def: roleUsesType(role: String, checkType: uddl::ConceptualComposableElement): Boolean = 
+			if (self.oclIsKindOf(UopTemplate))	then
+				self.oclAsType(UopTemplate).roleUsesType(role, checkType)
+			else
+				self.oclAsType(UopCompositeTemplate).roleUsesType(role, checkType)
+			endif
 	
 	context UopTemplate
 	
 		def: referencedModelTypes(): Set(uddl::ConceptualComposableElement) =
 			self.boundQuery.referencedModelTypes()
 	
+		/**
+		 * Does this element reference the specified type?
+		 */
+		def: referencesModelType(rmt: uddl::ConceptualComposableElement): Boolean = 
+			self.boundQuery.referencesModelType(rmt)
+
+
+		/**
+		 * check to see if the specified role is used anywhere. That
+		 * means first finding a composition element with the specified role name and then checking
+		 * from that type down to see if the checkType is used
+		 */
+		 def: roleUsesType(role: String, checkType: uddl::ConceptualComposableElement): Boolean =
+		 	self.boundQuery.roleUsesType(role, checkType)
 	
 			
 	context UopCompositeTemplate
@@ -188,5 +286,20 @@ package face
 			self.composition->collect(type.referencedModelTypes())->flatten()->asSet()
 		
 
+		/**
+		 * Does this element reference the specified type?
+		 */
+		def: referencesModelType(rmt: uddl::ConceptualComposableElement): Boolean = 
+			self.composition->exists(type.referencesModelType(rmt))
+			
+
+
+		/**
+		 * check to see if the specified role is used anywhere. That
+		 * means first finding a composition element with the specified role name and then checking
+		 * from that type down to see if the checkType is used
+		 */
+		 def: roleUsesType(role: String, checkType: uddl::ConceptualComposableElement): Boolean =
+		 	self.composition->exists(type.roleUsesType(role, checkType))
 
 endpackage

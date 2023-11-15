@@ -451,11 +451,20 @@ package face
 			filterByTypes(nodes, types,UopMessageExchangeType::OUTBOUND_MESSAGE )
 
 	context IntegrationUoPInputEndPoint
+		def: owner(): IntegrationUoPInstance =
+			self.oclContainer.oclAsType(IntegrationUoPInstance)
+
 		def: referencedModelTypes():Set(uddl::ConceptualComposableElement) =
 			self.connection.referencedModelTypes()
 
-		def: owner(): IntegrationUoPInstance =
-			self.oclContainer.oclAsType(IntegrationUoPInstance)
+		def: referencesModelType(rmt: uddl::ConceptualComposableElement): Boolean = 
+			self.connection.referencesModelType(rmt)
+
+		/**
+		 * is this role used, and does it use the checkType in its structure.
+		 */
+		def: roleUsesType(role: String, checkType: uddl::ConceptualComposableElement): Boolean =
+			self.connection.roleUsesType(role, checkType)
 			
 		def: linksInIC(ic: IntegrationIntegrationContext): Set(IntegrationTSNodeConnection) =
 			ic.connection->select(l|l.destination = self)->asSet()
@@ -687,11 +696,20 @@ package face
 			filterByTypes(nodes, types,UopMessageExchangeType::INBOUND_MESSAGE )
 
 	context IntegrationUoPOutputEndPoint
-		def: referencedModelTypes():Set(uddl::ConceptualComposableElement) =
-			self.connection.referencedModelTypes()
-			
 		def: owner(): IntegrationUoPInstance =
 			self.oclContainer.oclAsType(IntegrationUoPInstance)
+			
+		def: referencedModelTypes():Set(uddl::ConceptualComposableElement) =
+			self.connection.referencedModelTypes()
+
+		def: referencesModelType(rmt: uddl::ConceptualComposableElement): Boolean = 
+			self.connection.referencesModelType(rmt)
+
+		/**
+		 * is this role used, and does it use the checkType in its structure.
+		 */
+		 def: roleUsesType(role: String, checkType: uddl::ConceptualComposableElement): Boolean =
+			self.connection.roleUsesType(role, checkType)
 			
 		def: linksInIC(ic: IntegrationIntegrationContext): Set(IntegrationTSNodeConnection) =
 			ic.connection->select(l|l.source = self)->asSet()
@@ -998,7 +1016,7 @@ package face
 			endif
 		
 			
-		def: actuallyReferencesModelType(t: uddl::ConceptualObservable): Boolean =
+		def: actuallyReferencesModelType(t: uddl::ConceptualComposableElement): Boolean =
 			self.actualReferencedModelTypes()->includes(t)
 	
 		/**
@@ -1010,7 +1028,7 @@ package face
 		def: possibleReferencedModelTypes(dir: UopMessageExchangeType): Set(uddl::ConceptualComposableElement) =
 			self.realizes.referencedModelTypes(dir)
 	
-		def: possiblyReferencesModelType(t: uddl::ConceptualObservable): Boolean =
+		def: possiblyReferencesModelType(t: uddl::ConceptualComposableElement): Boolean =
 			self.possibleReferencedModelTypes()->includes(t)
 		
 		/**
@@ -1563,10 +1581,10 @@ package face
 		def: allReferencedPSCs(): Set(UopPlatformSpecificComponent) =
 			self.allReferencedUops()->selectByKind(UopPlatformSpecificComponent)->collect(oclAsType(UopPlatformSpecificComponent))->asSet()
 	
-		def: actuallyReferencesModelType(t: uddl::ConceptualObservable): Boolean =
+		def: actuallyReferencesModelType(t: uddl::ConceptualComposableElement): Boolean =
 			self.actualReferencedModelTypes()->includes(t)
 	
-		def: possiblyReferencesModelType(t: uddl::ConceptualObservable): Boolean =
+		def: possiblyReferencesModelType(t: uddl::ConceptualComposableElement): Boolean =
 			self.possibleReferencedModelTypes()->includes(t)
 	
 		/**
