@@ -6,7 +6,6 @@
  */
 package com.epistimis.face.ui.wizard
 
-
 import org.eclipse.core.runtime.Status
 import org.eclipse.jdt.core.JavaCore
 import org.eclipse.xtext.ui.XtextProjectHelper
@@ -16,6 +15,8 @@ import org.eclipse.xtext.ui.wizard.template.IProjectTemplateProvider
 import org.eclipse.xtext.ui.wizard.template.ProjectTemplate
 
 import static org.eclipse.core.runtime.IStatus.*
+import org.eclipse.emf.ecore.util.EcoreUtil
+import org.eclipse.xtext.ui.wizard.template.StringTemplateVariable
 
 /**
  * Create a list with all project templates to be shown in the template new project wizard.
@@ -34,14 +35,14 @@ and a parameter to set the package the file is created in.</p>")
 final class HelloWorldProject {
 	val advanced = check("Advanced:", false)
 	val advancedGroup = group("Properties")
-	val name = combo("Name:", #["Xtext", "World", "Foo", "Bar"], "The name to say 'Hello' to", advancedGroup)
-	val path = text("Package:", "mydsl", "The package path to place the files in", advancedGroup)
+	val name = combo("Name:", #["FACE Model", "UoP Model", "Integration Model"], "Name of the new Model", advancedGroup)
+	val path = text("Package:", "", "The package path to place the files in", advancedGroup)
 
 	override protected updateVariables() {
 		name.enabled = advanced.value
 		path.enabled = advanced.value
 		if (!advanced.value) {
-			name.value = "Xtext"
+			name.value = "FACE Model"
 			path.value = "face"
 		}
 	}
@@ -57,15 +58,97 @@ final class HelloWorldProject {
 		generator.generate(new PluginProjectFactory => [
 			projectName = projectInfo.projectName
 			location = projectInfo.locationPath
-			projectNatures += #[JavaCore.NATURE_ID, "org.eclipse.pde.PluginNature", XtextProjectHelper.NATURE_ID]
-			builderIds += #[JavaCore.BUILDER_ID, XtextProjectHelper.BUILDER_ID]
-			folders += "src"
-			addFile('''src/«path»/Model.face''', '''
-				/*
-				 * This is an example model
-				 */
-				Hello «name»!
-			''')
+			projectNatures += #[
+				"org.eclipse.sirius.nature.modelingproject", // must generate an .aird file along with this.
+				"org.eclipse.ocl.pivot.ui.oclnature",
+				// <nature>org.eclipse.jdt.core.javanature</nature>
+//				JavaCore.NATURE_ID, 
+//				"org.eclipse.pde.PluginNature", 
+				XtextProjectHelper.NATURE_ID
+			]
+			builderIds += #[
+//				JavaCore.BUILDER_ID, 
+				"org.eclipse.ocl.pivot.ui.oclbuilder",
+				XtextProjectHelper.BUILDER_ID
+			]
+			folders += "src-gen"
+
+			if (name.value == "FACE Model") {
+				addFile('''src/«path»/FaceModel.face''', '''
+					/*
+					 * This is an example model
+					 */
+					am ArchitectureModel "description of the Architecture model" {
+						/*
+						 *Add Data, UoP and/or Integration Models here
+					
+						*/
+						
+					}
+				''')
+				addFile('''representations.aird''', representationsFileContent(path, "FaceModel"));
+			} else if (name.value == "UoP Model") {
+				addFile('''src/«path»/UoPModel.face''', '''
+					/*
+					 * This is an example model
+					 */
+					 am ArchitectureModel "description of the Architecture model"{
+					 	
+					 	um UoPModel "description of the UoP model" {
+					 		/*
+					 		*Add Portable Components, Platform Specific Components, etc. here
+					 	*/
+					 	}
+					 }				
+				''')
+				addFile('''representations.aird''', representationsFileContent(path, "UoPModel"));
+			} else if (name.value == "Integration Model") {
+				addFile('''src/«path»/IntegrationModel.face''', '''
+					/*
+					 * This is an example model
+					 */
+					am ArchitectureModel "description of the Architecture model"{
+						
+						im IntegrationModel "description of the Integration model" {
+							/*
+							 *Add IntegrationContext, UoPInstance, and TranportChannel elements  here
+							*/					
+							  }
+					}
+				''')
+				addFile('''representations.aird''', representationsFileContent(path, "IntegrationModel"));
+			} else {
+				addFile('''src/«path»/FaceModel.face''', '''
+					/*
+					 * This is an example model
+					 */
+					am ArchitectureModel "description of the Architecture model" {
+						/*
+						 *Add Data, UoP and/or Integration Models here
+					
+						*/
+						
+					}
+				''')
+				addFile('''representations.aird''', representationsFileContent(path, "FaceModel"));
+			}
+
 		])
 	}
+
+	/**
+	 * TODO: This assumes a particular version of something (15.2.0.202303281325). Needs to be updated to some constant that returns the current version.
+	 */
+	def representationsFileContent(StringTemplateVariable path, String fname) {
+		val uid = EcoreUtil.generateUUID()
+		return '''
+			<?xml version="1.0" encoding="UTF-8"?>
+			<viewpoint:DAnalysis xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:viewpoint="http://www.eclipse.org/sirius/1.1.0" uid="«uid»" 
+				version="15.2.0.202303281325">
+				 <semanticResources>src/«path»/«fname».uddl</semanticResources>
+			</viewpoint:DAnalysis>
+			
+		'''
+	}
+
 }

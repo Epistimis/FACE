@@ -22,16 +22,23 @@ class FaceFileTemplateProvider implements IFileTemplateProvider {
 	}
 }
 
-@FileTemplate(label="Hello World", icon="file_template.png", description="Create a hello world for Face.")
+@FileTemplate(label="Sample File", icon="file_template.png", description="Basic Face Model")
 final class HelloWorldFile {
-	val helloName = combo("Hello Name:", #["Xtext", "World", "Foo", "Bar"], "The name to say 'Hello' to")
+	//val name = combo("Name:", #["FACEModel", "UoPModel", "IntegrationModel"], "Name of the new Model")
 
 	override generateFiles(IFileGenerator generator) {
 		generator.generate('''«folder»/«name».face''', '''
 			/*
 			 * This is an example model
 			 */
-			Hello «helloName»!
+			am «name» "description of the «name» FACE model" {
+				/*
+				 *Add Data, UoP and/or Integration Models here
+			
+				*/
+				
+			}
 		''')
+
 	}
 }
