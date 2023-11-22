@@ -29,13 +29,13 @@ class FaceProjectTemplateProvider implements IProjectTemplateProvider {
 	}
 }
 
-@ProjectTemplate(label="Hello World", icon="project_template.png", description="<p><b>Hello World</b></p>
-<p>This is a parameterized hello world for Face. You can set a parameter to modify the content in the generated file
+@ProjectTemplate(label="Basic FACE Model", icon="project_template.png", description="<p><b>Basic FACE Model</b></p>
+<p>This creates a basic FACE model. You can set a parameter to modify the content in the generated file
 and a parameter to set the package the file is created in.</p>")
 final class HelloWorldProject {
 	val advanced = check("Advanced:", false)
 	val advancedGroup = group("Properties")
-	val name = combo("Name:", #["FACE Model", "UoP Model", "Integration Model"], "Name of the new Model", advancedGroup)
+	val name = combo("Face:", #["FACE Model", "UoP Model", "Integration Model"], "Initial focus of the new Model", advancedGroup)
 	val path = text("Package:", "", "The package path to place the files in", advancedGroup)
 
 	override protected updateVariables() {
@@ -43,7 +43,7 @@ final class HelloWorldProject {
 		path.enabled = advanced.value
 		if (!advanced.value) {
 			name.value = "FACE Model"
-			path.value = "face"
+			path.value = ""
 		}
 	}
 
@@ -59,7 +59,7 @@ final class HelloWorldProject {
 			projectName = projectInfo.projectName
 			location = projectInfo.locationPath
 			projectNatures += #[
-				"org.eclipse.sirius.nature.modelingproject", // must generate an .aird file along with this.
+				//"org.eclipse.sirius.nature.modelingproject", // must generate an .aird file along with this.
 				"org.eclipse.ocl.pivot.ui.oclnature",
 				// <nature>org.eclipse.jdt.core.javanature</nature>
 //				JavaCore.NATURE_ID, 
@@ -86,7 +86,7 @@ final class HelloWorldProject {
 						
 					}
 				''')
-				addFile('''representations.aird''', representationsFileContent(path, "FaceModel"));
+				//addFile('''representations.aird''', representationsFileContent(path, "FaceModel"));
 			} else if (name.value == "UoP Model") {
 				addFile('''src/«path»/UoPModel.face''', '''
 					/*
@@ -101,7 +101,7 @@ final class HelloWorldProject {
 					 	}
 					 }				
 				''')
-				addFile('''representations.aird''', representationsFileContent(path, "UoPModel"));
+				//addFile('''representations.aird''', representationsFileContent(path, "UoPModel"));
 			} else if (name.value == "Integration Model") {
 				addFile('''src/«path»/IntegrationModel.face''', '''
 					/*
@@ -116,7 +116,7 @@ final class HelloWorldProject {
 							  }
 					}
 				''')
-				addFile('''representations.aird''', representationsFileContent(path, "IntegrationModel"));
+				//addFile('''representations.aird''', representationsFileContent(path, "IntegrationModel"));
 			} else {
 				addFile('''src/«path»/FaceModel.face''', '''
 					/*
@@ -130,7 +130,7 @@ final class HelloWorldProject {
 						
 					}
 				''')
-				addFile('''representations.aird''', representationsFileContent(path, "FaceModel"));
+				//addFile('''representations.aird''', representationsFileContent(path, "FaceModel"));
 			}
 
 		])
@@ -145,7 +145,7 @@ final class HelloWorldProject {
 			<?xml version="1.0" encoding="UTF-8"?>
 			<viewpoint:DAnalysis xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:viewpoint="http://www.eclipse.org/sirius/1.1.0" uid="«uid»" 
 				version="15.2.0.202303281325">
-				 <semanticResources>src/«path»/«fname».uddl</semanticResources>
+				 <semanticResources>src/«path»/«fname».face</semanticResources>
 			</viewpoint:DAnalysis>
 			
 		'''

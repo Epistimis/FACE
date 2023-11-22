@@ -5,6 +5,12 @@
       version="1.0.0.qualifier"
       provider-name="Epistimis LLC">
 
+   <description>
+      Support for Future Airborne Capability Environment (FACE) UoP and Integration Models.
+
+Includes support for UDDL Data Models (Conceptual, Logical and Platform) and UDDL Queries.
+   </description>
+
    <includes
          id="com.epistimis.uddl.feature"
          version="0.0.0"
