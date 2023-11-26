@@ -26,7 +26,7 @@ Require-Bundle: com.epistimis.face,
  com.epistimis.uddl
 Import-Package: org.apache.log4j,
  org.eclipse.xtext.ui.codemining;resolution:=optional
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-20
 Export-Package: com.epistimis.face.ui.quickfix,
  com.epistimis.face.ui.contentassist,
  com.epistimis.face.ui.internal,
