@@ -25,6 +25,7 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.formatting2.IFormattableDocument
 
 import static com.epistimis.face.face.FacePackage.Literals.*
+import com.epistimis.face.face.UopLifeCycleManagementPort
 
 class FaceFormatter extends UddlFormatter {
 	
@@ -93,8 +94,6 @@ class FaceFormatter extends UddlFormatter {
 		formatAttribute(obj.regionFor.keyword('DAL:'),obj.regionFor.feature(UOP_UNIT_OF_PORTABILITY__DESIGN_ASSURANCE_LEVEL),document);
 		formatAttribute(obj.regionFor.keyword('DAS:'),obj.regionFor.feature(UOP_UNIT_OF_PORTABILITY__DESIGN_ASSURANCE_STANDARD),document);
 		formatAttribute(obj.regionFor.keyword('support:'),obj.regionFor.feature(UOP_UNIT_OF_PORTABILITY__SUPPORTING_COMPONENT),document);
-		formatAttribute(obj.regionFor.keyword('conn:'),obj.regionFor.feature(UOP_UNIT_OF_PORTABILITY__CONNECTION),document);
-		formatAttribute(obj.regionFor.keyword('lcm:'),obj.regionFor.feature(UOP_UNIT_OF_PORTABILITY__LCM_PORT),document);
 //		formatAttributeElement(obj.regionFor.feature(UOP_UNIT_OF_PORTABILITY__MEMORY_REQUIREMENTS ),document);
 //		formatAttributeElement(obj.regionFor.feature(UOP_UNIT_OF_PORTABILITY__THREAD ),document);
 		for (EObject contained: obj.eContents) {
@@ -102,6 +101,9 @@ class FaceFormatter extends UddlFormatter {
 			contained.format
 		}
 		for (EObject elem: obj.connection) {
+			obj.surround[oneSpace]
+		}
+		for (EObject elem: obj.lcmPort) {
 			obj.surround[oneSpace]
 		}
 		
@@ -142,6 +144,12 @@ class FaceFormatter extends UddlFormatter {
 	}
 	def dispatch void format(UopSingleInstanceMessageConnection obj, extension IFormattableDocument document) {
 		obj.formatConnection(document)
+	}
+
+	def void formatConnection(UopLifeCycleManagementPort obj, extension IFormattableDocument document) {
+		obj.formatSubobj(document)
+		formatAttributeElement(obj.regionFor.feature(UOP_LIFE_CYCLE_MANAGEMENT_PORT__MESSAGE_EXCHANGE_TYPE ),document);		
+		formatAttributeElement(obj.regionFor.feature(UOP_LIFE_CYCLE_MANAGEMENT_PORT__LCM_MESSAGE_TYPE ),document);
 	}
 
 	def dispatch void format(UopCompositeTemplate obj, extension IFormattableDocument document) {
