@@ -7,7 +7,7 @@
 package com.epistimis.face.ui.wizard
 
 import org.eclipse.core.runtime.Status
-import org.eclipse.jdt.core.JavaCore
+//import org.eclipse.jdt.core.JavaCore
 import org.eclipse.xtext.ui.XtextProjectHelper
 import org.eclipse.xtext.ui.util.PluginProjectFactory
 import org.eclipse.xtext.ui.wizard.template.IProjectGenerator
