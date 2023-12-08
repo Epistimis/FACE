@@ -18,18 +18,19 @@ import com.epistimis.face.face.UopTemplate
 import com.epistimis.face.face.UopThread
 import com.epistimis.face.face.UopUnitOfPortability
 import com.epistimis.face.face.UopUoPModel
-//import com.epistimis.face.services.FaceGrammarAccess
+import com.epistimis.face.services.FaceGrammarAccess
 import com.epistimis.uddl.formatting2.UddlFormatter
-//import com.google.inject.Inject
+import com.google.inject.Inject
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.formatting2.IFormattableDocument
 
 import static com.epistimis.face.face.FacePackage.Literals.*
 import com.epistimis.face.face.UopLifeCycleManagementPort
+import com.epistimis.face.face.IntegrationTSNodeConnection
 
 class FaceFormatter extends UddlFormatter {
 	
-//	@Inject extension FaceGrammarAccess
+	@Inject extension FaceGrammarAccess
 
 	/**
 	 * Several standard methods needed for formatting
@@ -94,6 +95,8 @@ class FaceFormatter extends UddlFormatter {
 		formatAttribute(obj.regionFor.keyword('DAL:'),obj.regionFor.feature(UOP_UNIT_OF_PORTABILITY__DESIGN_ASSURANCE_LEVEL),document);
 		formatAttribute(obj.regionFor.keyword('DAS:'),obj.regionFor.feature(UOP_UNIT_OF_PORTABILITY__DESIGN_ASSURANCE_STANDARD),document);
 		formatAttribute(obj.regionFor.keyword('support:'),obj.regionFor.feature(UOP_UNIT_OF_PORTABILITY__SUPPORTING_COMPONENT),document);
+		formatAttribute(obj.regionFor.keyword('implementedBy:'),obj.regionFor.feature(UOP_UNIT_OF_PORTABILITY__IMPLEMENTED_BY), document);
+
 //		formatAttributeElement(obj.regionFor.feature(UOP_UNIT_OF_PORTABILITY__MEMORY_REQUIREMENTS ),document);
 //		formatAttributeElement(obj.regionFor.feature(UOP_UNIT_OF_PORTABILITY__THREAD ),document);
 		for (EObject contained: obj.eContents) {
@@ -101,10 +104,10 @@ class FaceFormatter extends UddlFormatter {
 			contained.format
 		}
 		for (EObject elem: obj.connection) {
-			obj.surround[oneSpace]
+			elem.surround[oneSpace]
 		}
 		for (EObject elem: obj.lcmPort) {
-			obj.surround[oneSpace]
+			elem.surround[oneSpace]
 		}
 		
 	}
@@ -211,6 +214,12 @@ class FaceFormatter extends UddlFormatter {
 		}
 		obj.outPort.format
 	}
+
+	def dispatch void format(IntegrationTSNodeConnection obj, extension IFormattableDocument document) {
+		formatAttributeElement(obj.regionFor.feature(INTEGRATION_TS_NODE_CONNECTION__SOURCE ),document);
+		formatAttributeElement(obj.regionFor.feature(INTEGRATION_TS_NODE_CONNECTION__DESTINATION ),document);
+	}
+
 
 
 }
