@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<feature
-      id="com.epistimis.face.feature"
-      label="Face Feature "
+<feature id="com.epistimis.face.feature"
+	label="Face Feature "
       version="1.0.0.qualifier"
       provider-name="Epistimis LLC">
 
@@ -22,25 +21,31 @@ Includes support for UDDL Data Models (Conceptual, Logical and Platform) and UDD
          name="UDDL Query Language"
          search-location="both"/>
 
-   <plugin
-         id="com.epistimis.face"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+   <requires>
+      <import feature="org.eclipse.gmf.runtime.notation" version="0.0.0" match="greaterOrEqual"/>
+      <import feature="org.eclipse.sirius.runtime" version="0.0.0" match="greaterOrEqual"/>
+      <import feature="org.eclipse.sirius.runtime.ide.ui" version="0.0.0" match="greaterOrEqual"/>
+   </requires>
 
-   <plugin
-         id="com.epistimis.face.ide"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+	<plugin
+			id="com.epistimis.face"
+			download-size="0"
+			install-size="0"
+			version="0.0.0"
+			unpack="false"/>
 
-   <plugin
-         id="com.epistimis.face.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+	<plugin
+			id="com.epistimis.face.ide"
+			download-size="0"
+			install-size="0"
+			version="0.0.0"
+			unpack="false"/>
+
+	<plugin
+			id="com.epistimis.face.ui"
+			download-size="0"
+			install-size="0"
+			version="0.0.0"
+			unpack="false"/>
 
 </feature>

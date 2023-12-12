@@ -7,7 +7,6 @@
 	<relativePath>..</relativePath>
   </parent>
   <artifactId>com.epistimis.face.design</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
   <build>
     <sourceDirectory>src</sourceDirectory>
     <plugins>
@@ -46,4 +45,5 @@
 	</dependency>
 
   </dependencies>
+  <packaging>eclipse-plugin</packaging>
 </project>

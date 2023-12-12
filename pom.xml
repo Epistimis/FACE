@@ -7,8 +7,8 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<xtextVersion>2.32.0</xtextVersion>
-		<mwe2Version>2.15.0</mwe2Version>
+		<xtextVersion>2.33.0</xtextVersion>
+		<mwe2Version>2.16.0</mwe2Version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
@@ -24,11 +24,14 @@
 		<module>com.epistimis.face</module>
 		<module>com.epistimis.face.ide</module>
 		<module>com.epistimis.face.ui</module>
+		<module>com.epistimis.face.web</module>
 		<module>com.epistimis.face.target</module>
 		<module>com.epistimis.face.feature</module>
 		<module>com.epistimis.face.repository</module>
 		<module>com.epistimis.face.tests</module>
 		<module>com.epistimis.face.ui.tests</module>
+		<module>com.epistimis.face.design</module>
+		<module>com.epistimis.face.product</module>
 	</modules>
 	<dependencyManagement>
 		<dependencies>
@@ -38,12 +41,6 @@
 				<version>${xtextVersion}</version>
 				<type>pom</type>
 				<scope>import</scope>
-			</dependency>
-			<dependency>
-			    <groupId>org.projectlombok</groupId>
-			    <artifactId>lombok</artifactId>
-			    <version>1.18.28</version>
-			    <scope>provided</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -105,6 +102,11 @@
 							<os>macosx</os>
 							<ws>cocoa</ws>
 							<arch>x86_64</arch>
+						</environment>
+						<environment>
+							<os>macosx</os>
+							<ws>cocoa</ws>
+							<arch>aarch64</arch>
 						</environment>
 						<environment>
 							<os>win32</os>

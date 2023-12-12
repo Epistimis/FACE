@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <description:Group xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:description="http://www.eclipse.org/sirius/description/1.1.0" xmlns:description_1="http://www.eclipse.org/sirius/diagram/description/1.1.0" xmlns:style="http://www.eclipse.org/sirius/diagram/description/style/1.1.0" xmlns:tool="http://www.eclipse.org/sirius/diagram/description/tool/1.1.0" xmlns:tool_1="http://www.eclipse.org/sirius/description/tool/1.1.0" xmlns:validation="http://www.eclipse.org/sirius/description/validation/1.1.0" name="face" version="12.0.0.2017041100">
   <ownedViewpoints name="IntegrationContexts" modelFileExtension="face">
-    <ownedRepresentations xsi:type="description_1:DiagramDescription" name="Integration Model diagram" initialisation="true" showOnStartup="true" domainClass="face::IntegrationIntegrationModel" enablePopupBars="true">
+    <ownedRepresentations xsi:type="description_1:DiagramDescription" name="IntegrationModelDiagram" titleExpression="All the Integration Contexts for this Integration Model" initialisation="true" showOnStartup="true" domainClass="face::IntegrationIntegrationModel" enablePopupBars="true">
       <metamodel href="../../com.epistimis.face/model/generated/Face.ecore#/"/>
+      <metamodel href="../../com.epistimis.uddl/model/generated/Uddl.ecore#/"/>
       <validationSet>
         <ownedRules xsi:type="validation:SemanticValidationRule" name="misMatchedConnections" level="ERROR" message="'source is not the same as destination'" targetClass="face::IntegrationTSNodeConnection">
           <audits auditExpression="service:doConnectionsMatch"/>
@@ -11,7 +12,7 @@
       <defaultLayer name="Default">
         <nodeMappings name="UoPInstanceNode" semanticCandidatesExpression="feature:element" domainClass="face::IntegrationUoPInstance">
           <borderedNodeMappings name="IntegrationUoPInputEndPointNode" semanticCandidatesExpression="feature:input" domainClass="face::IntegrationUoPInputEndPoint">
-            <style xsi:type="style:BundledImageDescription" borderSizeComputationExpression="1" showIcon="false" labelExpression="aql:self.connection.name" labelAlignment="LEFT" tooltipExpression="aql: &quot;input into this component instance - accepts &quot; + self.connection.name" resizeKind="NSEW" shape="ring">
+            <style xsi:type="style:BundledImageDescription" borderSizeComputationExpression="1" showIcon="false" labelExpression="aql:self.connection.name" labelAlignment="LEFT" tooltipExpression="aql: &quot;input into this component instance - accepts &quot; + self.connection.name" sizeComputationExpression="2" resizeKind="NSEW" shape="ring">
               <borderColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='black']"/>
               <labelColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='black']"/>
               <forbiddenSides>SOUTH</forbiddenSides>
@@ -20,7 +21,7 @@
             </style>
           </borderedNodeMappings>
           <borderedNodeMappings name="IntegrationUoPOutputEndPointNode" semanticCandidatesExpression="feature:output" domainClass="face::IntegrationUoPOutputEndPoint">
-            <style xsi:type="style:BundledImageDescription" borderSizeComputationExpression="1" showIcon="false" labelExpression="aql:self.connection.name" labelAlignment="RIGHT" tooltipExpression="An output from this component instance" resizeKind="NSEW" shape="ring">
+            <style xsi:type="style:BundledImageDescription" borderSizeComputationExpression="1" showIcon="false" labelExpression="aql:self.connection.name" labelAlignment="RIGHT" tooltipExpression="An output from this component instance" sizeComputationExpression="1" resizeKind="NSEW" shape="ring">
               <borderColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='black']"/>
               <labelColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='black']"/>
               <forbiddenSides>WEST</forbiddenSides>
@@ -28,13 +29,14 @@
               <color xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='purple']"/>
             </style>
           </borderedNodeMappings>
-          <style xsi:type="style:BundledImageDescription" labelSize="12" sizeComputationExpression="10" labelPosition="node" resizeKind="NSEW">
+          <style xsi:type="style:BundledImageDescription" labelSize="12" labelExpression="aql: name + &quot;\n&lt;&lt;&quot; + realizes.name + &quot;>>&quot;" sizeComputationExpression="10" labelPosition="node" resizeKind="NSEW">
             <borderColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='black']"/>
             <labelColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='black']"/>
             <color xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='light_blue']"/>
           </style>
         </nodeMappings>
-        <edgeMappings name="U2UConnectionEdge" sourceMapping="//@ownedViewpoints[name='IntegrationContexts']/@ownedRepresentations[name='Integration%20Model%20diagram']/@defaultLayer/@nodeMappings[name='UoPInstanceNode']/@borderedNodeMappings[name='IntegrationUoPOutputEndPointNode']" targetMapping="//@ownedViewpoints[name='IntegrationContexts']/@ownedRepresentations[name='Integration%20Model%20diagram']/@defaultLayer/@nodeMappings[name='UoPInstanceNode']/@borderedNodeMappings[name='IntegrationUoPInputEndPointNode']" targetFinderExpression="aql:self.destination" sourceFinderExpression="aql:self.source" domainClass="face::IntegrationTSNodeConnection" useDomainElement="true">
+        <nodeMappings name="PSComponent" semanticCandidatesExpression="feature::element" documentation="Define a new Platform Specific Component so you can create model instances of it." domainClass="face::UopPlatformSpecificComponent"/>
+        <edgeMappings name="U2UConnectionEdge" sourceMapping="//@ownedViewpoints[name='IntegrationContexts']/@ownedRepresentations[name='IntegrationModelDiagram']/@defaultLayer/@nodeMappings[name='UoPInstanceNode']/@borderedNodeMappings[name='IntegrationUoPOutputEndPointNode']" targetMapping="//@ownedViewpoints[name='IntegrationContexts']/@ownedRepresentations[name='IntegrationModelDiagram']/@defaultLayer/@nodeMappings[name='UoPInstanceNode']/@borderedNodeMappings[name='IntegrationUoPInputEndPointNode']" targetFinderExpression="aql:self.destination" sourceFinderExpression="aql:self.source" domainClass="face::IntegrationTSNodeConnection" useDomainElement="true">
           <style sourceArrow="OutputArrow" sizeComputationExpression="2">
             <strokeColor xsi:type="description:SystemColor" href="environment:/viewpoint#//@systemColors/@entries[name='gray']"/>
             <centerLabelStyleDescription labelSize="12" labelExpression="aql:self.source.connection.name">
@@ -58,7 +60,7 @@
           </style>
         </containerMappings>
         <toolSections name="Tools">
-          <ownedTools xsi:type="tool:NodeCreationDescription" name="CreateUoPInstance" nodeMappings="//@ownedViewpoints[name='IntegrationContexts']/@ownedRepresentations[name='Integration%20Model%20diagram']/@defaultLayer/@nodeMappings[name='UoPInstanceNode']">
+          <ownedTools xsi:type="tool:NodeCreationDescription" name="CreateUoPInstance" nodeMappings="//@ownedViewpoints[name='IntegrationContexts']/@ownedRepresentations[name='IntegrationModelDiagram']/@defaultLayer/@nodeMappings[name='UoPInstanceNode']">
             <variable name="container"/>
             <viewVariable name="containerView"/>
             <initialOperation>
@@ -70,7 +72,7 @@
               </firstModelOperations>
             </initialOperation>
           </ownedTools>
-          <ownedTools xsi:type="tool:EdgeCreationDescription" documentation="Completion conditions:&#xA;1) No circular connections (the target &lt;> source)&#xA;2) No duplicate connections (there cannot be another edge from the same source to the same target)" name="CreateDataFlow" edgeMappings="//@ownedViewpoints[name='IntegrationContexts']/@ownedRepresentations[name='Integration%20Model%20diagram']/@defaultLayer/@edgeMappings[name='U2UConnectionEdge']">
+          <ownedTools xsi:type="tool:EdgeCreationDescription" documentation="Completion conditions:&#xA;1) No circular connections (the target &lt;> source)&#xA;2) No duplicate connections (there cannot be another edge from the same source to the same target)" name="CreateDataFlow" edgeMappings="//@ownedViewpoints[name='IntegrationContexts']/@ownedRepresentations[name='IntegrationModelDiagram']/@defaultLayer/@edgeMappings[name='U2UConnectionEdge']">
             <sourceVariable name="source"/>
             <targetVariable name="target"/>
             <sourceViewVariable name="sourceView"/>
@@ -85,6 +87,11 @@
                 </subModelOperations>
               </firstModelOperations>
             </initialOperation>
+          </ownedTools>
+          <ownedTools xsi:type="tool:NodeCreationDescription" name="PSComponent">
+            <variable name="container"/>
+            <viewVariable name="containerView"/>
+            <initialOperation/>
           </ownedTools>
         </toolSections>
       </defaultLayer>
