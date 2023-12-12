@@ -488,22 +488,4 @@
 			<newWizardShortcut id="com.epistimis.face.ui.wizard.FaceNewFileWizard"/>
 		</perspectiveExtension>
 	</extension>
-	<!-- code mining -->
-	<extension point="org.eclipse.ui.workbench.texteditor.codeMiningProviders">
-		<codeMiningProvider
-			class="com.epistimis.face.ui.FaceExecutableExtensionFactory:org.eclipse.jface.text.codemining.ICodeMiningProvider"
-			id="com.epistimis.face.Face.CodeMiningProvider"
-			label="Face Codemining">
-			<enabledWhen>
-				<with variable="editorInput">
-					<adapt type="org.eclipse.core.resources.IFile">
-						<test
-							property="org.eclipse.core.resources.contentTypeId"
-							value="com.epistimis.face.Face.contenttype">
-						</test>
-					</adapt>
-				</with>
-			</enabledWhen>
-		</codeMiningProvider>
-	</extension>
 </plugin>

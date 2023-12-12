@@ -49,9 +49,8 @@ Workflow {
 		    fragment = io.typefox.xtext2langium.Xtext2LangiumFragment {
 		        outputPath = './langium'
 		    }
-
-			fragment = org.eclipse.xtext.xtext.generator.ui.codemining.CodeMiningFragment {}
-
+// Only include this once we have a use for it.
+//			fragment = org.eclipse.xtext.xtext.generator.ui.codemining.CodeMiningFragment {}
 			serializer = {
 				generateStub = false
 			}

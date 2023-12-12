@@ -24,8 +24,7 @@ Require-Bundle: com.epistimis.face,
  org.eclipse.ui.forms,
  com.epistimis.uddl.ui;bundle-version="1.0.0",
  com.epistimis.uddl
-Import-Package: org.apache.log4j,
- org.eclipse.xtext.ui.codemining;resolution:=optional
+Import-Package: org.apache.log4j
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Export-Package: com.epistimis.face.ui.quickfix,
  com.epistimis.face.ui.contentassist,

@@ -150,9 +150,9 @@ public class ConnectionProcessor {
 	 * @param conn
 	 * @return A map of (rolename, characteristic) for all the characteristics on
 	 *         this UopConnection
-	 * @throws CharacteristicNotFoundException 
+	 * @ throws CharacteristicNotFoundException 
 	 */
-	public Map<String, ConceptualCharacteristic> getSelectedConceptualCharacteristicsMap(UopConnection conn) throws CharacteristicNotFoundException {
+	public Map<String, ConceptualCharacteristic> getSelectedConceptualCharacteristicsMap(UopConnection conn) /* throws CharacteristicNotFoundException */ {
 		if (conn instanceof UopQueuingConnection) {
 			return getSelectedConceptualCharacteristicsMap((UopQueuingConnection) conn);
 		}
@@ -173,9 +173,9 @@ public class ConnectionProcessor {
 	 * @param conn
 	 * @return A map of (rolename, characteristic) for all the characteristics on
 	 *         this UopConnection
-	 * @throws CharacteristicNotFoundException 
+	 * @ throws CharacteristicNotFoundException 
 	 */
-	protected Map<String, ConceptualCharacteristic> getSelectedConceptualCharacteristicsMap(UopQueuingConnection conn) throws CharacteristicNotFoundException {
+	protected Map<String, ConceptualCharacteristic> getSelectedConceptualCharacteristicsMap(UopQueuingConnection conn) /* throws CharacteristicNotFoundException */ {
 		if (conn.getMessageExchangeType() == UopMessageExchangeType.INBOUND_MESSAGE) {
 			return getSelectedConceptualCharacteristicsMap(conn, conn.getMessageType());
 		}
@@ -193,7 +193,7 @@ public class ConnectionProcessor {
 	 * @throws CharacteristicNotFoundException 
 	 */
 	protected Map<String, ConceptualCharacteristic> getSelectedConceptualCharacteristicsMap(
-			UopSingleInstanceMessageConnection conn) throws CharacteristicNotFoundException {
+			UopSingleInstanceMessageConnection conn) /* throws CharacteristicNotFoundException */ {
 		if (conn.getMessageExchangeType() == UopMessageExchangeType.INBOUND_MESSAGE) {
 			return getSelectedConceptualCharacteristicsMap(conn, conn.getMessageType());
 		}
@@ -210,7 +210,7 @@ public class ConnectionProcessor {
 	 * @throws CharacteristicNotFoundException 
 	 */
 	protected Map<String, ConceptualCharacteristic> getSelectedConceptualCharacteristicsMap(
-			UopClientServerConnection conn) throws CharacteristicNotFoundException {
+			UopClientServerConnection conn) /* throws CharacteristicNotFoundException */ {
 		/**
 		 * We only care about the inbound direction, so look at the connection to
 		 * determine which to use
@@ -239,7 +239,7 @@ public class ConnectionProcessor {
 	 * @throws CharacteristicNotFoundException 
 	 */
 	protected Map<String, ConceptualCharacteristic> getSelectedConceptualCharacteristicsMap(UopConnection context,
-			UopMessageType msgType) throws CharacteristicNotFoundException {
+			UopMessageType msgType) /* throws CharacteristicNotFoundException */ {
 		if (msgType != null) {
 			return getSelectedConceptualCharacteristicsMap(msgType);
 		}
@@ -254,7 +254,7 @@ public class ConnectionProcessor {
 	 *         specified by this UopMessageType
 	 * @throws CharacteristicNotFoundException 
 	 */
-	protected Map<String, ConceptualCharacteristic> getSelectedConceptualCharacteristicsMap(UopMessageType msgType) throws CharacteristicNotFoundException {
+	protected Map<String, ConceptualCharacteristic> getSelectedConceptualCharacteristicsMap(UopMessageType msgType) /* throws CharacteristicNotFoundException */ {
 		// This is the standard approach - so extract the query from the template and
 		// then process the query
 		if (msgType instanceof UopTemplate) {
@@ -286,7 +286,7 @@ public class ConnectionProcessor {
 	 *         selected by this template
 	 * @throws CharacteristicNotFoundException 
 	 */
-	protected Map<String, ConceptualCharacteristic> getSelectedConceptualCharacteristicsMap(UopTemplate templ) throws CharacteristicNotFoundException {
+	protected Map<String, ConceptualCharacteristic> getSelectedConceptualCharacteristicsMap(UopTemplate templ) /* throws CharacteristicNotFoundException */ {
 		Map<String, ConceptualCharacteristic> cchars = new HashMap<>();
 		// If we get here, we have a single template
 		if (templ.getBoundQuery() != null) {
@@ -318,7 +318,7 @@ public class ConnectionProcessor {
 	 *         this ConceptualView
 	 * @throws CharacteristicNotFoundException 
 	 */
-	protected Map<String, ConceptualCharacteristic> getSelectedConceptualCharacteristicsMap(ConceptualView cv) throws CharacteristicNotFoundException {
+	protected Map<String, ConceptualCharacteristic> getSelectedConceptualCharacteristicsMap(ConceptualView cv) /* throws CharacteristicNotFoundException */ {
 
 		if (cv instanceof ConceptualQuery) {
 			return cqp.getSelectedCharacteristics((ConceptualQuery) cv);
