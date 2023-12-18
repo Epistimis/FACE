@@ -34,7 +34,7 @@ import com.epistimis.face.exceptions.MissingRealizationException
 class QueryUtilities {
 
 	/**
-	 * NOTE: The qno is not protected because derived classes will have their own
+	 * NOTE: The qnp is not protected because derived classes will have their own
 	 */
 	@Inject extension IQualifiedNameProvider qnp;
 
