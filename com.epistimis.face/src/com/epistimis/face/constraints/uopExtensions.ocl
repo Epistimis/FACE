@@ -225,6 +225,12 @@ package face
 		def: roleUsesType(role: String, checkType: uddl::ConceptualComposableElement): Boolean = 
 			self.connection->exists(roleUsesType(role, checkType))
 
+		/**
+		 * Helper method to collect info needed 
+		 */
+		def: nameDescriptionLogic(): Tuple(name:String, description: String, logic:String ) =
+			let logicDesc =  self?.implementedBy?.description in
+			Tuple{ name: String = self.name, description: String = self.description, logic: String = logicDesc }  
 		
 	context UopMessageType
 	
