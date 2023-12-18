@@ -291,11 +291,11 @@ abstract class CommonFunctionGenerator extends CommonDataStructureGenerator impl
 	override String getFileHeader(PlatformEntity entType) {
 			return dsg.getFileHeader(entType);		
 	}
-	override String compositionElement(PlatformComposition composition, int ndx) {
-			return dsg.compositionElement(composition,ndx);		
+	override String compositionElement(PlatformComposition composition, int tabs, int ndx) {
+			return dsg.compositionElement(composition,tabs, ndx);		
 	}
-	override String participantElement(PlatformParticipant participant, int ndx) {
-			return dsg.participantElement(participant,ndx);		
+	override String participantElement(PlatformParticipant participant, int tabs, int ndx) {
+			return dsg.participantElement(participant,tabs, ndx);		
 	}
 		
 	override String clazzDecl(PlatformEntity entity) {
