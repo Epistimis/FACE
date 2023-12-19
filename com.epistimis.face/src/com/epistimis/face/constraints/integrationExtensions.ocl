@@ -1549,8 +1549,11 @@ package face
 		def: possibleReferencedModelTypes(): Set(uddl::ConceptualComposableElement) =
 			self.element->selectByKind(IntegrationUoPInstance)->collect(possibleReferencedModelTypes())->asSet()
 		
+		/**
+		 * All IMs (closure + self)
+		 */
 		def: allIntegrationModels(): Set(IntegrationIntegrationModel) =
-			self->closure(im)
+			self.containedIMs()->including(self)
 
 		/**
 		 * All the local UopInstances (does not include instances in nested models)
