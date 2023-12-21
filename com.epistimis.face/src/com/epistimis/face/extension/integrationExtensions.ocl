@@ -7,7 +7,7 @@ import ecore : 'http://www.eclipse.org/emf/2002/Ecore#/'
 import 'platform:/plugin/com.epistimis.uddl/model/generated/Uddl.ecore'
 import 'platform:/plugin/com.epistimis.face/model/generated/Face.ecore'
 
-include 'platform:/plugin/com.epistimis.face/src/com/epistimis/face/constraints/uopExtensions.ocl'
+include 'platform:/plugin/com.epistimis.face/src/com/epistimis/face/extension/uopExtensions.ocl'
 include 'platform:/plugin/com.epistimis.face/src/com/epistimis/face/constraints/integration.ocl'
 
 package face
