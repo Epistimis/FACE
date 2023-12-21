@@ -29,6 +29,7 @@ Export-Package:
  com.epistimis.face.constraints.standalone,
  com.epistimis.face.exceptions,
  com.epistimis.face.face,
+ com.epistimis.face.extension,
  com.epistimis.face.face.impl,
  com.epistimis.face.face.util,
  com.epistimis.face.formatting2,

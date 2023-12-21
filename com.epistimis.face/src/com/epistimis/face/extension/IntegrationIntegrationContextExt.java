@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.epistimis.face.constraints;
+package com.epistimis.face.extension;
 
 import java.util.HashSet;
 import java.util.Set;
