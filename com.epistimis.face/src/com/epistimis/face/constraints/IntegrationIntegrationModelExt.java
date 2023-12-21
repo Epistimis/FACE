@@ -14,7 +14,7 @@ import com.epistimis.face.face.IntegrationIntegrationModel;
 /**
  * 
  */
-public class IntegrationIntegrationModelHelper {
+public class IntegrationIntegrationModelExt {
 
 	/**
 	 * Returns a flattened list of all the IntegrationModels nested in this one
@@ -61,7 +61,12 @@ public class IntegrationIntegrationModelHelper {
 //			models->collect(element->selectByKind(IntegrationIntegrationContext))->asSet()
 
 	public static Set<IntegrationIntegrationContext> allIntegrationContexts(IntegrationIntegrationModel self) {
-		return null;
+		return allIntegrationModels(self).stream()
+					.map(IntegrationIntegrationModel::getElement)
+					.flatMap(list ->list.stream())
+					.filter(IntegrationIntegrationContext.class::isInstance)
+					.map(IntegrationIntegrationContext.class::cast)
+					.collect(Collectors.toSet());
 	}
 	
 }
