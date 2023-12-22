@@ -1,0 +1,7 @@
+-- These are the FACE standard invariants
+include 'platform:/plugin/com.epistimis.face/src/com/epistimis/face/constraints/face.ocl'
+include 'platform:/plugin/com.epistimis.face/src/com/epistimis/face/constraints/integration.ocl'
+include 'platform:/plugin/com.epistimis.face/src/com/epistimis/face/constraints/uop.ocl'
+
+-- include the UDDL standard required invariants as well - they are part of the standard
+include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/constraints/all-standard-req-invariants.ocl'

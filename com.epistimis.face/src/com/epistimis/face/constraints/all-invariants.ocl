@@ -1,0 +1,4 @@
+include 'platform:/plugin/com.epistimis.face/src/com/epistimis/face/constraints/all-standard-invariants.ocl'
+
+-- Include all the UDDL invariants
+include 'platform:/plugin/com.epistimis.uddl/src/com/epistimis/uddl/constraints/all-invariants.ocl'

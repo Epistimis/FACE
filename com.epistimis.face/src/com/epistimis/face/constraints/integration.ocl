@@ -2,11 +2,8 @@
  * UDDL standard constraints - adjusted for this metamodel
  */
 import ecore : 'http://www.eclipse.org/emf/2002/Ecore#/'
-import uddl  : 'platform:/plugin/com.epistimis.uddl/model/generated/Uddl.ecore'
+import 'platform:/plugin/com.epistimis.uddl/model/generated/Uddl.ecore'
 import 'platform:/plugin/com.epistimis.face/model/generated/Face.ecore'
-
---include 'uop.ocl'
-include 'platform:/plugin/com.epistimis.face/src/com/epistimis/face/constraints/uop.ocl'
 
 package face
 

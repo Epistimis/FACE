@@ -2,11 +2,8 @@
  * UDDL standard constraints - adjusted for this metamodel
  */
 import uddl : 'platform:/plugin/com.epistimis.uddl/model/generated/Uddl.ecore'
---import  '../../../../../model/generated/Face.ecore'
 import 'platform:/plugin/com.epistimis.face/model/generated/Face.ecore'
 
--- include 'platform.ocl'
---include 'face.ocl'
 include 'platform:/plugin/com.epistimis.face/src/com/epistimis/face/constraints/face.ocl'
 
 package face
