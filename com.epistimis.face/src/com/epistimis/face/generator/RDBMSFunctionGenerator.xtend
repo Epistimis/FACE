@@ -11,10 +11,11 @@ import java.util.Collection
 import com.epistimis.face.face.UopConnection
 import java.util.Map
 import org.apache.log4j.Logger
+import java.lang.invoke.MethodHandles
 
 class RDBMSFunctionGenerator extends CommonFunctionGenerator implements IFaceLangGenerator {
 
-	static Logger logger = Logger.getLogger(RDBMSFunctionGenerator);
+	static Logger logger = Logger.getLogger(MethodHandles.lookup().lookupClass());
 
 	/**
 	 * Eventually this code generator can look at the version of language (look up SupportingComponents for runtimes and see

@@ -1,5 +1,7 @@
 package com.epistimis.face.validation;
 
+import java.lang.invoke.MethodHandles;
+
 import org.apache.log4j.Logger;
 
 import com.epistimis.face.face.IntegrationTSNodeConnection;
@@ -14,7 +16,7 @@ import com.epistimis.face.face.UopMessageType;
  */
 public class StructureChecks {
 
-	static Logger logger = Logger.getLogger(StructureChecks.class);
+	private static Logger logger = Logger.getLogger(MethodHandles.lookup().lookupClass());
 
 	public StructureChecks() {
 		// TODO Auto-generated constructor stub

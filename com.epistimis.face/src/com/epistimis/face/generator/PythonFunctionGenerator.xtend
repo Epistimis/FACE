@@ -13,10 +13,11 @@ import com.google.common.base.CaseFormat
 import java.util.Collection
 import java.util.Map
 import org.apache.log4j.Logger
+import java.lang.invoke.MethodHandles
 
 class PythonFunctionGenerator extends CommonFunctionGenerator implements IFaceLangGenerator {
 
-	static Logger logger = Logger.getLogger(PythonFunctionGenerator);
+	static Logger logger = Logger.getLogger(MethodHandles.lookup().lookupClass());
 
 	/**
 	 * Eventually this code generator can look at the version of language (look up SupportingComponents for runtimes and see

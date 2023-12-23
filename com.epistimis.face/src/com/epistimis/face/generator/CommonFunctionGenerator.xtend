@@ -32,10 +32,11 @@ import org.eclipse.xtext.generator.IGenerator2
 import org.eclipse.xtext.generator.IGeneratorContext
 //import com.epistimis.uddl.validation.UddlValidator
 import org.apache.log4j.Logger
+import java.lang.invoke.MethodHandles
 
 abstract class CommonFunctionGenerator extends CommonDataStructureGenerator implements IFaceLangGenerator {
 
-	static Logger logger = Logger.getLogger(CommonFunctionGenerator);
+	static Logger logger = Logger.getLogger(MethodHandles.lookup().lookupClass());
 
 	List<UopUnitOfPortability> processedComponents;
 

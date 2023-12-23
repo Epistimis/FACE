@@ -1,5 +1,6 @@
 package com.epistimis.face;
 
+import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -51,7 +52,7 @@ public class ConnectionProcessor {
 	@Inject
 	QueryUtilities qu;
 
-	static Logger logger = Logger.getLogger(ConnectionProcessor.class);
+	private static Logger logger = Logger.getLogger(MethodHandles.lookup().lookupClass());
 
 	public static String getDefinedRole(UopConnection conn) {
 		if (conn == null) {

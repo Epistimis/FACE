@@ -20,6 +20,7 @@ import org.eclipse.xtext.generator.IGeneratorContext
 import org.eclipse.xtext.naming.IQualifiedNameProvider
 import com.epistimis.uddl.exceptions.QueryMatchException
 import org.apache.log4j.Logger
+import java.lang.invoke.MethodHandles
 
 /**
  * Generates code from your model files on save.
@@ -35,7 +36,7 @@ class FaceGenerator extends AbstractGenerator {
 	// @Inject extension QueryProcessor qp; 
 	@Inject extension QueryUtilities qu;
 
-	static Logger logger = Logger.getLogger(FaceGenerator);
+	static Logger logger = Logger.getLogger(MethodHandles.lookup().lookupClass());
 
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
 //		/**

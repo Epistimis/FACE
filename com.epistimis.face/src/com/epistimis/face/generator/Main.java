@@ -10,6 +10,8 @@ import com.epistimis.face.FaceStandaloneSetup;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Provider;
+
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -26,7 +28,8 @@ import org.eclipse.xtext.validation.Issue;
 
 public class Main {
 
-	static Logger logger = Logger.getLogger(Main.class);
+	private static Logger logger = Logger.getLogger(MethodHandles.lookup().lookupClass());
+
 	public static void main(String[] args) {
 		if (args.length == 0) {
 			logger.error("Aborting: no path to EMF resource provided!");
