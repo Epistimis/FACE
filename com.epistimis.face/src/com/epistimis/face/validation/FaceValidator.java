@@ -6,9 +6,10 @@
  */
 package com.epistimis.face.validation;
 
-import org.eclipse.emf.common.util.URI;
+import java.lang.invoke.MethodHandles;
+
+import org.apache.log4j.Logger;
 import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.validation.EValidatorRegistrar;
 
@@ -18,19 +19,26 @@ import com.epistimis.uddl.scoping.IndexUtilities;
 import com.google.inject.Inject;
 
 /**
- * This class contains custom validation rules. 
+ * This class contains custom validation rules.
  *
  * See
  * https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
 public class FaceValidator extends AbstractFaceValidator {
 
+	private static Logger logger = Logger.getLogger(MethodHandles.lookup().lookupClass());
+
+	static ClassLoader classLoader = FaceValidator.class.getClassLoader();
+
 	@Inject
 	IQualifiedNameProvider qnp;
+
 //	@Inject
 //	QueryProcessor qp;
+
 	@Inject
 	QueryUtilities qu;
+
 	@Inject
 	IndexUtilities ndxUtil;
 
@@ -42,16 +50,37 @@ public class FaceValidator extends AbstractFaceValidator {
 	public static String CONSTRAINT_VIOLATION = ISSUE_CODE_PREFIX + "ConstraintViolation";
 
 	@Override
+	public IQualifiedNameProvider getQNP() {
+		return this.qnp;
+	}
+
+	@Override
+	public ClassLoader getClzLoader() {
+		return FaceValidator.classLoader;
+	}
+
+	@Override
 	public EPackage getPackage() {
 		return FacePackage.eINSTANCE;
 	}
-	
 
 	@Override
-	protected @NonNull URI getInputURI(@NonNull String localFileName) {
-		return getInputURI(localFileName, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
+	public String getPluginID() {
+		return com.epistimis.face.FaceRuntimeModule.PLUGIN_ID;
 	}
 
+	@Override
+	protected void augmentRegistry(EPackage.Registry registry) {
+		super.augmentRegistry(registry);
+		registry.put(FacePackage.eNS_URI, FacePackage.eINSTANCE);
+	}
+
+	@Override
+	protected EPackage.Registry createMinimalRegistry() {
+		EPackage.Registry registry = super.createMinimalRegistry();
+		registry.put(FacePackage.eNS_URI, FacePackage.eINSTANCE);
+		return registry;
+	}
 
 	
 	@Override
@@ -59,9 +88,9 @@ public class FaceValidator extends AbstractFaceValidator {
 		super.register(registrar);
 
 		/**
-		 * Registrations here are for OCL we ALWAYS want available.
-		 * These provide foundational rules about the FACE metamodel
-		 */	
+		 * Registrations here are for OCL we ALWAYS want available. These provide
+		 * foundational rules about the FACE metamodel
+		 */
 //		loadOCLAndRegister(registrar,"src/com/epistimis/face/constraints/face.ocl",FacePackage.eINSTANCE, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
 //		loadOCLAndRegister(registrar, "src/com/epistimis/face/constraints/uop.ocl",FacePackage.eINSTANCE, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
 //		loadOCLAndRegister(registrar, "src/com/epistimis/face/constraints/integration.ocl",FacePackage.eINSTANCE, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
@@ -73,10 +102,6 @@ public class FaceValidator extends AbstractFaceValidator {
 //		loadOCLAndRegister(registrar,"src/com/epistimis/face/constraints/uopExtensions.ocl",FacePackage.eINSTANCE, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
 //		loadOCLAndRegister(registrar,"src/com/epistimis/face/constraints/integrationExtensions.ocl",FacePackage.eINSTANCE, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
 	}
-
-
-
-
 
 //	/**
 //	 * Load an OCL file from the specified URI and register any constraints found
@@ -128,19 +153,5 @@ public class FaceValidator extends AbstractFaceValidator {
 //		}
 //		return constraintMap;
 //	}
-
-	@Override
-	protected void augmentRegistry(EPackage.Registry registry) {
-		super.augmentRegistry(registry);
-		registry.put(FacePackage.eNS_URI, FacePackage.eINSTANCE);
-	}
-
-	@Override
-	protected EPackage.Registry createMinimalRegistry() {
-		EPackage.Registry registry = super.createMinimalRegistry();
-		registry.put(FacePackage.eNS_URI, FacePackage.eINSTANCE);
-		return registry;
-	}
-
 
 }
