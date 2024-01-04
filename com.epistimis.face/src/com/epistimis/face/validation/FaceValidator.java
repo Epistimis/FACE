@@ -37,14 +37,13 @@ public class FaceValidator extends AbstractFaceValidator {
 //	QueryProcessor qp;
 
 	@Inject
-	QueryUtilities qu;
+	protected QueryUtilities qu;
 
 	@Inject
-	IndexUtilities ndxUtil;
+	protected IndexUtilities ndxUtil;
 
 	boolean conditionalsRegistered = false;
 
-	// OCL ocl = null;
 
 	protected static String ISSUE_CODE_PREFIX = "com.epistimis.face.";
 	public static String CONSTRAINT_VIOLATION = ISSUE_CODE_PREFIX + "ConstraintViolation";
@@ -87,6 +86,7 @@ public class FaceValidator extends AbstractFaceValidator {
 	public void register(EValidatorRegistrar registrar) {
 		super.register(registrar);
 
+//		loadOCLAndRegister(registrar,"src/com/epistimis/face/constraints/all-invariants.ocl",FacePackage.eINSTANCE, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
 		/**
 		 * Registrations here are for OCL we ALWAYS want available. These provide
 		 * foundational rules about the FACE metamodel
