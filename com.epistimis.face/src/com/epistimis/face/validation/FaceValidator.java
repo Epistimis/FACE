@@ -101,6 +101,8 @@ public class FaceValidator extends AbstractFaceValidator {
 //		loadOCLAndRegister(registrar, "src/com/epistimis/face/constraints/uddlquery.ocl",FacePackage.eINSTANCE, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
 //		loadOCLAndRegister(registrar,"src/com/epistimis/face/constraints/uopExtensions.ocl",FacePackage.eINSTANCE, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
 //		loadOCLAndRegister(registrar,"src/com/epistimis/face/constraints/integrationExtensions.ocl",FacePackage.eINSTANCE, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
+
+		logger.trace("FaceValidator::register done");
 	}
 
 //	/**
