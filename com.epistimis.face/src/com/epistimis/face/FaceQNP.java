@@ -133,7 +133,7 @@ public class FaceQNP extends UddlQNP {
 	public  QualifiedName qualifiedName(IntegrationTSNodeOutputPort obj) {
 		IntegrationTransportNode inst = (IntegrationTransportNode) obj.eContainer();
 		// TODO: Is it possible to have the same data flowing over multiple endpoints?
-		// If so, we then need to using indexing into the output list as part of the name
+		// If so, we then need to using index ing into the output list as part of the name
 		EStructuralFeature container = obj.eContainingFeature();
 		//IntegrationTSNodeOutputPort outport =  inst.getOutPort();
 
@@ -166,7 +166,7 @@ public class FaceQNP extends UddlQNP {
 		// Should only be 1 node
 		List<INode> nodes = NodeModelUtils.findNodesForFeature(obj, refFeature);
 		INode node = nodes.get(0);
-		return node.getText();
+		return node.getText().trim();
 	}
 
 	public QualifiedName getReferenceAsQN(EObject obj, String featureName) {
