@@ -77,6 +77,10 @@ Workflow {
 			projectWizard = {
 				generate = true
 			}			
+			// https://idiomaticsoft.com/post/2022-05-16-xtext-importuri/ 
+			scopeProvider = scoping.ImportNamespacesScopingFragment2 {
+				generateXtendStub = false
+			}
 
 		}
 	}

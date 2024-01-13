@@ -4,12 +4,12 @@ generate face "http://www.epistimis.com/face/Face"
 
 import "http://www.epistimis.com/uddl/Uddl" as uddl
 
-//// Starter rule comes first
-//@Override
-//ModelFile:
-//	includes+=Include*
-//	archModel=ArchitectureModel
-//;
+// Starter rule comes first
+@Override
+ModelFile:
+	(includes+=Include)*
+	archModel=ArchitectureModel
+;
 
 /** An ArchitectureModel is a container for DataModels, UoPModels, IntegrationModels, and TraceabilityModels. */	
 ArchitectureModel:
