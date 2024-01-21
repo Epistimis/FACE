@@ -12,6 +12,7 @@ import org.eclipse.xtext.resource.IDefaultResourceDescriptionStrategy;
 //import org.eclipse.xtext.scoping.IGlobalScopeProvider;
 
 import com.epistimis.face.generator.QueryUtilities;
+import com.epistimis.face.scoping.FacePackageProvider;
 //import com.epistimis.face.scoping.FaceGlobalScopeProvider;
 import com.epistimis.face.scoping.FaceResourceDescriptionsStrategy;
 
@@ -66,4 +67,10 @@ public class FaceRuntimeModule extends AbstractFaceRuntimeModule {
 //	Class<? extends IGlobalScopeProvider> bindIGlobalScopeProvider() {
 //		return FaceGlobalScopeProvider.class;
 //	}
+	
+	// --------  Other providers --------------------------------
+	public Class<? extends com.epistimis.uddl.scoping.IPackageProvider> bindIPackageProvider() {
+		return FacePackageProvider.class;
+	}
+	
 }
