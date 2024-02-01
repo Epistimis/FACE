@@ -8,14 +8,14 @@ package com.epistimis.face.ui.labeling;
 
 import com.google.inject.Inject;
 import org.eclipse.emf.edit.ui.provider.AdapterFactoryLabelProvider;
-import org.eclipse.xtext.ui.label.DefaultEObjectLabelProvider;
-
+//import org.eclipse.xtext.ui.label.DefaultEObjectLabelProvider;
+import com.epistimis.uddl.ui.labeling.UddlLabelProvider;
 /**
  * Provides labels for EObjects.
  * 
  * See https://www.eclipse.org/Xtext/documentation/310_eclipse_support.html#label-provider
  */
-public class FaceLabelProvider extends DefaultEObjectLabelProvider {
+public class FaceLabelProvider extends UddlLabelProvider { //DefaultEObjectLabelProvider {
 
 	@Inject
 	public FaceLabelProvider(AdapterFactoryLabelProvider delegate) {

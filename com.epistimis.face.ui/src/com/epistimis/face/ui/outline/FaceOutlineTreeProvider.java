@@ -6,13 +6,15 @@
  */
 package com.epistimis.face.ui.outline;
 
-import org.eclipse.xtext.ui.editor.outline.impl.DefaultOutlineTreeProvider;
+//import org.eclipse.xtext.ui.editor.outline.impl.DefaultOutlineTreeProvider;
+
+import com.epistimis.uddl.ui.outline.UddlOutlineTreeProvider;
 
 /**
  * Customization of the default outline structure.
  *
  * See https://www.eclipse.org/Xtext/documentation/310_eclipse_support.html#outline
  */
-public class FaceOutlineTreeProvider extends DefaultOutlineTreeProvider {
+public class FaceOutlineTreeProvider extends UddlOutlineTreeProvider { // DefaultOutlineTreeProvider {
 
 }

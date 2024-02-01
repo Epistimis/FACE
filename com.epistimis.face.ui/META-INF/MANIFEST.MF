@@ -26,8 +26,10 @@ Require-Bundle: com.epistimis.face,
  com.epistimis.uddl
 Import-Package: org.apache.log4j
 Bundle-RequiredExecutionEnvironment: JavaSE-17
-Export-Package: com.epistimis.face.ui.quickfix,
- com.epistimis.face.ui.contentassist,
+Export-Package: com.epistimis.face.ui.contentassist,
  com.epistimis.face.ui.internal,
+ com.epistimis.face.ui.labeling,
+ com.epistimis.face.ui.outline,
+ com.epistimis.face.ui.quickfix,
  com.epistimis.face.ui.wizard
 Bundle-Activator: com.epistimis.face.ui.internal.FaceActivator
