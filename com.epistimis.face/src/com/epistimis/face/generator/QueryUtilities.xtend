@@ -44,6 +44,7 @@ class QueryUtilities {
 
 	@Inject protected extension ConnectionProcessor cp;
 
+	// ======== getReferencedConceptualEntities ========
 	def Map<String, ConceptualEntity> getReferencedConceptualEntities(UopUnitOfPortability comp) {
 		var Map<String, ConceptualEntity> entities = new HashMap<String, ConceptualEntity>();
 		for (conn : comp.connection) {
@@ -69,6 +70,7 @@ class QueryUtilities {
 		return cp.getReferencedConceptualEntities(conn);
 	}
 
+	// ======== getReferencedPlatformEntities ========
 	def dispatch Map<String, PlatformEntity> getReferencedPlatformEntities(UopUnitOfPortability comp) {
 		var Map<String, PlatformEntity> entities = new HashMap<String, PlatformEntity>();
 		for (conn : comp.connection) {
@@ -107,6 +109,7 @@ class QueryUtilities {
 		return entities;
 	}
 
+	// ======== platformQueriesMap =================================
 	/**
 	 * Get all the queries referenced by this Template/Connection. Recurses down through Composites to find everything, keeping only
 	 * a single reference, ordered by the FQN of the query. Note that this returns only PlatformQuery, not PlatformCompositeQuery - 
@@ -172,13 +175,15 @@ class QueryUtilities {
 		return result;
 	}
 
+	// ======== conceptualQueriesMap =======
 	/**
 	 * Get all the queries referenced by this Template/Connection. Recurses down through Composites to find everything, keeping only
 	 * a single reference, ordered by the FQN of the query. Note that this returns only ConceptualQuery, not ConceptualCompositeQuery - 
 	 * effectively flattening the list.
 	 * 
 	 * TODO: this does not account for differences between Platform/Logical/Conceptual in terms of fields selected. So
-	 * the ConceptualQuery returned could contain more fields than the PlatformQuery actually uses.
+	 * the ConceptualQuery returned could contain more fields than the PlatformQuery actually uses. Or, if Logical/Platform realizes the
+	 * same Conceptual field multiple ways, it could be missing something - or it could have the wrong composition name
 	 */
 	def dispatch SortedMap<String, ConceptualQuery> conceptualQueriesMap(UopTemplate templ) {
 		var result = new TreeMap<String, ConceptualQuery>();

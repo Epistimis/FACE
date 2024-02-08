@@ -32,7 +32,7 @@ FaceElement:
 ;
 
 enum UoPClientServerRole:
-	CLIENT='client' | SERVER='server'
+	CLIENT='Client' | SERVER='Server'
 ;
 
 /** The FaceProfile enumeration captures the OS API subsets for a UoP as defined by the OSS. */
@@ -44,7 +44,7 @@ enum UopFaceProfile:
 ;
 
 enum UopDesignAssuranceLevel:
-	A='a' | B='b' | C='c' | D='d' | E='e'
+	A='A' | B='B' | C='C' | D='D' | E='E'
 ;
 
 enum UopDesignAssuranceStandard:
@@ -68,7 +68,7 @@ enum UopProgrammingLanguage:
 	UNSPECIFIED = 'Unspecified' | // EXTENSION: Make it possible to not specify a language - this is first so it gets the '0' value, so if no value is specified, this one will be assumed
 	CONTAINER = 'Container' | // EXTENSION: Use the language of the container (look at the language used by the component implemented with  instances of this)
 	INPUT = 'Input' | // EXTENSION: Use the same language as used for the inputs (what calls this)
-	C='C' | CPP='cpp' | JAVA='Java' | ADA='Ada' 
+	C='C' | CPP='CPP' | JAVA='Java' | ADA='Ada' 
 	// EXTENSION: Additional languages not supported by FACE
 	| GO='Go' | JS='Javascript' | PYTHON='Python' | RUST = 'Rust' | SCALA='Scala' | SQL='SQL' | TS='Typescript' 
 ;
@@ -256,12 +256,19 @@ UopCompositeTemplate:
 	'};'
 ;
 
-/** A TemplateComposition is the mechanism that allows a CompositeTemplate to be constructed from Templates and other CompositeTemplates. The “rolename” attribute defines the name of the composed platform View within the scope of the composing CompositeTemplate. The “type” of a TemplateComposition is the platform View being used to construct the CompositeTemplate. */
+/** 
+ * A TemplateComposition is the mechanism that allows a CompositeTemplate to be constructed from Templates and other CompositeTemplates. 
+ * The “rolename” attribute defines the name of the composed platform View within the scope of the composing CompositeTemplate. 
+ * The “type” of a TemplateComposition is the platform View being used to construct the CompositeTemplate.
+ */
 UopTemplateComposition:
 	type=[UopMessageType|QN] rolename=STRING ('->' realizes=[uddl::LogicalQueryComposition|QN])?
 ;
 
-/** A Template is a specification that defines a structure for Characteristics projected by its “boundQuery” or its “effectiveQuery”. The “specification” attribute captures the specification of a Template as defined by the Template grammar in Section J.4.  */
+/** 
+ * A Template is a specification that defines a structure for Characteristics projected by its “boundQuery” or its “effectiveQuery”. 
+ * The “specification” attribute captures the specification of a Template as defined by the Template grammar in Section J.4.
+ */
 UopTemplate:
 	'templ' name=ID description=STRING  '{'
 		'spec:' specification=STRING
@@ -292,7 +299,7 @@ IntegrationElement:
 IntegrationIntegrationContext:
 	'ic' name=ID description=STRING '{'
 		('xport:''[' node+=IntegrationTransportNode+ ']')?
-		('conn:' '['connection+=IntegrationTSNodeConnection+ ']')?
+		('conn:' '[' connection+=IntegrationTSNodeConnection+ ']')?
 	'}'
 ;
 

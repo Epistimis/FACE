@@ -57,7 +57,9 @@ public class Main {
 		ResourceSet set = resourceSetProvider.get();
 		Resource resource = set.getResource(URI.createFileURI(string), true);
 
-		// Validate the resource
+		// Because we may generate code that crosses resource boundaries - and because there may be errors
+		// in those resources that are relevant but undetectable in initial file we load, we need to
+		// determine all the files to load and valiadate them all before doing code gen. 		// Validate the resource
 		List<Issue> list = validator.validate(resource, CheckMode.ALL, CancelIndicator.NullImpl);
 		if (!list.isEmpty()) {
 			for (Issue issue : list) {
