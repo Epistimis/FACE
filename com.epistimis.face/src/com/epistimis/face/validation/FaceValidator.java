@@ -7,14 +7,23 @@
 package com.epistimis.face.validation;
 
 import java.lang.invoke.MethodHandles;
+import java.text.MessageFormat;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
+import org.eclipse.xtext.naming.QualifiedName;
+import org.eclipse.xtext.validation.Check;
 import org.eclipse.xtext.validation.EValidatorRegistrar;
 
+import com.epistimis.face.TemplProcessor;
 import com.epistimis.face.face.FacePackage;
+import com.epistimis.face.face.UopTemplate;
 import com.epistimis.face.generator.QueryUtilities;
+import com.epistimis.face.templ.templ.MainTemplateMethodDecl;
+import com.epistimis.face.templ.templ.TemplPackage;
+import com.epistimis.face.templ.templ.TemplateSpecification;
+import com.epistimis.face.templ.validation.TemplValidator;
 import com.epistimis.uddl.scoping.IndexUtilities;
 import com.google.inject.Inject;
 
@@ -41,6 +50,9 @@ public class FaceValidator extends AbstractFaceValidator {
 
 	@Inject
 	protected IndexUtilities ndxUtil;
+	
+	@Inject
+	protected TemplProcessor tproc;
 
 	boolean conditionalsRegistered = false;
 
@@ -103,6 +115,23 @@ public class FaceValidator extends AbstractFaceValidator {
 //		loadOCLAndRegister(registrar,"src/com/epistimis/face/constraints/integrationExtensions.ocl",FacePackage.eINSTANCE, com.epistimis.face.FaceRuntimeModule.PLUGIN_ID);
 
 		logger.trace("FaceValidator::register done");
+	}
+
+	@Check
+	public void checkMainMethodCount(UopTemplate templ) {
+		
+		QualifiedName containerName = qnp.getFullyQualifiedName(templ);
+		TemplateSpecification tspec = tproc.parseTemplate(templ);
+		TemplValidator templValidator = new TemplValidator(containerName);
+		
+		long mainTemplateMethodCnt = tspec.getStructuredTemplateElementTypeDecl().stream()
+											.filter(e -> { return e instanceof MainTemplateMethodDecl;} )
+											.count();
+		if (mainTemplateMethodCnt > 1) {
+			error(MessageFormat.format(TemplValidator.TOO_MANY_MAIN_METHODS_FMT,containerName.toString(),mainTemplateMethodCnt),tspec,
+					TemplPackage.eINSTANCE.getTemplateSpecification_StructuredTemplateElementTypeDecl(), 
+					TemplValidator.NO_MORE_THAN_ONE_MM, containerName.toString());
+		}
 	}
 
 //	/**

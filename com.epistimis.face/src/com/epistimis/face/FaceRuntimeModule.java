@@ -47,10 +47,6 @@ public class FaceRuntimeModule extends AbstractFaceRuntimeModule {
 		return FaceQNP.class;
 	}
 
-	public Class<? extends QueryUtilities> bindQueryUtilities() {
-		return QueryUtilities.class;
-	}
-
 	/** Enable this if there are performance issues with name resolution. And then look at the strategy to see what should
 	 * be excluded from the index
 	 * */
@@ -73,4 +69,15 @@ public class FaceRuntimeModule extends AbstractFaceRuntimeModule {
 		return FacePackageProvider.class;
 	}
 	
+
+
+	public Class<? extends QueryUtilities> bindQueryUtilities() {
+		return QueryUtilities.class;
+	}
+
+	public Class<? extends TemplProcessor> bindTemplProcessor() {
+		return TemplProcessor.class;
+	}
+
+
 }

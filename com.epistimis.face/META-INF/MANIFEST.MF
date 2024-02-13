@@ -21,7 +21,8 @@ Require-Bundle: org.eclipse.xtext,
  org.eclipse.ocl.xtext.oclstdlib;bundle-version="1.17.0",
  org.eclipse.ocl.xtext.completeocl;bundle-version="1.17.0",
  org.eclipse.xtext.xbase.lib;bundle-version="2.14.0",
- io.typefox.xtext2langium;bundle-version="0.4.0"
+ io.typefox.xtext2langium;bundle-version="0.4.0",
+ com.epistimis.face.templ;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Export-Package: 
  com.epistimis.face,
