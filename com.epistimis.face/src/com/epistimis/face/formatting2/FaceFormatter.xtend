@@ -159,8 +159,7 @@ class FaceFormatter extends UddlFormatter {
 	}
 
 	def dispatch void format(UopCompositeTemplate obj, extension IFormattableDocument document) {
-		obj.prepend[newLine]
-		formatObj(obj,document);
+		obj.formatObj(document)
 		for (EObject contained: obj.eContents) {
 			contained.format
 		}
@@ -168,9 +167,13 @@ class FaceFormatter extends UddlFormatter {
 
 	def dispatch void format(UopTemplate obj, extension IFormattableDocument document) {
 		formatObj(obj,document);		
-		formatAttributeElement(obj.regionFor.feature(UOP_TEMPLATE__BOUND_QUERY ),document);
-		formatAttributeElement(obj.regionFor.feature(UOP_TEMPLATE__EFFECTIVE_QUERY ),document);
-		formatAttributeElement(obj.regionFor.feature(UOP_TEMPLATE__SPECIFICATION),document);
+		formatAttribute(obj.regionFor.keyword('bound:'),obj.regionFor.feature(UOP_TEMPLATE__BOUND_QUERY ),document);
+		formatAttribute(obj.regionFor.keyword('effective:'),obj.regionFor.feature(UOP_TEMPLATE__EFFECTIVE_QUERY ),document);
+		formatAttribute(obj.regionFor.keyword('spec:'),obj.regionFor.feature(UOP_TEMPLATE__SPECIFICATION),document);
+		// The entire spec content should have the same indentation. The first part (before the first embedded CRLF) 
+		// won't have it. How do we get it indented the same? It isn't just insert a CRLF at the beginning of the spec content
+		// because that leaves it indented the same the attributes (because of formatObj) 
+		// obj.regionFor.feature(UOP_TEMPLATE__SPECIFICATION).prepend[newLine];
 	}
 
 	/** Integration  */
