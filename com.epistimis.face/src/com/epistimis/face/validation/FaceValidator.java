@@ -53,6 +53,9 @@ public class FaceValidator extends AbstractFaceValidator {
 	
 	@Inject
 	protected TemplProcessor tproc;
+	
+	@Inject
+	protected TemplValidator templValidator;
 
 	boolean conditionalsRegistered = false;
 
@@ -122,7 +125,8 @@ public class FaceValidator extends AbstractFaceValidator {
 		
 		QualifiedName containerName = qnp.getFullyQualifiedName(templ);
 		TemplateSpecification tspec = tproc.parseTemplate(templ);
-		TemplValidator templValidator = new TemplValidator(containerName);
+		// initialize for the current UopTemplate
+		templValidator.init(containerName);
 		
 		long mainTemplateMethodCnt = tspec.getStructuredTemplateElementTypeDecl().stream()
 											.filter(e -> { return e instanceof MainTemplateMethodDecl;} )
