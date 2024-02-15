@@ -38,10 +38,6 @@ import com.google.inject.Inject;
  * on how to customize the content assistant.
  */
 public class FaceProposalProvider extends AbstractFaceProposalProvider {
-	@Inject
-	IQualifiedNameProvider qnp;
-	@Inject
-	IScopeProvider sp;
 
 	private static String proposalPrefix = "";
 	private static String proposalSuffix = "";

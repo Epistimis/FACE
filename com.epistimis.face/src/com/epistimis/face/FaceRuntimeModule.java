@@ -15,6 +15,7 @@ import com.epistimis.face.generator.QueryUtilities;
 import com.epistimis.face.scoping.FacePackageProvider;
 //import com.epistimis.face.scoping.FaceGlobalScopeProvider;
 import com.epistimis.face.scoping.FaceResourceDescriptionsStrategy;
+import com.epistimis.uddl.UddlQNP;
 
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
@@ -70,6 +71,14 @@ public class FaceRuntimeModule extends AbstractFaceRuntimeModule {
 	}
 	
 
+	/** 
+	 * Inject this if you want the additional methods provided by this QNP
+	 * @return
+	 */
+	public Class<? extends UddlQNP> bindIUddlQNP() {
+		// TODO Auto-generated method stub
+		return FaceQNP.class;
+	}
 
 	public Class<? extends QueryUtilities> bindQueryUtilities() {
 		return QueryUtilities.class;
