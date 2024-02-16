@@ -24,7 +24,7 @@ import com.epistimis.face.templ.templ.MainTemplateMethodDecl;
 import com.epistimis.face.templ.templ.TemplPackage;
 import com.epistimis.face.templ.templ.TemplateSpecification;
 import com.epistimis.face.templ.validation.TemplValidator;
-import com.epistimis.uddl.scoping.IndexUtilities;
+import com.epistimis.uddl.util.IndexUtilities;
 import com.google.inject.Inject;
 
 /**
