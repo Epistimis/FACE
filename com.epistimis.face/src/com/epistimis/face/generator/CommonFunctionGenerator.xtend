@@ -33,6 +33,7 @@ import org.eclipse.xtext.generator.IGeneratorContext
 //import com.epistimis.uddl.validation.UddlValidator
 import org.apache.log4j.Logger
 import java.lang.invoke.MethodHandles
+import com.epistimis.face.util.QueryUtilitiesP
 
 abstract class CommonFunctionGenerator extends CommonDataStructureGenerator implements IFaceLangGenerator {
 
@@ -44,7 +45,7 @@ abstract class CommonFunctionGenerator extends CommonDataStructureGenerator impl
 	protected IGenerator2  fg;
 	
 	//@Inject 
-	protected QueryUtilities qu;
+	protected QueryUtilitiesP qu;
 	
 	// @Inject
 	CommonDataStructureGenerator dsg ;
@@ -58,7 +59,7 @@ abstract class CommonFunctionGenerator extends CommonDataStructureGenerator impl
 	 * language features from that version if desired)
 	 */
 	
-	new(QueryUtilities qu, CommonDataStructureGenerator dsg) {
+	new(QueryUtilitiesP qu, CommonDataStructureGenerator dsg) {
 		initialize();
 		this.qu = qu;
 		this.dsg = dsg;
@@ -105,7 +106,7 @@ abstract class CommonFunctionGenerator extends CommonDataStructureGenerator impl
 			return;
 		}
 		
-		val Map<String,PlatformEntity> entities = qu.getReferencedPlatformEntities(inst.realizes);
+		val Map<String,PlatformEntity> entities = qu.getReferencedEntities(inst.realizes);
 		
 		processAComponent(inst.realizes,entities.values, fsa, context);
 			

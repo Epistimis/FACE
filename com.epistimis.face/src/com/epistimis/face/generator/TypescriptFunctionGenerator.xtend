@@ -13,6 +13,7 @@ import java.util.Collection
 import java.util.Map
 import org.apache.log4j.Logger
 import java.lang.invoke.MethodHandles
+import com.epistimis.face.util.QueryUtilitiesP
 
 class TypescriptFunctionGenerator extends CommonFunctionGenerator implements IFaceLangGenerator {
 
@@ -24,7 +25,7 @@ class TypescriptFunctionGenerator extends CommonFunctionGenerator implements IFa
 	 * language features from that version if desired)
 	 */
 	
-	new(QueryUtilities qu) {
+	new(QueryUtilitiesP qu) {
 		super(qu,new TypescriptDataStructureGenerator());
 	}
 	
@@ -93,7 +94,7 @@ class TypescriptFunctionGenerator extends CommonFunctionGenerator implements IFa
 	}
 	
 	def genParameter(UopConnection conn) {
-		val Map<String,PlatformEntity> pes = qu.getReferencedPlatformEntities(conn);
+		val Map<String,PlatformEntity> pes = qu.getReferencedEntities(conn);
 		if (pes.empty) {
 			logger.error("Connection " + conn.fullyQualifiedName + " references missing type");
 			return "<Missing parameter>"

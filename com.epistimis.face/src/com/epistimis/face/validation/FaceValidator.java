@@ -19,11 +19,11 @@ import org.eclipse.xtext.validation.EValidatorRegistrar;
 import com.epistimis.face.TemplProcessor;
 import com.epistimis.face.face.FacePackage;
 import com.epistimis.face.face.UopTemplate;
-import com.epistimis.face.generator.QueryUtilities;
 import com.epistimis.face.templ.templ.MainTemplateMethodDecl;
 import com.epistimis.face.templ.templ.TemplPackage;
 import com.epistimis.face.templ.templ.TemplateSpecification;
 import com.epistimis.face.templ.validation.TemplValidator;
+import com.epistimis.face.util.QueryUtilitiesP;
 import com.epistimis.uddl.util.IndexUtilities;
 import com.google.inject.Inject;
 
@@ -46,7 +46,7 @@ public class FaceValidator extends AbstractFaceValidator {
 //	QueryProcessor qp;
 
 	@Inject
-	protected QueryUtilities qu;
+	protected QueryUtilitiesP qu;
 
 	@Inject
 	protected IndexUtilities ndxUtil;

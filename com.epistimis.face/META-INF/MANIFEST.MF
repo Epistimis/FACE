@@ -29,8 +29,8 @@ Export-Package:
  com.epistimis.face.constraints,
  com.epistimis.face.constraints.standalone,
  com.epistimis.face.exceptions,
- com.epistimis.face.face,
  com.epistimis.face.extension,
+ com.epistimis.face.face,
  com.epistimis.face.face.impl,
  com.epistimis.face.face.util,
  com.epistimis.face.formatting2,
@@ -40,5 +40,6 @@ Export-Package:
  com.epistimis.face.scoping,
  com.epistimis.face.serializer,
  com.epistimis.face.services,
+ com.epistimis.face.util,
  com.epistimis.face.validation
 Import-Package: org.apache.log4j

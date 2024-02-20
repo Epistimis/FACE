@@ -21,6 +21,7 @@ import org.eclipse.xtext.naming.IQualifiedNameProvider
 import com.epistimis.uddl.exceptions.QueryMatchException
 import org.apache.log4j.Logger
 import java.lang.invoke.MethodHandles
+import com.epistimis.face.util.QueryUtilitiesP
 
 /**
  * Generates code from your model files on save.
@@ -34,7 +35,7 @@ class FaceGenerator extends AbstractGenerator {
 	@Inject extension IQualifiedNameProvider qnp;
 	// @Inject extension IndexUtilities ndxUtil;
 	// @Inject extension QueryProcessor qp; 
-	@Inject extension QueryUtilities qu;
+	@Inject extension QueryUtilitiesP qu;
 
 	static Logger logger = Logger.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -71,7 +72,7 @@ class FaceGenerator extends AbstractGenerator {
 
 			try {
 
-				val Map<String, PlatformEntity> entities = getReferencedPlatformEntities(comp);
+				val Map<String, PlatformEntity> entities = getReferencedEntities(comp);
 				if (comp.transportAPILanguage != UopProgrammingLanguage.UNSPECIFIED) {
 					// Now call the relevant generator
 					val generator = languageSpecificGenerators.get(comp.transportAPILanguage);

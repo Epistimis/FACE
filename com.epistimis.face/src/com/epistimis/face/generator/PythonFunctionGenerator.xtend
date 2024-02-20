@@ -14,6 +14,7 @@ import java.util.Collection
 import java.util.Map
 import org.apache.log4j.Logger
 import java.lang.invoke.MethodHandles
+import com.epistimis.face.util.QueryUtilitiesP
 
 class PythonFunctionGenerator extends CommonFunctionGenerator implements IFaceLangGenerator {
 
@@ -25,7 +26,7 @@ class PythonFunctionGenerator extends CommonFunctionGenerator implements IFaceLa
 	 * language features from that version if desired)
 	 */
 	
-	new(QueryUtilities qu) {
+	new(QueryUtilitiesP qu) {
 		super(qu,new PythonDataStructureGenerator());
 	}
 	
@@ -93,12 +94,12 @@ class PythonFunctionGenerator extends CommonFunctionGenerator implements IFaceLa
 	}
 	
 	def genParameter(UopConnection conn) {
-		val Map<String,PlatformEntity> pes = qu.getReferencedPlatformEntities(conn);
+		val Map<String,PlatformEntity> pes = qu.getReferencedEntities(conn);
 		if (pes.empty) {
 			logger.error("Connection " + conn.fullyQualifiedName + " references missing type");
 			return "<Missing parameter>"
 		}
-		return genParameterName(conn) + ": "  + qu.getReferencedPlatformEntities(conn).entrySet.get(0).value.typeString;
+		return genParameterName(conn) + ": "  + qu.getReferencedEntities(conn).entrySet.get(0).value.typeString;
 	}
 
 	

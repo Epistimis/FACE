@@ -9,6 +9,7 @@ import java.util.ArrayList
 import java.util.List
 import com.epistimis.face.face.UopUoPModel
 import java.util.Collection
+import com.epistimis.face.util.QueryUtilitiesP
 
 class GoFunctionGenerator extends CommonFunctionGenerator implements IFaceLangGenerator {
 
@@ -19,7 +20,7 @@ class GoFunctionGenerator extends CommonFunctionGenerator implements IFaceLangGe
 	 * language features from that version if desired)
 	 */
 	
-	new(QueryUtilities qu) {
+	new(QueryUtilitiesP qu) {
 		super(qu,new GoDataStructureGenerator());
 	}
 	
@@ -58,7 +59,7 @@ class GoFunctionGenerator extends CommonFunctionGenerator implements IFaceLangGe
 	«FOR ent: entities»
 		«ent.generateInclude(uop,pdmIncludes, entityIncludes)»
 	«ENDFOR»
-	func «uop.name»(«FOR conn: uop.connection  SEPARATOR ','» «qu.getReferencedPlatformEntities(conn).entrySet.get(0).value.typeString» «conn.name»«ENDFOR»)
+	func «uop.name»(«FOR conn: uop.connection  SEPARATOR ','» «qu.getReferencedEntities(conn).entrySet.get(0).value.typeString» «conn.name»«ENDFOR»)
 	{
 		/** The first step in this function must be a check for runtime privacy issues (e.g. where individual choices matter like Consent).
 		 *  This might be a null function

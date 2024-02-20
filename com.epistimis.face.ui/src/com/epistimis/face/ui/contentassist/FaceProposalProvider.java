@@ -12,8 +12,6 @@ import java.util.List;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.Assignment;
 import org.eclipse.xtext.EcoreUtil2;
-import org.eclipse.xtext.naming.IQualifiedNameProvider;
-import org.eclipse.xtext.scoping.IScopeProvider;
 import org.eclipse.xtext.ui.editor.contentassist.ContentAssistContext;
 import org.eclipse.xtext.ui.editor.contentassist.ICompletionProposalAcceptor;
 
@@ -31,7 +29,6 @@ import com.epistimis.face.face.UopMessageExchangeType;
 import com.epistimis.face.face.UopMessageType;
 import com.epistimis.face.face.UopPubSubConnection;
 import com.epistimis.face.face.UopUnitOfPortability;
-import com.google.inject.Inject;
 
 /**
  * See https://www.eclipse.org/Xtext/documentation/310_eclipse_support.html#content-assist
