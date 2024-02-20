@@ -52,7 +52,7 @@ public class GraphTraversal {
 	 * instances of those classes.
 	 * @return
 	 */
-	public static Set<EObject> downstreamSubgraph(EObject root, List<Class> filter) {
+	public static Set<EObject> downstreamSubgraph(EObject root, @SuppressWarnings("rawtypes") List<Class> filter) {
 		Set<EObject> result = new HashSet<>();
 		
 		return result;
