@@ -6,7 +6,6 @@ package com.epistimis.face.util;
 import org.eclipse.emf.common.util.EList;
 
 import com.epistimis.face.face.UopTemplate;
-import com.epistimis.face.util.QueryUtilities;
 import com.epistimis.uddl.LogicalQueryProcessor;
 import com.epistimis.uddl.uddl.LogicalCharacteristic;
 import com.epistimis.uddl.uddl.LogicalCompositeQuery;

@@ -33,7 +33,15 @@ import com.google.inject.Inject;
  * These are utilities that are used to handle the transition between Face ->
  * Query -> Uddl
  */
-public abstract class QueryUtilities<Characteristic extends EObject, Entity extends UddlElement, Composition extends Characteristic, Participant extends Characteristic, View extends UddlElement, Query extends View, CompositeQuery extends View, QueryComposition extends EObject, QProcessor extends QueryProcessor<?, Characteristic, Entity, ?, Composition, Participant, View, Query, CompositeQuery, QueryComposition, ?, ?, ?>
+public abstract class QueryUtilities<Characteristic extends EObject, 
+										Entity extends UddlElement, 
+										Composition extends Characteristic, 
+										Participant extends Characteristic, 
+										View extends UddlElement, 
+										Query extends View, 
+										CompositeQuery extends View, 
+										QueryComposition extends EObject, 
+			QProcessor extends QueryProcessor<?, Characteristic, Entity, ?, Composition, Participant, View, Query, CompositeQuery, QueryComposition, ?, ?, ?>
 //			,CProcessor extends ConnectionProcessor<Characteristic,Entity, Composition, Participant, View, Query, CompositeQuery, QueryComposition, QProcessor>
 > {
 

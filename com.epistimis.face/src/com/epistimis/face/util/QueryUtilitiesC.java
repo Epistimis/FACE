@@ -22,7 +22,6 @@ import com.epistimis.uddl.uddl.ConceptualView;
 
 public class QueryUtilitiesC extends
 		QueryUtilities<ConceptualCharacteristic, ConceptualEntity, ConceptualComposition, ConceptualParticipant, ConceptualView, ConceptualQuery, ConceptualCompositeQuery, ConceptualQueryComposition, ConceptualQueryProcessor
-//		, ConnectionProcessorC
 		> {
 
 	// @Override

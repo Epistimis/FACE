@@ -18,35 +18,22 @@ import com.epistimis.face.util.QueryUtilities;
 import com.epistimis.face.util.QueryUtilitiesC;
 import com.epistimis.face.util.QueryUtilitiesL;
 import com.epistimis.face.util.QueryUtilitiesP;
+import com.epistimis.uddl.ConceptualEntityProcessor;
 import com.epistimis.uddl.ConceptualQueryProcessor;
-import com.epistimis.uddl.LogicalQueryProcessor;
-import com.epistimis.uddl.PlatformQueryProcessor;
 import com.epistimis.uddl.QueryProcessor;
 import com.epistimis.uddl.UddlQNP;
+import com.epistimis.uddl.uddl.ConceptualAssociation;
 import com.epistimis.uddl.uddl.ConceptualCharacteristic;
+import com.epistimis.uddl.uddl.ConceptualComposableElement;
 import com.epistimis.uddl.uddl.ConceptualCompositeQuery;
 import com.epistimis.uddl.uddl.ConceptualComposition;
+import com.epistimis.uddl.uddl.ConceptualDataModel;
 import com.epistimis.uddl.uddl.ConceptualEntity;
+import com.epistimis.uddl.uddl.ConceptualObservable;
 import com.epistimis.uddl.uddl.ConceptualParticipant;
 import com.epistimis.uddl.uddl.ConceptualQuery;
 import com.epistimis.uddl.uddl.ConceptualQueryComposition;
 import com.epistimis.uddl.uddl.ConceptualView;
-import com.epistimis.uddl.uddl.LogicalCharacteristic;
-import com.epistimis.uddl.uddl.LogicalCompositeQuery;
-import com.epistimis.uddl.uddl.LogicalComposition;
-import com.epistimis.uddl.uddl.LogicalEntity;
-import com.epistimis.uddl.uddl.LogicalParticipant;
-import com.epistimis.uddl.uddl.LogicalQuery;
-import com.epistimis.uddl.uddl.LogicalQueryComposition;
-import com.epistimis.uddl.uddl.LogicalView;
-import com.epistimis.uddl.uddl.PlatformCharacteristic;
-import com.epistimis.uddl.uddl.PlatformCompositeQuery;
-import com.epistimis.uddl.uddl.PlatformComposition;
-import com.epistimis.uddl.uddl.PlatformEntity;
-import com.epistimis.uddl.uddl.PlatformParticipant;
-import com.epistimis.uddl.uddl.PlatformQuery;
-import com.epistimis.uddl.uddl.PlatformQueryComposition;
-import com.epistimis.uddl.uddl.PlatformView;
 
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
@@ -64,24 +51,6 @@ public class FaceRuntimeModule extends AbstractFaceRuntimeModule {
 	 */
 	public static final @NonNull String PLUGIN_ID = "com.epistimis.face";
 
-
-//	public Class<? extends ConnectionProcessor> bindConnectionProcessor() {
-//		return ConnectionProcessor.class;
-//	}
-	public Class<? extends com.epistimis.face.ConnectionProcessor<ConceptualCharacteristic, ConceptualEntity, ConceptualComposition, ConceptualParticipant, ConceptualView, ConceptualQuery, ConceptualCompositeQuery, ConceptualQueryComposition, 
-				ConceptualQueryProcessor
-				>> 
-		bindConnectionProcessorC() {
-	return ConnectionProcessorC.class;
-	}
-	public Class<? extends ConnectionProcessor<LogicalCharacteristic, LogicalEntity, LogicalComposition, LogicalParticipant, LogicalView, LogicalQuery, LogicalCompositeQuery, LogicalQueryComposition, LogicalQueryProcessor>> 
-		bindConnectionProcessorL() {
-	return ConnectionProcessorL.class;
-	}
-	public Class<? extends ConnectionProcessor<PlatformCharacteristic, PlatformEntity, PlatformComposition, PlatformParticipant, PlatformView, PlatformQuery, PlatformCompositeQuery, PlatformQueryComposition, PlatformQueryProcessor>> 
-		bindConnectionProcessorP() {
-	return ConnectionProcessorP.class;
-	}
 
 	public Class<? extends IntegrationContextProcessor> bindIntegrationContextProcessor() {
 		return IntegrationContextProcessor.class;
@@ -119,22 +88,23 @@ public class FaceRuntimeModule extends AbstractFaceRuntimeModule {
 	 * Inject this if you want the additional methods provided by this QNP
 	 * @return
 	 */
-	public Class<? extends UddlQNP> bindIUddlQNP() {
+	public Class<? extends UddlQNP> bindUddlQNP() {
 		return FaceQNP.class;
 	}
-
-//	public Class<? extends QueryUtilities<ConceptualCharacteristic, ConceptualEntity, ConceptualComposition, ConceptualParticipant, ConceptualView, ConceptualQuery, ConceptualCompositeQuery, ConceptualQueryComposition, 
-//			QueryProcessor<?,ConceptualCharacteristic,ConceptualEntity,?,ConceptualComposition,ConceptualParticipant,
-//					ConceptualView,ConceptualQuery,ConceptualCompositeQuery,ConceptualQueryComposition,?,?,?>
-//			>> bindQueryUtilitiesC() {
-//		return QueryUtilitiesC.class;
-//	}
-//	public Class<? extends QueryUtilitiesL> bindQueryUtilitiesL() {
-//		return QueryUtilitiesL.class;
-//	}
-//	public Class<? extends QueryUtilitiesP> bindQueryUtilitiesP() {
-//		return QueryUtilitiesP.class;
-//	}
+	// This return type is more complicated because there is a derived QueryProcessor that must be accounted for in Privacy
+	public Class<? extends	QueryUtilities<ConceptualCharacteristic, ConceptualEntity, ConceptualComposition, ConceptualParticipant, ConceptualView, ConceptualQuery, ConceptualCompositeQuery, ConceptualQueryComposition, 
+					? extends QueryProcessor<?,ConceptualCharacteristic,ConceptualEntity,?,ConceptualComposition,ConceptualParticipant,
+							ConceptualView,ConceptualQuery,ConceptualCompositeQuery,ConceptualQueryComposition,?,?,?>		
+						>> 
+	bindQueryUtilitiesC() {
+		return QueryUtilitiesC.class;
+	}
+	public Class<? extends QueryUtilitiesL> bindQueryUtilitiesL() {
+		return QueryUtilitiesL.class;
+	}
+	public Class<? extends QueryUtilitiesP> bindQueryUtilitiesP() {
+		return QueryUtilitiesP.class;
+	}
 
 	public Class<? extends TemplProcessor> bindTemplProcessor() {
 		return TemplProcessor.class;
