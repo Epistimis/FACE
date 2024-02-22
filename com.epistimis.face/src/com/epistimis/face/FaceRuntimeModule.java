@@ -34,6 +34,22 @@ import com.epistimis.uddl.uddl.ConceptualParticipant;
 import com.epistimis.uddl.uddl.ConceptualQuery;
 import com.epistimis.uddl.uddl.ConceptualQueryComposition;
 import com.epistimis.uddl.uddl.ConceptualView;
+import com.epistimis.uddl.uddl.LogicalCharacteristic;
+import com.epistimis.uddl.uddl.LogicalCompositeQuery;
+import com.epistimis.uddl.uddl.LogicalComposition;
+import com.epistimis.uddl.uddl.LogicalEntity;
+import com.epistimis.uddl.uddl.LogicalParticipant;
+import com.epistimis.uddl.uddl.LogicalQuery;
+import com.epistimis.uddl.uddl.LogicalQueryComposition;
+import com.epistimis.uddl.uddl.LogicalView;
+import com.epistimis.uddl.uddl.PlatformCharacteristic;
+import com.epistimis.uddl.uddl.PlatformCompositeQuery;
+import com.epistimis.uddl.uddl.PlatformComposition;
+import com.epistimis.uddl.uddl.PlatformEntity;
+import com.epistimis.uddl.uddl.PlatformParticipant;
+import com.epistimis.uddl.uddl.PlatformQuery;
+import com.epistimis.uddl.uddl.PlatformQueryComposition;
+import com.epistimis.uddl.uddl.PlatformView;
 
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
@@ -99,10 +115,20 @@ public class FaceRuntimeModule extends AbstractFaceRuntimeModule {
 	bindQueryUtilitiesC() {
 		return QueryUtilitiesC.class;
 	}
-	public Class<? extends QueryUtilitiesL> bindQueryUtilitiesL() {
+	public Class<? extends	QueryUtilities<LogicalCharacteristic, LogicalEntity, LogicalComposition, LogicalParticipant, LogicalView, LogicalQuery, LogicalCompositeQuery, LogicalQueryComposition, 
+			? extends QueryProcessor<?,LogicalCharacteristic,LogicalEntity,?,LogicalComposition,LogicalParticipant,
+					LogicalView,LogicalQuery,LogicalCompositeQuery,LogicalQueryComposition,?,?,?>		
+				>> 
+	bindQueryUtilitiesL() 
+	{
 		return QueryUtilitiesL.class;
 	}
-	public Class<? extends QueryUtilitiesP> bindQueryUtilitiesP() {
+	public Class<? extends	QueryUtilities<PlatformCharacteristic, PlatformEntity, PlatformComposition, PlatformParticipant, PlatformView, PlatformQuery, PlatformCompositeQuery, PlatformQueryComposition, 
+			? extends QueryProcessor<?,PlatformCharacteristic,PlatformEntity,?,PlatformComposition,PlatformParticipant,
+					PlatformView,PlatformQuery,PlatformCompositeQuery,PlatformQueryComposition,?,?,?>		
+				>> 
+	bindQueryUtilitiesP() 
+	{
 		return QueryUtilitiesP.class;
 	}
 

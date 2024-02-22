@@ -42,26 +42,16 @@ public abstract class QueryUtilities<Characteristic extends EObject,
 										CompositeQuery extends View, 
 										QueryComposition extends EObject, 
 			QProcessor extends QueryProcessor<?, Characteristic, Entity, ?, Composition, Participant, View, Query, CompositeQuery, QueryComposition, ?, ?, ?>
-//			,CProcessor extends ConnectionProcessor<Characteristic,Entity, Composition, Participant, View, Query, CompositeQuery, QueryComposition, QProcessor>
 > {
 
 	/**
 	 * NOTE: The qnp is not protected because derived classes will have their own
 	 */
-	@Inject
-	IQualifiedNameProvider qnp;
+	@Inject	IQualifiedNameProvider qnp;
 
-	@Inject
-	CLPExtractors clp;
+	@Inject	CLPExtractors clp;
 
-//	@Inject protected extension PlatformQueryProcessor pqp;
-//
-//	@Inject protected extension ConceptualQueryProcessor cqp;
-//
-//	@Inject protected  CProcessor cp;
-
-	@Inject
-	protected QProcessor qp;
+	@Inject	protected QProcessor qp;
 
 	private static Logger logger = Logger.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -333,7 +323,8 @@ public abstract class QueryUtilities<Characteristic extends EObject,
 	}
 
 	/**
-	 * Get all the ConceptualEntities referenced by this connection.
+	 * Get all the ConceptualEntities referenced by this connection.  We do this by looking at all
+	 * the queries and then get the referencedEntities for each query.
 	 * 
 	 * @param conn
 	 * @return
@@ -369,11 +360,11 @@ public abstract class QueryUtilities<Characteristic extends EObject,
 	/**
 	 * Get all the queries referenced by this Template/Connection. Recurses down
 	 * through Composites to find everything, keeping only a single reference,
-	 * ordered by the FQN of the query. Note that this returns only ConceptualQuery,
-	 * not ConceptualCompositeQuery - effectively flattening the list.
+	 * ordered by the FQN of the query. Note that this returns only Query,
+	 * not CompositeQuery - effectively flattening the list.
 	 * 
 	 * TODO: this does not account for differences between
-	 * Platform/Logical/Conceptual in terms of fields selected. So the
+	 * Platform/Logical/Conceptual in terms of fields selected. So a
 	 * ConceptualQuery returned could contain more fields than the PlatformQuery
 	 * actually uses. Or, if Logical/Platform realizes the same Conceptual field
 	 * multiple ways, it could be missing something - or it could have the wrong
@@ -381,9 +372,9 @@ public abstract class QueryUtilities<Characteristic extends EObject,
 	 */
 	public SortedMap<String, Query> queriesMap(UopTemplate elem) {
 		SortedMap<String, Query> result = new TreeMap<String, Query>();
-		Query cq = getQuery(elem); // .boundQuery?.realizes?.realizes;
-		if (cq != null) {
-			result.put(qnp.getFullyQualifiedName(cq).toString(), cq);
+		Query query = getQuery(elem); 
+		if (query != null) {
+			result.put(qnp.getFullyQualifiedName(query).toString(), query);
 		} else {
 			String msg = String.format(
 					"Attempt to find Query associated with Template %s failed. Is a realization missing?",
@@ -393,6 +384,12 @@ public abstract class QueryUtilities<Characteristic extends EObject,
 		return result;
 	}
 
+	/**
+	 * Get all the queries referenced by the CompositeTemplate. This effectively flattens
+	 * the composite template by storing only the queries from the individual template compositions
+	 * @param elem
+	 * @return a map of queries, keyed by the FQN of the query.
+	 */
 	public SortedMap<String, Query> queriesMap(UopCompositeTemplate elem) {
 		SortedMap<String, Query> result = new TreeMap<String, Query>();
 		for (UopTemplateComposition comp : elem.getComposition()) {
