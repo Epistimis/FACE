@@ -114,6 +114,7 @@
 							<version>${project.version}</version>
 						</artifact>
 					</target>
+   					<executionEnvironment>JavaSE-17</executionEnvironment>
 					<environments>
 						<environment>
 							<os>macosx</os>
