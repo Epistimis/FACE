@@ -28,7 +28,6 @@ import com.google.inject.Inject;
 
 public class FaceQNP extends UddlQNP {
 
-	@Inject IQualifiedNameConverter qnc;
 	
 	// UoP
 	public  QualifiedName qualifiedName(UopTemplateComposition obj) {
@@ -84,11 +83,16 @@ public class FaceQNP extends UddlQNP {
 		IntegrationUoPInstance inst = (IntegrationUoPInstance) obj.eContainer();
 		// TODO: Is it possible to have the same data flowing over multiple endpoints?
 		// If so, we then need to using indexing into the input list as part of the name
-		EStructuralFeature container = obj.eContainingFeature();
-		EObjectContainmentEList<IntegrationUoPInputEndPoint> inputs = (EObjectContainmentEList<IntegrationUoPInputEndPoint>) inst.getInput();
-		int ndx = inputs.basicIndexOf(obj);
+		
+		String indexName = containerIndexAsString(obj); 
+		return  getFullyQualifiedName(inst).append(indexName); 
 
-		return  getFullyQualifiedName(inst).append(container.getName()+Integer.toString(ndx));
+// replaces the following		
+//		EObjectContainmentEList<IntegrationUoPInputEndPoint> inputs = (EObjectContainmentEList<IntegrationUoPInputEndPoint>) inst.getInput();
+//		EStructuralFeature container = obj.eContainingFeature();
+//		int ndx = inputs.basicIndexOf(obj);
+//		return  getFullyQualifiedName(inst).append(container.getName()+Integer.toString(ndx));
+
 
 		//QualifiedName connQN = getReferenceAsQN(obj,"connection");
 //		return  getFullyQualifiedName(inst).append(connQN);
@@ -101,11 +105,14 @@ public class FaceQNP extends UddlQNP {
 		
 		// TODO: Is it possible to have the same data flowing over multiple endpoints?
 		// If so, we then need to using indexing into the output list as part of the name
-		EStructuralFeature container = obj.eContainingFeature();
-		EObjectContainmentEList<IntegrationUoPOutputEndPoint> outputs = (EObjectContainmentEList<IntegrationUoPOutputEndPoint>) inst.getOutput();
-		int ndx = outputs.basicIndexOf(obj);
-	
-		return  getFullyQualifiedName(inst).append(container.getName()+Integer.toString(ndx));
+		String indexName = containerIndexAsString(obj); 
+		return  getFullyQualifiedName(inst).append(indexName); 
+
+// replaces the following				
+//		EObjectContainmentEList<IntegrationUoPOutputEndPoint> outputs = (EObjectContainmentEList<IntegrationUoPOutputEndPoint>) inst.getOutput();
+//		EStructuralFeature container = obj.eContainingFeature();
+//		int ndx = outputs.basicIndexOf(obj);
+//		return  getFullyQualifiedName(inst).append(container.getName()+Integer.toString(ndx));
 
 //		QualifiedName connQN = getReferenceAsQN(obj,"connection");
 //
@@ -118,11 +125,14 @@ public class FaceQNP extends UddlQNP {
 		IntegrationTransportNode inst = (IntegrationTransportNode) obj.eContainer();
 		// TODO: Is it possible to have the same data flowing over multiple endpoints?
 		// If so, we then need to using indexing into the input list as part of the name
-		EStructuralFeature container = obj.eContainingFeature();
-		EObjectContainmentEList<IntegrationTSNodeInputPort> inports = (EObjectContainmentEList<IntegrationTSNodeInputPort>) inst.getInPort();
-		int ndx = inports.basicIndexOf(obj);
+		String indexName = containerIndexAsString(obj); 
+		return  getFullyQualifiedName(inst).append(indexName); 
 
-		return  getFullyQualifiedName(inst).append(container.getName()+Integer.toString(ndx));
+// replaces the following				
+//		EStructuralFeature container = obj.eContainingFeature();
+//		EObjectContainmentEList<IntegrationTSNodeInputPort> inports = (EObjectContainmentEList<IntegrationTSNodeInputPort>) inst.getInPort();
+//		int ndx = inports.basicIndexOf(obj);
+//		return  getFullyQualifiedName(inst).append(container.getName()+Integer.toString(ndx));
 
 //		QualifiedName refQN = getReferenceAsQN(obj,"messageType");
 //
@@ -134,11 +144,14 @@ public class FaceQNP extends UddlQNP {
 		IntegrationTransportNode inst = (IntegrationTransportNode) obj.eContainer();
 		// TODO: Is it possible to have the same data flowing over multiple endpoints?
 		// If so, we then need to using index ing into the output list as part of the name
-		EStructuralFeature container = obj.eContainingFeature();
-		//IntegrationTSNodeOutputPort outport =  inst.getOutPort();
+		String indexName = containerIndexAsString(obj); 
+		return  getFullyQualifiedName(inst).append(indexName); 
 
-		// There is only 1 output port, so the index will always be zero
-		return  getFullyQualifiedName(inst).append(container.getName()+"0");
+// replaces the following				
+//		EStructuralFeature container = obj.eContainingFeature();
+//		//IntegrationTSNodeOutputPort outport =  inst.getOutPort();
+//		// There is only 1 output port, so the index will always be zero
+//		return  getFullyQualifiedName(inst).append(container.getName()+"0");
 
 //		QualifiedName refQN = getReferenceAsQN(obj,"messageType");
 //
@@ -146,36 +159,6 @@ public class FaceQNP extends UddlQNP {
 //		return QualifiedName.create(inst.getName(),obj.getMessageType().getName());
 	}
 
-	/**
-	 * Per this (https://www.eclipse.org/forums/index.php?t=msg&th=1084491&goto=1776641&)
-	 * we can't use cross references in a QNP. Instead, we can grab the actual text
-	 * of the cross reference using NodeModelUtils (https://archive.eclipse.org/modeling/tmf/xtext/javadoc/2.3/org/eclipse/xtext/nodemodel/util/NodeModelUtils.html)
-	 * (which is what we want anyway).
-	 * 
-	 * Note this is likely to be a QN - and we need the entire thing to make sure we don't have name
-	 * collisions.
-	 * 
-	 * NOTE also: When using a QN as a node in a larger qualified name, we can't use it in its default
-	 * format because it will include '.' separators that would make it look like multiple segments.
-	 * That means we need to convert the entire thing into a string that uses a different separator.
-	 * Ideally, the replacement separator should not be something that would otherwise be used in 
-	 * a single node (e.g. '_') because that could result in name collisions.
-	 */
-	public static String getReferenceAsString(EObject obj, String featureName) {
-		EStructuralFeature refFeature = obj.eClass().getEStructuralFeature(featureName);
-		// Should only be 1 node
-		List<INode> nodes = NodeModelUtils.findNodesForFeature(obj, refFeature);
-		INode node = nodes.get(0);
-		return node.getText().trim();
-	}
-
-	public QualifiedName getReferenceAsQN(EObject obj, String featureName) {
-		String qnString = getReferenceAsString(obj,featureName);
-
-		// Since the string may itself be a qualified name, we need to parse it into segments
-		QualifiedName refQN = qnc.toQualifiedName(qnString);
-		return refQN;
-	}
 
 
 }
