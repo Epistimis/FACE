@@ -1,0 +1,68 @@
+/**
+ * FACE Integration level - Epistimis extensions outside of the FACE spec
+ */
+
+import 'platform:/plugin/com.epistimis.face/model/generated/Face.ecore'
+
+
+package face
+				
+	context FaceElement
+   /*
+     * Helper method that determines if a string is a FACE grammar keyword
+     * 
+     * In same order as XText grammar file.
+     */
+    static def: isGrammarKeyword(str : String) : Boolean =
+      let strLower: String = str.toLowerCase() in
+        strLower = 'am' or
+        strLower = 'client' or
+        strLower = 'server' or
+        strLower = 'generalpurpose' or
+        strLower = 'security' or
+        strLower = 'safetybase' or
+        strLower = 'safetyextended' or
+        strLower = 'do_178b_ed_12b' or
+        strLower = 'do_178b_ed_12c' or
+        strLower = 'inboundmessage' or
+        strLower = 'outboundmessage' or
+        strLower = 'posix' or
+        strLower = 'arinc653' or
+        strLower = 'unspecified' or
+        strLower = 'container' or
+        strLower = 'input' or
+        strLower = 'cpp' or
+        strLower = 'java' or
+        strLower = 'go' or
+        strLower = 'javascript' or
+        strLower = 'python' or
+        strLower = 'rust' or
+        strLower = 'scala' or
+        strLower = 'sql' or
+        strLower = 'typescript' or
+        strLower = 'blocking' or
+        strLower = 'nonblocking' or
+        strLower = 'foreground' or
+        strLower = 'background' or
+        strLower = 'um' or
+        strLower = 'runtime' or
+        strLower = 'framework' or
+        strLower = 'auop' or
+        strLower = 'aconn' or
+        strLower = 'pc' or
+        strLower = 'psc' or
+        strLower = 'csconn' or
+        strLower = 'qconn' or
+        strLower = 'simconn' or
+        strLower = 'templ' or
+        strLower = 'im' or
+        strLower = 'ic' or
+        strLower = 'uinst' or
+        strLower = 'agg' or
+        strLower = 'filter' or
+        strLower = 'src' or
+        strLower = 'sink' or
+        strLower = 'xform' or
+        strLower = 'xport' or
+        strLower = 'itc'          
+ endpackage
