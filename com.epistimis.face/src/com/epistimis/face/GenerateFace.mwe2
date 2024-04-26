@@ -3,6 +3,8 @@ module com.epistimis.face.GenerateFace
 import org.eclipse.xtext.xtext.generator.*
 import org.eclipse.xtext.xtext.generator.model.project.*
 import org.eclipse.xtext.xtext.generator.ui.*
+import com.epistimis.xtextdocs.xtext.fragment.*
+import com.epistimis.xtextdocs.xtext.formatter.*
 
 var rootPath = ".."
 
@@ -81,6 +83,18 @@ Workflow {
 			scopeProvider = scoping.ImportNamespacesScopingFragment2 {
 				generateXtendStub = false
 			}
+			
+		 	// xtext-docs-gen
+		 	fragment = DocsGeneratorFragment auto-inject {
+		 		outputFileName = "face-syntax"
+		 		formatter = HTMLDocsFormatter {
+		 			includeToc = true
+		 			includeSimplifiedGrammar = true
+		 			mainTitle = "FACE Grammar Doc" // optional
+		 			includeDotReferenceGraph = true
+		 			
+		 		}
+		 	}
 
 		}
 	}
