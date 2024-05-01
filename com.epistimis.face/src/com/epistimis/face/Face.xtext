@@ -11,14 +11,24 @@ ModelFile:
 	archModel=ArchitectureModel
 ;
 
-/** An ArchitectureModel is a container for DataModels, UoPModels, IntegrationModels, and TraceabilityModels. */	
+
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.1.1
+ * <p>
+ * 
+ * An ArchitectureModel is a container for DataModels, UoPModels, IntegrationModels, and TraceabilityModels.
+ */	
 ArchitectureModel:
 	'am' name=ID description=STRING '{'
 	(dm+=DataModel | um+=UopUoPModel | im+=IntegrationIntegrationModel)+
 	'}'
 ;
 
-/** An Element is the root type for defining all named elements in the ArchitectureModel. The “name” attribute captures the name of the Element in the model. The “description” attribute captures a description for the element. 
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.1.2
+ * <p>
+ * 
+ * An Element is the root type for defining all named elements in the ArchitectureModel. The “name” attribute captures the name of the Element in the model. The “description” attribute captures a description for the element. 
  *  NOTE: Because of the way XText works, attributes bubble up from the bottom. So 'name' and 'description' are specified in leaf rules but show up in 
  *  the generated API for FaceElement
  * */
@@ -31,11 +41,20 @@ FaceElement:
 	IntegrationTransportNode
 ;
 
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.1
+ * <p>
+ * 
+ * */
 enum UoPClientServerRole:
 	CLIENT='Client' | SERVER='Server'
 ;
 
-/** The FaceProfile enumeration captures the OS API subsets for a UoP as defined by the OSS. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.2
+ * <p>
+ * 
+ The FaceProfile enumeration captures the OS API subsets for a UoP as defined by the OSS. */
 enum UopFaceProfile:
 	GENERAL_PURPOSE = 'GeneralPurpose' |
 	SECURITY = 'Security' |
@@ -43,27 +62,53 @@ enum UopFaceProfile:
 	SAFETY_EXTENDED = 'SafetyExtended'
 ;
 
-enum UopDesignAssuranceLevel:
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.3
+ * <p>
+ * 
+ * */
+ enum UopDesignAssuranceLevel:
 	A='A' | B='B' | C='C' | D='D' | E='E'
 ;
 
-enum UopDesignAssuranceStandard:
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.4
+ * <p>
+ * 
+ * */
+ enum UopDesignAssuranceStandard:
 	DO_178B_ED_12B='DO_178B_ED_12B' |
 	DO_178C_ED_12C='DO_178C_ED_12C'
 ;
 
-/** The MessageExchangeType enumeration captures the options for the message exchange type of a UoP port as defined by the TS Interface. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.5
+ * <p>
+ * 
+ The MessageExchangeType enumeration captures the options for the message exchange type of a UoP port as defined by the TS Interface. */
 enum UopMessageExchangeType:
 	INBOUND_MESSAGE='InboundMessage' |
 	OUTBOUND_MESSAGE='OutboundMessage'
 ;
 
-/** The PartitionType enumeration captures the OS API types for a UoP as defined by the OSS. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.6
+ * <p>
+ * 
+ The PartitionType enumeration captures the OS API types for a UoP as defined by the OSS. */
 enum UopPartitionType:
 	POSIX='POSIX' | ARINC653='ARINC653'
 ;
 
-/** The ProgrammingLanguage enumeration captures the options for programming language API bindings as defined by Section 4.14. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.7
+ * <p>
+ * 
+ *  The ProgrammingLanguage enumeration captures the options for programming language API bindings as defined by Section 4.14. 
+ * 
+ * Note that this enum has been extended to include additional languages **and** defer language specification to either the containing component, the prior component
+ * in the data flow or note that it is not yet specified at all.
+ * */
 enum UopProgrammingLanguage:
 	UNSPECIFIED = 'Unspecified' | // EXTENSION: Make it possible to not specify a language - this is first so it gets the '0' value, so if no value is specified, this one will be assumed
 	CONTAINER = 'Container' | // EXTENSION: Use the language of the container (look at the language used by the component implemented with  instances of this)
@@ -73,23 +118,40 @@ enum UopProgrammingLanguage:
 	| GO='Go' | JS='Javascript' | PYTHON='Python' | RUST = 'Rust' | SCALA='Scala' | SQL='SQL' | TS='Typescript' 
 ;
 
-/** The SynchronizationStyle enumeration captures the options for the synchronization style of a UoP port as defined by the TS Interface. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.8
+ * <p>
+ * 
+ The SynchronizationStyle enumeration captures the options for the synchronization style of a UoP port as defined by the TS Interface. */
 enum UopSynchronizationStyle:
 	BLOCKING='Blocking' | NON_BLOCKING='NonBlocking'
 ;
 
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.9
+ * <p>
+ * 
+ * */
 enum UopThreadType:
 	FOREGROUND='Foreground'| BACKGROUND='Background'
 ;
 
-/** A UoPModel is a container for UoC Elements. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.10
+ * <p>
+ * 
+ A UoPModel is a container for UoC Elements. */
 UopUoPModel:
 	'um' name=ID description=STRING '{'
 		(um+=UopUoPModel | element +=UopElement)+
 	'}'
 ;
 
-/** A uop Element is the root type for defining the component elements of the ArchitectureModel. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.11
+ * <p>
+ * 
+ A uop Element is the root type for defining the component elements of the ArchitectureModel. */
 UopElement: 
 	UopSupportingComponent |
 	UopUnitOfPortability |
@@ -98,30 +160,50 @@ UopElement:
 
 ;
 
-/** A SupportingComponent is a LanguageRunTime or ApplicationFramework. The “version” attribute is the version of the SupportingComponent. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.12
+ * <p>
+ * 
+ A SupportingComponent is a LanguageRunTime or ApplicationFramework. The “version” attribute is the version of the SupportingComponent. */
 UopSupportingComponent:
 	UopComponentFramework |
 	UopLanguageRuntime
 ;
 
-/** A LanguageRunTime is a language run-time as defined in Section 4.2.3. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.13
+ * <p>
+ * 
+ A LanguageRunTime is a language run-time as defined in Section 4.2.3. */
 UopLanguageRuntime:
 	'runtime' name=ID ':' version=ID description=STRING ';'
 ;
 
-/** A ComponentFramework is an application framework as defined in Section 4.2.4. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.14
+ * <p>
+ * 
+ A ComponentFramework is an application framework as defined in Section 4.2.4. */
 UopComponentFramework:
 	'framework' name=ID ':' version=ID description=STRING ';'
 ;
 
-/** An AbstractUoP is used to capture the specification of a UoP. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.15
+ * <p>
+ * 
+ An AbstractUoP is used to capture the specification of a UoP. */
 UopAbstractUoP:
 	'aUoP' name=ID description=STRING '{'
 		(connection+=UopAbstractConnection)*
 	'};'	
 ;
 
-/** An AbstractConnection captures the input and output characteristics of an AbstractUoP by specifying data at a Logical or Conceptual level. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.16
+ * <p>
+ * 
+ An AbstractConnection captures the input and output characteristics of an AbstractUoP by specifying data at a Logical or Conceptual level. */
 UopAbstractConnection:
 	'aconn' name=ID description=STRING '{'
 		( 'c' conceptualView=[uddl::ConceptualView|QN])? 
@@ -129,13 +211,21 @@ UopAbstractConnection:
 	'};'	
 ;
 
-/** A UnitOfPortability is a FACE PlatformSpecificComponent or PortableComponent. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.17
+ * <p>
+ * 
+ A UnitOfPortability is a FACE PlatformSpecificComponent or PortableComponent. */
 UopUnitOfPortability:	
 	UopPortableComponent |
 	UopPlatformSpecificComponent
 	;
 
-/** A PortableComponent is a software component as defined by the PCS. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.18
+ * <p>
+ * 
+ A PortableComponent is a software component as defined by the PCS. */
 UopPortableComponent:	
 	'pc'  name=ID description=STRING ('->' realizes=[UopAbstractUoP|QN])? '{'
 		'lang:' transportAPILanguage=UopProgrammingLanguage
@@ -152,7 +242,11 @@ UopPortableComponent:
 	'};'
 ;
 
-/** A PlatformSpecificComponent is a software component as defined by the PSSS. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.19
+ * <p>
+ * 
+ A PlatformSpecificComponent is a software component as defined by the PSSS. */
 UopPlatformSpecificComponent:	
 	 'psc' name=ID description=STRING ('->' realizes=[UopAbstractUoP|QN])? '{'
 		'lang:' transportAPILanguage=UopProgrammingLanguage
@@ -169,7 +263,11 @@ UopPlatformSpecificComponent:
 	'};'
 ;
 
-/** A Thread defines the properties for the scheduling of a thread. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.20
+ * <p>
+ * 
+ A Thread defines the properties for the scheduling of a thread. */
 UopThread: '(' 
 	'per:' period=FLOAT 
 	'timeCap:' timeCapacity=FLOAT 
@@ -179,7 +277,11 @@ UopThread: '('
 	')'
 	;
 
-/** A RAMMemoryRequirements defines memory resources required by a UoP. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.21
+ * <p>
+ * 
+ A RAMMemoryRequirements defines memory resources required by a UoP. */
 UopRAMMemoryRequirements:
 	{UopRAMMemoryRequirements}
 	'('
@@ -191,13 +293,21 @@ UopRAMMemoryRequirements:
 	')'
 ;
 
-/** A Connection is a communication endpoint on a FACE UoP. A Connection is either a Publisher, Subscriber, Client, or Server. The “messageType” specifies the platform View that is transmitted through the endpoint. If “period” is not specified, the endpoint is aperiodic. If “period” is specified, the value is the period of the endpoint in seconds. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.22
+ * <p>
+ * 
+ A Connection is a communication endpoint on a FACE UoP. A Connection is either a Publisher, Subscriber, Client, or Server. The “messageType” specifies the platform View that is transmitted through the endpoint. If “period” is not specified, the endpoint is aperiodic. If “period” is specified, the value is the period of the endpoint in seconds. */
 UopConnection:
 	UopPubSubConnection |
 	UopClientServerConnection
 ;
 
-/** A ClientServerConnection is a Request/Reply Connection as defined in Section 4.7. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.23
+ * <p>
+ * 
+ A ClientServerConnection is a Request/Reply Connection as defined in Section 4.7. */
 UopClientServerConnection:
 	'csconn' name=ID description=STRING ('->' realizes=[UopAbstractConnection|QN])? '{'
 	 	'msg:' '[' requestType=[UopMessageType|QN] '/' responseType=[UopMessageType|QN] ']'
@@ -208,13 +318,21 @@ UopClientServerConnection:
 	'}'
 ;
 
-/** A PubSubConnection is a QueuingConnection or a SingleInstanceMessageConnection. The “messageExchangeType” attribute defines the direction of the message relative to the UoP. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.24
+ * <p>
+ * 
+ A PubSubConnection is a QueuingConnection or a SingleInstanceMessageConnection. The “messageExchangeType” attribute defines the direction of the message relative to the UoP. */
 UopPubSubConnection:
 	UopQueuingConnection |
 	UopSingleInstanceMessageConnection
 ;
 
-/** A QueuingConnection is a PubSubConnection that supports buffering/queuing as defined in Section 4.8.  */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.25
+ * <p>
+ * 
+ A QueuingConnection is a PubSubConnection that supports buffering/queuing as defined in Section 4.8.  */
 UopQueuingConnection:
 	'qconn' name=ID description=STRING ('->' realizes=[UopAbstractConnection|QN])? '{'
 	 	'msg:'  messageExchangeType=UopMessageExchangeType 
@@ -226,7 +344,11 @@ UopQueuingConnection:
 		'}'
 ;
 
-/** A SingleInstanceMessageConnection is a PubSubConnection that supports single instance messaging as defined in Section 4.8.  */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.26
+ * <p>
+ * 
+ A SingleInstanceMessageConnection is a PubSubConnection that supports single instance messaging as defined in Section 4.8.  */
 UopSingleInstanceMessageConnection:
 	'simconn' name=ID description=STRING ('->' realizes=[UopAbstractConnection|QN])? '{'
 	 	'msg:'  messageExchangeType=UopMessageExchangeType 
@@ -237,18 +359,30 @@ UopSingleInstanceMessageConnection:
 		'}'
 ;
 
-/** A LifeCycleManagementPort is used to define the life-cycle interface for the component. The “messageExchangeType” attribute defines the direction of the life-cycle message relative to the UoP.  */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.27
+ * <p>
+ * 
+ A LifeCycleManagementPort is used to define the life-cycle interface for the component. The “messageExchangeType” attribute defines the direction of the life-cycle message relative to the UoP.  */
 UopLifeCycleManagementPort:
 	'(' messageExchangeType=UopMessageExchangeType lcmMessageType=[UopMessageType|QN] ')'
 ;
 
-/** A MessageType is a Template or a CompositeTemplate. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.28
+ * <p>
+ * 
+ A MessageType is a Template or a CompositeTemplate. */
 UopMessageType:
 	UopTemplate |
 	UopCompositeTemplate
 ;
 
-/** A CompositeTemplate is a collection of two or more Templates. The “isUnion” attribute specifies whether the composed Templates are to be represented as cases in an IDL union or as members of an IDL struct. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.29
+ * <p>
+ * 
+ A CompositeTemplate is a collection of two or more Templates. The “isUnion” attribute specifies whether the composed Templates are to be represented as cases in an IDL union or as members of an IDL struct. */
 UopCompositeTemplate:
 	'ctempl' name=ID description=STRING ('->' realizes=[uddl::LogicalCompositeQuery|QN])? '{'
 		isUnion?='isUnion'
@@ -257,6 +391,10 @@ UopCompositeTemplate:
 ;
 
 /** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.30
+ * <p>
+ * 
+ 
  * A TemplateComposition is the mechanism that allows a CompositeTemplate to be constructed from Templates and other CompositeTemplates. 
  * The “rolename” attribute defines the name of the composed platform View within the scope of the composing CompositeTemplate. 
  * The “type” of a TemplateComposition is the platform View being used to construct the CompositeTemplate.
@@ -266,6 +404,10 @@ UopTemplateComposition:
 ;
 
 /** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.2.31
+ * <p>
+ * 
+ 
  * A Template is a specification that defines a structure for Characteristics projected by its “boundQuery” or its “effectiveQuery”. 
  * The “specification” attribute captures the specification of a Template as defined by the Template grammar in Section J.4.
  */
@@ -281,21 +423,33 @@ UopTemplate:
 
 
 // ----
-/** An IntegrationModel is a container for integration Elements.  */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.3.1
+ * <p>
+ * 
+ An IntegrationModel is a container for integration Elements.  */
 IntegrationIntegrationModel:
 	'im' name=ID description=STRING '{'
 		(im+=IntegrationIntegrationModel | element+=IntegrationElement)*
 	'}'
 ;
 
-/** An integration Element is the root type for defining the integration elements of the ArchitectureModel. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.3.2
+ * <p>
+ * 
+ An integration Element is the root type for defining the integration elements of the ArchitectureModel. */
 IntegrationElement:
 	IntegrationUoPInstance |
 	IntegrationTransportChannel |
 	IntegrationIntegrationContext
 ;
 
-/** An IntegrationContext is a container used to group a set of TransportNodes and TSNodeConnections related to each other by a common, integrator defined context (e.g., collection and distribution of navigation data). */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.3.3
+ * <p>
+ * 
+ An IntegrationContext is a container used to group a set of TransportNodes and TSNodeConnections related to each other by a common, integrator defined context (e.g., collection and distribution of navigation data). */
 IntegrationIntegrationContext:
 	'ic' name=ID description=STRING '{'
 		('xport:''[' node+=IntegrationTransportNode+ ']')?
@@ -303,7 +457,11 @@ IntegrationIntegrationContext:
 	'}'
 ;
 
-/** A TSNodeConnection represents a connection between two TransportNodes. 
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.3.4
+ * <p>
+ * 
+ A TSNodeConnection represents a connection between two TransportNodes. 
  * NOTE: This rule as defined subsumes the functionality of the derived classes from the spec.
  */
 IntegrationTSNodeConnection:
@@ -314,7 +472,11 @@ IntegrationTSNodeConnection:
 	'(' 'T2T' source=[IntegrationTSNodeOutputPort|QN] '->' destination=[IntegrationTSNodeInputPort|QN] ')' 
 ;
 
-/** A TSNodePortBase is a port that can be used to connect a TransportNode and a UoPEndPoint together using a TSNodeConnection. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.3.5
+ * <p>
+ * 
+ A TSNodePortBase is a port that can be used to connect a TransportNode and a UoPEndPoint together using a TSNodeConnection. */
 IntegrationTSNodePortBase:
 //	IntegrationUoPEndPoint |
 //	IntegrationTSNodePort
@@ -325,7 +487,11 @@ IntegrationTSNodePortBase:
 	IntegrationTSNodeOutputPort
 ;
 
-/** A UoPInstance represents an instance of a specific UoP within the system bounded by an integration model. An integration model can contain multiple instances of the same UoP. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.3.6
+ * <p>
+ * 
+ A UoPInstance represents an instance of a specific UoP within the system bounded by an integration model. An integration model can contain multiple instances of the same UoP. */
 IntegrationUoPInstance:
 	'uinst' name=ID description=STRING '->' realizes=[UopUnitOfPortability|QN]  '{'
 		('uri:' configurationURI=STRING)?
@@ -335,23 +501,39 @@ IntegrationUoPInstance:
 ;
 
 // EXTENSION: Technically, the IntegrationTSNodeConnection rule sidesteps any need for this rule.
-/** A UoPEndPoint is a specialization of a TSNodePortBase that allows connections in a UoPInstance to be part of a TSNodeConnection. This supports connecting UOP input and output endpoints to each other and to transport node input and output ports. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.3.7
+ * <p>
+ * 
+ A UoPEndPoint is a specialization of a TSNodePortBase that allows connections in a UoPInstance to be part of a TSNodeConnection. This supports connecting UOP input and output endpoints to each other and to transport node input and output ports. */
 //IntegrationUoPEndPoint:
 //	IntegrationUoPInputEndPoint |
 //	IntegrationUoPOutputEndPoint
 //;
 
-/** A UoPInputEndPoint is a specialization of a UoPEndPoint providing an endpoint which is used to input data to a UoP. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.3.8
+ * <p>
+ * 
+ A UoPInputEndPoint is a specialization of a UoPEndPoint providing an endpoint which is used to input data to a UoP. */
 IntegrationUoPInputEndPoint:
 	connection=[UopConnection|QN]
 ;
 
-/** A UoPOutputEndPoint is a specialization of a UoPEndPoint providing an endpoint which is used to output data from a UoP. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.3.9
+ * <p>
+ * 
+ A UoPOutputEndPoint is a specialization of a UoPEndPoint providing an endpoint which is used to output data from a UoP. */
 IntegrationUoPOutputEndPoint:
 	 connection=[UopConnection|QN] 
 ;
 
-/** A TransportNode is an abstraction of a node that performs a function along a path of communication from source UoPs to destination UoPs.  */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.3.10
+ * <p>
+ * 
+ A TransportNode is an abstraction of a node that performs a function along a path of communication from source UoPs to destination UoPs.  */
 IntegrationTransportNode:
 	IntegrationViewTransporter |
 	IntegrationViewAggregation |
@@ -362,23 +544,39 @@ IntegrationTransportNode:
 ;
 
 // EXTENSION: Technically, the IntegrationTSNodeConnection rule sidesteps any need for this rule.
-/** A TSNodePort is a port that provides a connection point to a TransportNode. A TSNodePort is typed by the “view” it references. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.3.11
+ * <p>
+ * 
+ A TSNodePort is a port that provides a connection point to a TransportNode. A TSNodePort is typed by the “view” it references. */
 //IntegrationTSNodePort:
 //	IntegrationTSNodeOutputPort | 
 //	IntegrationTSNodeInputPort	
 //;
 
-/** A TSNodeInputPort is a specialization of a TSNodePort providing an endpoint which is used to input data to a TransportNode. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.3.12
+ * <p>
+ * 
+ A TSNodeInputPort is a specialization of a TSNodePort providing an endpoint which is used to input data to a TransportNode. */
 IntegrationTSNodeInputPort:
 	 view=[UopMessageType|QN]
 ;
 
-/** A TSNodeOutputPort is a specialization of a TSNodePort providing an endpoint which is used to output data from a TransportNode. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.3.13
+ * <p>
+ * 
+ A TSNodeOutputPort is a specialization of a TSNodePort providing an endpoint which is used to output data from a TransportNode. */
 IntegrationTSNodeOutputPort: 
 	 view=[UopMessageType|QN]
 ;
 
-/** A ViewAggregation represents of an instance of aggregation of data from multiple incoming views into a single outgoing view type, including transformation of input data to that required by the output view type. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.3.14
+ * <p>
+ * 
+ A ViewAggregation represents of an instance of aggregation of data from multiple incoming views into a single outgoing view type, including transformation of input data to that required by the output view type. */
 IntegrationViewAggregation:
 	'agg' name=ID description=STRING '{'
 		'in:' '[' inPort+=IntegrationTSNodeInputPort+ ']'
@@ -386,7 +584,11 @@ IntegrationViewAggregation:
 	'};'
 ;
 
-/** A ViewFilter represents of an instance of a filter of data allowing a view to either pass through a filter, or to be filtered out (i.e., not passed through). A ViewFilter performs no transformation of data. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.3.15
+ * <p>
+ * 
+ A ViewFilter represents of an instance of a filter of data allowing a view to either pass through a filter, or to be filtered out (i.e., not passed through). A ViewFilter performs no transformation of data. */
 IntegrationViewFilter:
 	'filter' name=ID description=STRING '{'
 		'in:' '[' inPort+=IntegrationTSNodeInputPort+ ']'
@@ -394,7 +596,11 @@ IntegrationViewFilter:
 	'};'
 ;
 
-/** A ViewSource is a TransportNode that only provides a View. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.3.16
+ * <p>
+ * 
+ A ViewSource is a TransportNode that only provides a View. */
 IntegrationViewSource:
 	'src' name=ID description=STRING '{'
 		('in:' '[' inPort+=IntegrationTSNodeInputPort+ ']')?
@@ -402,7 +608,11 @@ IntegrationViewSource:
 	'};'
 ;
 
-/** A ViewSink is a TransportNode that only receives a View. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.3.17
+ * <p>
+ * 
+ A ViewSink is a TransportNode that only receives a View. */
 IntegrationViewSink:
 	'sink' name=ID description=STRING '{'
 		'in:' '[' inPort+=IntegrationTSNodeInputPort+ ']'
@@ -410,7 +620,11 @@ IntegrationViewSink:
 	'};'
 ;
 
-/** A ViewTransformation represents an instance of transformation of data from one view type to another. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.3.18
+ * <p>
+ * 
+ A ViewTransformation represents an instance of transformation of data from one view type to another. */
 IntegrationViewTransformation:
 	'xform' name=ID description=STRING '{'
 		'in:' '[' inPort+=IntegrationTSNodeInputPort+ ']'
@@ -418,7 +632,11 @@ IntegrationViewTransformation:
 	'};'
 ;
 
-/** A ViewTransporter represents the use of a TransportChannel with the intent of moving a view over it. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.3.19
+ * <p>
+ * 
+ A ViewTransporter represents the use of a TransportChannel with the intent of moving a view over it. */
 IntegrationViewTransporter:
 	'xport' name=ID description=STRING '{'
 		'in:' '[' inPort+=IntegrationTSNodeInputPort+ ']'
@@ -427,7 +645,11 @@ IntegrationViewTransporter:
 	'};'
 ;
 
-/** A TransportChannel is a placeholder for an integrator supplied configuration between transport endpoints. */
+/** 
+ * <b>Defined:</b> FACE v3.2, Appendix J.2.3.20
+ * <p>
+ * 
+ A TransportChannel is a placeholder for an integrator supplied configuration between transport endpoints. */
 IntegrationTransportChannel:
 	'itc' name=ID description=STRING ';'
 ;
